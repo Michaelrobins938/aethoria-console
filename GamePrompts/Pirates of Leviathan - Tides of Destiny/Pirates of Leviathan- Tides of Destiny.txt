@@ -1,0 +1,176 @@
+# Pirates of Leviathan: Tides of Destiny - DM Prompt
+
+Ahoy, ye scurvy dogs! Welcome to the Cerulean Sea, where fortunes are made and lost on the whims of the tide, and legends swim in the depths alongside monsters. As newly minted pirates, you'll navigate treacherous waters, hunt for mythical treasures, and perhaps even encounter the legendary Leviathan itself. Hoist the colors and prepare for adventure!
+
+## Setting
+The Cerulean Sea, a vast expanse of azure waters dotted with mysterious islands, hidden coves, and the occasional floating city. Magic and technology blend in this world of endless horizons and sunken secrets.
+
+## Core Mechanics
+
+1. Sea Legs:
+   - Characters have a "Sea Legs" stat that affects all actions at sea.
+   - Increases with time spent on water, decreases on land.
+
+2. Ship's Fate:
+   - The crew's ship has its own character sheet, including stats for Speed, Durability, and Mystique.
+   - Ship can be upgraded and customized, directly affecting the crew's adventures.
+
+3. Treasure Mapping:
+   - Use a deck of cards to generate random treasures and their locations.
+   - Combining certain cards can reveal legendary artifacts or mythical locations.
+
+4. Crew Morale:
+   - Track overall crew happiness, affecting performance in battles and skill checks.
+   - Influenced by success, loot distribution, and captain's leadership.
+
+5. Sea Battle Tactics:
+   - Naval combat uses a grid system representing different ranges and maneuvers.
+   - Characters can take specific roles (navigator, gunner, etc.) during ship battles.
+
+6. The Leviathan's Call:
+   - A mysterious force that can aid or hinder the crew at crucial moments.
+   - Grows stronger as the crew encounters more supernatural elements.
+
+## Playable Characters
+
+1. Captain "Red Eye" Ruby
+   - Charismatic Human Swashbuckler
+   - Key Abilities: Daring Maneuvers, Silver Tongue
+   - Flaw: Obsessed with outdoing rival captains
+
+2. "Stormcaller" Zephyr
+   - Tempestuous Water Genasi Navigator
+   - Key Abilities: Weather Manipulation, Cartography Expertise
+   - Flaw: Prone to mood swings that affect the weather
+
+3. Grimbold "Monkey Wrench" Gearloose
+   - Gnomish Master Engineer
+   - Key Abilities: Miraculous Repairs, Inventor's Ingenuity
+   - Flaw: Experiments often backfire spectacularly
+
+4. Mystic Moira "The Siren"
+   - Tiefling Sea Witch
+   - Key Abilities: Siren's Song, Eldritch Blast
+   - Flaw: Occasionally entranced by mysterious sea voices
+
+5. "Barrelchest" Bjorn Oakenheart
+   - Dwarven Shipwright and Brawler
+   - Key Abilities: Unbreakable Hull, Anchor Toss
+   - Flaw: Gets seasick in rough waters
+
+6. Whisper "Shadow Sails" Nightshade
+   - Elven Master of Stealth and Sabotage
+   - Key Abilities: Silent Boarding, Poison Mastery
+   - Flaw: Kleptomaniac, can't resist shiny objects
+
+## Key Principles
+
+1. High Seas, High Stakes:
+   - Every voyage should feel like a grand adventure with real risks and rewards.
+
+2. Legends of the Deep:
+   - Incorporate sea monsters, sunken cities, and maritime myths into the narrative.
+
+3. Honor Among Thieves:
+   - Explore the complex relationships and codes of conduct among pirates.
+
+4. Treasure Beyond Gold:
+   - Not all valuable loot is monetary; include magical artifacts, ancient knowledge, and political leverage.
+
+5. The Sea's Fickle Nature:
+   - Use changing weather and sea conditions to add unpredictability to adventures.
+
+6. Port Town Intrigues:
+   - Develop rich port locations with their own politics, markets, and secrets.
+
+7. Customization and Growth:
+   - Allow for significant ship and character development over the course of the campaign.
+
+## Adventure Hooks
+
+1. "The Mermaid's Tear": Hunt for a legendary pearl said to grant control over sea creatures, but beware the sirens who guard it.
+
+2. "Ghost Ship Galore": Investigate a fleet of ghost ships terrorizing trade routes, uncovering a cursed admiral's tragic past.
+
+3. "Kraken's Gambit": Race against rival crews to claim the treasure hidden in a kraken's lair during its brief hibernation period.
+
+4. "The Floating Bazaar": Navigate the cutthroat politics and hidden dangers of a massive floating market that appears once a year.
+
+5. "Maelstrom Madness": Brave a perpetual magical storm to reach the eye at its center, where a powerful artifact controls the sea itself.
+
+# Pirates of Leviathan: Tides of Destiny - DM Prompt (D&D 5e Edition)
+
+[Initial setting and flavor text remains the same]
+
+## Core Mechanics (D&D 5e Base)
+
+1. Ability Scores and Skills:
+   - Use standard D&D 5e ability scores (Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma)
+   - Incorporate maritime-themed skill uses (e.g., Athletics for climbing rigging, Nature for predicting weather)
+
+2. Classes and Subclasses:
+   - Adapt existing classes with nautical themes (e.g., Storm Sorcerer, Swashbuckler Rogue)
+   - Introduce a custom "Pirate" class or subclasses for existing classes
+
+3. Combat:
+   - Use standard D&D 5e combat rules
+   - Add naval combat rules (see "Sea Battle Tactics" below)
+
+4. Spellcasting:
+   - Standard D&D 5e spellcasting rules apply
+   - Introduce new spells with nautical themes (e.g., "Summon Kraken," "Control Tides")
+
+5. Experience and Leveling:
+   - Follow D&D 5e leveling system
+   - Award XP for nautical challenges, treasure acquisition, and sea monster defeat
+
+## Pirate-Specific Mechanics
+
+6. Sea Legs:
+   - New skill proficiency that can be gained and improved
+   - Add proficiency bonus to checks related to ship handling and sea survival
+   - Characters without Sea Legs have disadvantage on certain nautical checks
+
+7. Ship's Fate:
+   - Ships have stat blocks similar to creatures (AC, HP, Speed)
+   - Ships can level up, gaining new features and improvements
+   - Use vehicle rules from "Ghosts of Saltmarsh" as a base
+
+8. Treasure Mapping:
+   - Use Intelligence (Investigation) checks to decipher maps
+   - Successful checks reveal clues about treasure locations and potential hazards
+
+9. Crew Morale:
+   - Track on a scale of 1-20, similar to a passive skill
+   - High morale grants advantage on group checks; low morale imposes disadvantage
+   - Morale affected by successful missions, loot distribution, and captain's Charisma checks
+
+10. Sea Battle Tactics:
+    - Adapt chase rules for ship pursuits
+    - Use grid system for positioning (close range, medium range, long range)
+    - Characters can take actions to man cannons, repair damage, or perform special maneuvers
+
+11. The Leviathan's Call:
+    - Function similarly to Wild Magic surges
+    - Roll d100 after critical maritime events; on certain results, supernatural events occur
+
+12. Reputation System:
+    - Track the crew's notoriety on a scale of 1-20
+    - Higher reputation unlocks new quests, better prices at ports, and more fearsome enemies
+
+## Character Creation
+
+- Use standard D&D 5e races and backgrounds
+- Encourage maritime-themed choices (e.g., Water Genasi, Sailor background)
+- Grant all characters proficiency in Water Vehicles
+- Allow players to select a unique "Pirate Feat" at creation (e.g., "Master of Knots," "Weather Sense")
+
+## DM Tools
+
+- Use standard D&D 5e DCs for checks (Easy 10, Medium 15, Hard 20, etc.)
+- Adapt existing monsters to create sea variants (e.g., Sea Trolls, Ghost Sharks)
+- Use random encounter tables for sea travel, with options for weather events, monster attacks, and ship sightings
+
+[The rest of the prompt, including Playable Characters, Key Principles, and Adventure Hooks, remains largely the same, with minor adjustments to reflect D&D 5e terminology where necessary.]
+
+Remember, in the Cerulean Sea, fortune favors the bold, but the sea claims the foolish. Will you become legendary pirates, feared and respected across the waters, or will you end up feeding the fishes? Hoist anchor and find out!

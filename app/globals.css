@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+@layer base {
+  html {
+    font-family: 'Orbitron', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-console-dark text-console-text;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .console-button {
+    @apply bg-console-darker border border-console-border text-console-text 
+           hover:bg-gray-800 hover:border-console-accent 
+           transition-all duration-200 px-4 py-2 rounded-md
+           font-gaming font-medium;
+  }
+  
+  .console-button-primary {
+    @apply console-button bg-console-accent text-console-dark 
+           hover:bg-green-600;
+  }
+  
+  .console-input {
+    @apply bg-console-darker border border-console-border text-console-text
+           focus:border-console-accent focus:outline-none
+           px-3 py-2 rounded-md font-gaming;
+  }
+  
+  .console-card {
+    @apply bg-console-darker border border-console-border rounded-lg
+           p-4 shadow-lg;
+  }
+  
+  .console-glow {
+    @apply shadow-[0_0_10px_rgba(0,255,136,0.3)] 
+           hover:shadow-[0_0_20px_rgba(0,255,136,0.5)]
+           transition-shadow duration-300;
+  }
+  
+  .typing-indicator {
+    @apply inline-block w-2 h-4 bg-console-accent animate-pulse;
+  }
+  
+  .chat-message {
+    @apply p-3 rounded-lg mb-2 max-w-[80%];
+  }
+  
+  .chat-message-user {
+    @apply chat-message bg-console-accent text-console-dark ml-auto;
+  }
+  
+  .chat-message-ai {
+    @apply chat-message bg-console-darker border border-console-border;
+  }
+  
+  .cartridge-slot {
+    @apply bg-console-darker border-2 border-console-border rounded-lg
+           p-6 text-center hover:border-console-accent transition-colors
+           cursor-pointer;
+  }
+  
+  .cartridge-active {
+    @apply border-console-accent console-glow;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+} 
