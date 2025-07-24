@@ -127,6 +127,12 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Python files with API keys
+*.py
+main.py
+main - Copy.py
+main - Copy (2).py
+
 # Virtual environments
 aethoria_env/
 aethoria-env/
