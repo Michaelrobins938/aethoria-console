@@ -138,6 +138,10 @@ MeloTTS/melotts_env/
 models/
 *.obj
 *.msi
+*.pt
+*.pth
+*.onnx
+*.bin
 
 # Game data and outputs
 output/
@@ -146,6 +150,40 @@ transcripts/
 conversations/
 tldw/
 
+# Audio and video files
+*.wav
+*.mp3
+*.ogg
+*.mp4
+*.avi
+*.mov
+
 # Temporary files
 *.tmp
 *.temp
+input/
+asset/
+
+# Development files
+scripts/
+*.sh
+*.bat
+
+# Large game prompt files (keep only the JSON versions)
+GamePrompts/
+
+# Other large files
+humanoid.urdf
+*.urdf
+textures/
+cudnn/
+
+# Large files that exceeded GitHub limits
+gametitleintro/
+asset/DVAE.pt
+asset/DVAE_full.pt
+asset/Decoder.pt
+asset/Vocos.pt
+asset/GPT.pt
+asset/spk_stat.pt
+asset/tokenizer.pt
