@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Play, Sword, Ghost, Rocket, Shield, Zap, Skull } from 'lucide-react'
+import type { GamePrompt } from '@/lib/types'
 
 interface Cartridge {
   id: string
@@ -64,8 +65,8 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
     // Fetch game prompts from API
     fetch('/api/game-prompts')
       .then(res => res.json())
-      .then(data => {
-        const formattedCartridges = data.map((prompt: any) => ({
+      .then((data: GamePrompt[]) => {
+        const formattedCartridges = data.map((prompt: GamePrompt) => ({
           id: prompt.id,
           title: prompt.title,
           description: prompt.description,

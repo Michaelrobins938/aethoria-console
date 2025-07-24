@@ -1,0 +1,53 @@
+# Python files and environments
+*.py
+*.pyc
+__pycache__/
+aethoria_env/
+aethoria-env/
+myenv/
+new_venv/
+MeloTTS/
+
+# Large model files
+models/
+*.obj
+*.msi
+*.pt
+*.pth
+*.onnx
+*.bin
+
+# Game data and outputs
+output/
+journals/
+transcripts/
+conversations/
+tldw/
+
+# Audio and video files
+*.wav
+*.mp3
+*.ogg
+*.mp4
+*.avi
+*.mov
+
+# Temporary files
+*.tmp
+*.temp
+input/
+asset/
+
+# Development files
+scripts/
+*.sh
+*.bat
+
+# Large game prompt files (keep only the JSON versions)
+GamePrompts/
+
+# Other large files
+humanoid.urdf
+*.urdf
+textures/
+cudnn/ 

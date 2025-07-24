@@ -21,9 +21,9 @@ export function CombatUI() {
   const player = combatState.participants.find(p => p.name === character?.name)
   const enemies = combatState.participants.filter(p => p.name !== character?.name)
 
-  const handleAction = (action: string, target?: string) => {
+  const handleAction = (action: 'attack' | 'defend' | 'special' | 'flee' | 'item' | 'skill', target?: string) => {
     performCombatAction({
-      type: action as any,
+      type: action,
       target
     })
   }
