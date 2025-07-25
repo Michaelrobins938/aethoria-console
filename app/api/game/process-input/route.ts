@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { streamText } from 'ai'
 import { getModelForCartridge, getAIProvider } from '@/lib/ai'
 
+// Updated API route for assistant-ui integration
 export async function POST(request: NextRequest) {
   try {
     const { messages, cartridgeId, gameState } = await request.json()
