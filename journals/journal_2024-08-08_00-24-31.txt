@@ -1,0 +1,12 @@
+Session started at 2024-08-08_00-24-31
+
+User input: generate image of smily face
+
+Transcription:
+Transcription started at 2024-08-08_00-22-57
+
+~~~
+
+User: generate image of smily face
+
+~~~

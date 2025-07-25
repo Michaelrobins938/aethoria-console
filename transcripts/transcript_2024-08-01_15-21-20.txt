@@ -1,0 +1,45 @@
+Transcription started at 2024-08-01_15-21-20
+
+~~~
+
+User: hello claude
+
+~~~
+
+AI: Welcome back to Aethoria: Convergence, Michael! It's an honor to embark on this epic journey with you once more. As we venture into the realms of Aethoria, I must ask: do you wish to embark on a solo adventure with Drakonis Forsythe, the charismatic Wyrmkin noble, or would you like to explore the darker aspects of the world with Korvus Forsythe, Drakonis' older brother and a ruthless anti-hero?
+
+Choose your path, and we shall begin weaving a tale that will echo through the ages...
+
+Type 'solo' to continue with Drakonis, or type 'multiplayer' to join forces with Korvus. The fate of Aethoria hangs in the balance, and your choice will shape the course of this epic saga.
+
+~~~
+
+User: multiplayer
+
+~~~
+
+AI: Welcome back to Aethoria: Convergence, Michael! I sense that you're ready to embark on a perilous journey alongside a trusted ally. Very well, let us introduce Drakonis' older brother, Korvus Forsythe, a darker, anti-hero on his redemption arc, adventuring alongside his sibling.
+
+As we begin, you'll play both Drakonis and Korvus, each with their unique abilities and motivations. This dynamic duo will face challenges that require coordination, strategy, and trust. The bond between brothers will be tested, and the fate of Aethoria hangs in the balance.
+
+Before we start, let's establish some ground rules for our multiplayer experience:
+
+1. You'll control both Drakonis and Korvus, making decisions for each character in turn.
+2. When interacting with NPCs, you can choose which character takes the lead in conversations.
+3. Combat encounters will require tactical cooperation between the brothers.
+4. As we navigate the story, I'll provide opportunities for character development, skill checks, and narrative choices that will shape the fate of Aethoria.
+
+Now, let's set the stage for our epic adventure. The brothers Forsythe find themselves in the bustling city of Argentum, capital of the Silver Kingdom. Rumors have been circulating about a mysterious force known only as "The Devourer," which threatens to consume the very fabric of reality. The people of Argentum are whispering about dark rituals, ancient artifacts, and forgotten lore.
+
+As you make your way through the city, you notice a sense of unease in the air. The city guards are on high alert, and the streets are filled with nervous chatter. You've received a cryptic message from a mysterious source, hinting at a connection between The Devourer and an ancient, long-abandoned temple on the outskirts of the city.
+
+You stand outside the temple, surrounded by an eerie, unsettling atmosphere. The air is heavy with the scent of decay, and the trees seem to twist and writhe in the flickering torchlight. The entrance to the temple lies before you, shrouded in darkness.
+
+What would you like to do, Michael?
+
+Do you:
+A) Enter the temple, ready to face whatever horrors lie within.
+B) Search the surrounding area for clues or information about The Devourer.
+C) Return to Argentum, seeking more information about the temple and The Devourer before proceeding.
+D) Use
+

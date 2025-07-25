@@ -1,0 +1,100 @@
+Transcription started at 2024-08-02_23-36-25
+
+~~~
+
+User: hello
+
+~~~
+
+AI: Welcome to Woodsboro, a small town with a dark history of murder and mayhem. It's been years since the original Ghostface killings, but the anniversary of those tragic events is approaching, and a new generation of teens is about to find themselves in the crosshairs of a killer donning the infamous mask.
+
+You're one of the lucky (or unlucky) few who'll have to navigate this treacherous landscape, where knowing the rules of horror movies might just save your life – or make you the prime suspect. You'll have to be clever, resourceful, and willing to take risks to survive.
+
+Choose your character:
+
+1. **Casey Carpenter**: The Final Girl archetype, a horror film buff with a quick wit and a talent for investigation.
+2. **Alex Loomis**: The Outsider, a tech whiz with a mysterious past and a penchant for preparedness.
+3. **Jamie "The Jock" Thompson**: The Popular Athlete, with a secret passion for film analysis and a heroic streak.
+
+Which character will you play as?
+
+~~~
+
+User: ill be playing as alex loomis
+
+~~~
+
+AI: As Alex Loomis, the tech-savvy outsider, you bring a unique set of skills to the table. Your paranoid preparedness and hacking abilities will undoubtedly come in handy as you navigate the treacherous landscape of Woodsboro.
+
+Let's get started! You find yourself in the midst of a bustling school day at Woodsboro High. The anniversary of the original Ghostface killings is just around the corner, and the town is on edge. You've been noticing strange occurrences around town, from eerie messages on social media to whispered rumors of a new killer on the loose.
+
+As you walk down the hallway, you overhear a group of students discussing the recent murder of a local teenager. The police are stumped, and the town is in a state of panic. You notice that the group seems particularly interested in the fact that the victim was an avid horror movie fan, and that the killer left a cryptic message at the crime scene: "You can't escape the rules."
+
+You have three options to respond to the situation:
+
+A) Approach the group and share your own theories about the murder, using your knowledge of horror tropes to try and make sense of the cryptic message.
+
+B) Slip away unnoticed, deciding to investigate the crime scene and gather more information on your own.
+
+C) Take out your phone and start hacking into the school's security systems, trying to uncover any potential surveillance footage or clues that might have been missed.
+
+Choose your response:
+
+~~~
+
+User: A
+
+~~~
+~~~
+
+User: 
+
+~~~
+
+AI: Welcome to Woodsboro, a small town with a dark history of Ghostface killings. It's been years since the original murders, but a new generation of teens is about to face the same terror. You are one of these teens, and you'll need to use your wits, pop culture knowledge, and survival skills to make it out alive.
+
+You have three characters to choose from, each with their unique strengths and weaknesses:
+
+**Casey Carpenter**: The Final Girl Archetype, Horror Film Buff
+Key Stats: Intelligence 16 (+3), Dexterity 15 (+2), Charisma 14 (+2)
+Survival Aptitudes: Horror Trope Awareness, Quick Thinking, Investigation
+Special Trait: Genre Savvy (can predict potential killer actions based on horror movie logic)
+Equipment: Smartphone with Horror Movie Database App, Pepper Spray, House Keys
+Background: Niece of a survivor from the original killings, now caught in her own horror story
+
+**Alex Loomis**: The Outsider, Tech Whiz
+Key Stats: Intelligence 15 (+2), Dexterity 16 (+3), Wisdom 14 (+2)
+Tech Aptitudes: Hacking, Surveillance, Digital Forensics
+Special Trait: Paranoid Preparedness (has set up hidden cameras and failsafes around town)
+Equipment: Custom Laptop, Micro Spy Cameras, Taser
+Background: New kid in town, distrusting of everyone due to a mysterious past
+
+**Jamie "The Jock" Thompson**: The Popular Athlete, Unexpected Film Nerd
+Key Stats: Strength 16 (+3), Charisma 15 (+2), Intelligence 14 (+2)
+Social Aptitudes: Leadership, Intimidation, Pop Culture Knowledge
+Special Trait: Heroic Sacrifice (can take a hit meant for someone else, potentially surviving)
+Equipment: Baseball Bat, Car Keys, Lucky Letterman Jacket
+Background: Seems like the typical jock, but harbors a secret passion for film analysis
+
+Which character would you like to play as?
+
+
+AI: You've chosen to play as Casey Carpenter, the Final Girl Archetype and Horror Film Buff. With your Genre Savvy trait, you'll be able to predict potential killer actions based on horror movie logic. Your equipment consists of a smartphone with a Horror Movie Database App, pepper spray, and house keys.
+
+As you settle into your new life in Woodsboro, you can't help but feel a sense of unease. The anniversary of the original Ghostface killings is approaching, and the town is buzzing with nervous energy. You've heard rumors of a new killer donning the infamous mask, and you can't shake the feeling that you're being watched.
+
+You're currently at school, surrounded by your classmates. The atmosphere is tense, with everyone whispering about the recent murders. You notice Alex Loomis, the Outsider and Tech Whiz, sitting alone at a table, typing away on her laptop. Jamie "The Jock" Thompson is nearby, chatting with his friends and trying to appear nonchalant.
+
+As you observe your classmates, you receive a text message from an unknown number:
+
+"Hey, Casey. You think you're so smart, don't you? You think you can outsmart the killer? Meet me at the old warehouse on 5th and Main at midnight if you want to survive."
+
+What do you do?
+
+A) Ignore the message and continue with your day
+B) Tell Alex about the message and ask for her help
+C) Share the message with Jamie and see if he's interested in investigating
+D) Go to the old warehouse alone at midnight to confront the killer
+
+Choose your response:
+

@@ -1,0 +1,62 @@
+Transcription started at 2024-08-03_04-52-37
+
+
+AI: I'm glad you're ready to dive into this Xenomorph nightmare! However, it seems you didn't select a character to play as. Let me recap the character options:
+
+1. Dr. Elara Vance, a Xenobiologist with a strong background in Xenomorph Knowledge, Medical Expertise, and Data Analysis.
+2. Marshal Dante Coburn, a Colonial Marshal and Former Marine, with expertise in Tactical Awareness, Weapons Specialist, and Zero-G Operations.
+
+Please select a character to proceed:
+
+(Remember to specify "Dr. Elara Vance" or "Marshal Dante Coburn" when you make your decision)
+
+Additionally, let's set the starting scenario:
+
+As your ship approaches LV-493, the silence of the planet is suddenly shattered by the transmission of a cryptic message:
+
+"This is Outpost Aurora... can... anyone... hear... *static*... Xenomorphs... everywhere... *screams*... Don't... come... *transmission ends*"
+
+Your ship lands near the outpost, and you step out into the eerie silence. The air is thick with an otherworldly atmosphere, and the darkness seems to writhe like a living entity. The outpost's entrance is just a few meters away, but the silence is oppressive, and you sense that you're being watched.
+
+What do you do?
+
+(Please respond with your character's name, followed by your actions)
+
+~~~
+
+User: 2
+
+~~~
+
+AI: You've chosen to play as Marshal Dante Coburn, a Colonial Marshal and Former Marine. Your skills in Tactical Awareness, Weapons Specialist, and Zero-G Operations will be crucial in this unforgiving environment.
+
+As you step out of the ship, you take a moment to survey your surroundings. The outpost's entrance is a large, metallic door with a sign that reads "Outpost Aurora" in bold letters. The door appears to be slightly ajar, and you can see a sliver of darkness within.
+
+You notice that the surrounding area is littered with debris, including broken equipment and what looks like a mangled android body. The air is thick with the smell of smoke and ozone.
+
+You take a deep breath, grip your M41A Pulse Rifle tightly, and move cautiously towards the entrance. As you approach, you notice that the door is not just ajar, but it's also slightly damaged, with scorch marks and signs of forced entry.
+
+You push the door open slowly, scanning the area for any signs of movement or danger. The interior of the outpost is dark, with only a few flickering emergency lights illuminating the area. You see a corridor stretching out before you, with several doors leading off to either side.
+
+Suddenly, you hear a faint noise coming from deeper within the outpost. It sounds like footsteps, but they're light and cautious, as if someone is trying not to be seen.
+
+What do you do?
+
+(Remember to use your skills and equipment to inform your decisions. You can ask me questions about your surroundings or the situation if you need more information.)
+
+**Your current status:**
+
+* Health: 100%
+* Ammo: 30 rounds (M41A Pulse Rifle)
+* Equipment: M41A Pulse Rifle, Motion Tracker, Compressed Air Launcher
+* Skills: Tactical Awareness, Weapons Specialist, Zero-G Operations
+
+**Your options:**
+
+1. Investigate the noise and try to locate the source.
+2. Search the entrance area for more clues or useful equipment.
+3. Move cautiously down the corridor, trying to get a better sense of the layout and potential dangers.
+4. Use your Motion Tracker to scan for any signs of movement or xenomorph activity.
+
+Please respond with your chosen action.
+
