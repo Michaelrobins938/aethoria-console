@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { streamText } from 'ai'
-import { getModelForCartridge, getAIProvider } from '@/lib/ai'
+import OpenAI from 'openai'
+import { getModelForCartridge } from '@/lib/ai'
 
 // Updated API route for assistant-ui integration
 export async function POST(request: NextRequest) {
@@ -31,15 +31,16 @@ export async function POST(request: NextRequest) {
 
     // Get the appropriate model for this cartridge
     const model = getModelForCartridge(cartridgeId)
-    const aiProvider = getAIProvider(model)
 
-    // Generate AI response with streaming
-    return streamText({
-      model: aiProvider,
-      messages: [
-        {
-          role: 'system',
-          content: `${gamePrompt}
+    // Initialize OpenAI client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+
+    // Create the system message with game state
+    const systemMessage = {
+      role: 'system' as const,
+      content: `${gamePrompt}
 
 Current Game State:
 - Character: ${gameState?.character?.name || 'Unknown'}
@@ -51,11 +52,40 @@ Current Game State:
 - In Combat: ${gameState?.combatState?.isActive ? 'Yes' : 'No'}
 
 Respond as the Game Master, creating an immersive and engaging experience. Keep responses concise but atmospheric.`
-        },
-        ...messages
-      ],
+    }
+
+    // Generate AI response using OpenAI directly
+    const response = await openai.chat.completions.create({
+      model: model,
+      messages: [systemMessage, ...messages],
       temperature: 0.8,
-      maxTokens: 500,
+      max_tokens: 500,
+      stream: true,
+    })
+
+    // Create a readable stream from the OpenAI response
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of response) {
+            const text = chunk.choices[0]?.delta?.content || ''
+            if (text) {
+              controller.enqueue(new TextEncoder().encode(text))
+            }
+          }
+          controller.close()
+        } catch (error) {
+          controller.error(error)
+        }
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
     })
   } catch (error) {
     console.error('Error processing game input:', error)
