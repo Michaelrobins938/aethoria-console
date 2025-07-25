@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { GameConsole } from '@/components/GameConsole'
+import { AIChat } from '@/components/AIChat'
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
 
@@ -108,7 +108,7 @@ export default function Home() {
               <CartridgeSelector onSelect={handleCartridgeSelect} />
             </div>
           ) : (
-            <GameConsole 
+            <AIChat 
               cartridgeId={selectedCartridge!}
               onGameEnd={handleGameEnd}
             />

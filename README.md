@@ -10,6 +10,7 @@ Aethoria is a revolutionary AI-powered gaming console that transforms artificial
 - **🎯 Dice Rolling System**: Interactive D&D-style dice rolling with visual feedback
 - **💾 Persistent Game State**: Save and load your adventures with character progression
 - **🎨 Beautiful UI**: Apple-quality console interface with retro gaming aesthetics
+- **🤖 Advanced AI Chat**: Powered by [assistant-ui](https://github.com/assistant-ui/assistant-ui) for seamless AI interactions
 
 ## 🚀 Quick Start
 
@@ -17,6 +18,7 @@ Aethoria is a revolutionary AI-powered gaming console that transforms artificial
 
 - Node.js 18.0.0 or higher
 - npm or yarn package manager
+- AI API keys (OpenAI, Anthropic, or Groq)
 
 ### Installation
 
@@ -31,12 +33,24 @@ Aethoria is a revolutionary AI-powered gaming console that transforms artificial
    npm install
    ```
 
-3. **Start the development server**
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Edit `.env.local` and add your AI API keys:
+   ```env
+   OPENAI_API_KEY=your_openai_api_key_here
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
+   GROQ_API_KEY=your_groq_api_key_here
+   ```
+
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🎯 Available Games
@@ -61,13 +75,14 @@ aethoria-console/
 │   ├── layout.tsx         # Root layout
 │   └── page.tsx           # Home page
 ├── components/            # React components
-│   ├── GameConsole.tsx    # Main game interface
+│   ├── AIChat.tsx        # AI chat interface (assistant-ui)
 │   ├── CartridgeSelector.tsx # Game selection
-│   ├── VoiceRecorder.tsx  # Voice input
+│   ├── VoiceSynthesis.tsx # Voice synthesis (Web Speech API)
 │   └── DieRoller.tsx      # Dice rolling system
 ├── lib/                   # Utilities and types
 │   ├── store.ts           # Zustand state management
-│   └── types.ts           # TypeScript definitions
+│   ├── types.ts           # TypeScript definitions
+│   └── ai.ts              # AI configuration
 ├── GamePrompts/           # Game prompt content
 └── api/                   # Python AI backend
 ```
@@ -79,6 +94,42 @@ aethoria-console/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
+
+## 🤖 AI Integration
+
+### Assistant-UI Integration
+
+Aethoria uses [assistant-ui](https://github.com/assistant-ui/assistant-ui) for seamless AI chat functionality:
+
+- **Streaming Responses**: Real-time AI responses with typing indicators
+- **Auto-scrolling**: Automatic chat scrolling for smooth UX
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Customizable**: Fully customizable chat interface
+- **Multi-provider Support**: OpenAI, Anthropic, Groq, and more
+
+### Voice Synthesis
+
+Replaced MeloTTS with Web Speech API for better browser compatibility:
+
+- **No Installation Required**: Works in all modern browsers
+- **Multiple Voices**: Access to system voices
+- **Real-time Synthesis**: Instant voice feedback
+- **Cross-platform**: Works on Windows, Mac, Linux, and mobile
+
+### AI Providers
+
+Configure your preferred AI provider in `lib/ai.ts`:
+
+```typescript
+// Game-specific model configurations
+export const gameModels = {
+  'dnd-fantasy': 'gpt-4',
+  'silent-hill-echoes': 'gpt-4',
+  'portal-sci-fi': 'gpt-3.5-turbo',
+  'pokemon-adventure': 'gpt-3.5-turbo',
+  default: 'gpt-3.5-turbo'
+}
+```
 
 ## 🌐 Deployment
 
@@ -94,7 +145,10 @@ aethoria-console/
    vercel
    ```
 
-3. **Follow the prompts** to connect your GitHub repository
+3. **Configure environment variables** in Vercel dashboard:
+   - `OPENAI_API_KEY`
+   - `ANTHROPIC_API_KEY`
+   - `GROQ_API_KEY`
 
 ### Manual Deployment
 
@@ -112,7 +166,7 @@ aethoria-console/
 
 ### Adding New Games
 
-1. Create a new game prompt file in `GamePrompts/`
+1. Create a new game prompt file in `app/api/game-prompts/data/`
 2. Add the game to `app/api/game-prompts/data/index.json`
 3. The game will automatically appear in the cartridge selector
 
@@ -132,12 +186,13 @@ The project uses Tailwind CSS with a custom console theme. Key color variables:
 Create a `.env.local` file for local development:
 
 ```env
-# AI API Keys (for future AI integration)
-GROQ_API_KEY=your_groq_api_key
+# AI API Keys
 OPENAI_API_KEY=your_openai_api_key
+ANTHROPIC_API_KEY=your_anthropic_api_key
+GROQ_API_KEY=your_groq_api_key
 
-# Voice API (for future voice synthesis)
-ELEVENLABS_API_KEY=your_elevenlabs_key
+# App Configuration
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 ## 🤝 Contributing
@@ -155,10 +210,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
+- AI Chat powered by [assistant-ui](https://github.com/assistant-ui/assistant-ui)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - State management with [Zustand](https://zustand-demo.pmnd.rs/)
 - Icons from [Lucide React](https://lucide.dev/)
-- AI integration with [Groq](https://groq.com/)
+- AI integration with [AI SDK](https://sdk.vercel.ai/)
 
 ## 📞 Support
 

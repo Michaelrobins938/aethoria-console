@@ -230,27 +230,30 @@ export const useGameStore = create<GameStore>()(
           const aiResponse: AIResponse = await response.json()
 
           // Update game state based on AI response
-          if (aiResponse.characterUpdates) {
-            get().updateCharacter(aiResponse.characterUpdates)
-          }
           if (aiResponse.gameState) {
-            get().updateWorldState(aiResponse.gameState)
-          }
-          if (aiResponse.questUpdates) {
-            aiResponse.questUpdates.forEach(questUpdate => {
-              if (questUpdate.id) {
-                get().updateQuest(questUpdate.id, questUpdate)
-              }
+            set({ 
+              worldState: { ...get().worldState, ...aiResponse.gameState }
             })
           }
-          if (aiResponse.inventoryUpdates) {
-            aiResponse.inventoryUpdates.forEach(item => {
-              get().addItem(item)
-            })
-          }
+
+          // Update combat state
           if (aiResponse.combatState) {
-            set({ combatState: { ...get().combatState, ...aiResponse.combatState } })
+            set({ 
+              combatState: { 
+                ...get().combatState, 
+                ...aiResponse.combatState,
+                isActive: aiResponse.combatState.isActive ?? get().combatState?.isActive ?? false,
+                participants: aiResponse.combatState.participants ?? get().combatState?.participants ?? [],
+                turn: aiResponse.combatState.turn ?? get().combatState?.turn ?? 1,
+                currentActor: aiResponse.combatState.currentActor ?? get().combatState?.currentActor ?? '',
+                log: aiResponse.combatState.log ?? get().combatState?.log ?? [],
+                environment: aiResponse.combatState.environment ?? get().combatState?.environment ?? ''
+              } 
+            })
           }
+
+          // Save game state
+          get().saveGame()
 
           const aiMessage = {
             id: `ai_${Date.now()}`,
@@ -268,11 +271,6 @@ export const useGameStore = create<GameStore>()(
             messages: [...state.messages, aiMessage],
             isTyping: false
           }))
-
-          // Text-to-speech if enabled
-          if (get().audioSettings.voiceOutputEnabled) {
-            get().speakText(aiResponse.text)
-          }
 
         } catch (error) {
           console.error('Failed to process message:', error)
@@ -416,17 +414,6 @@ export const useGameStore = create<GameStore>()(
         set(state => ({
           messages: [...state.messages, message]
         }))
-      },
-
-      // Text-to-speech
-      speakText: (text: string) => {
-        if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(text)
-          utterance.rate = get().audioSettings.voiceSpeed
-          utterance.pitch = get().audioSettings.voicePitch
-          utterance.volume = get().audioSettings.volume
-          speechSynthesis.speak(utterance)
-        }
       },
 
       // Save/load system
