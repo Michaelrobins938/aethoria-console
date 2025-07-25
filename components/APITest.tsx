@@ -13,7 +13,7 @@ export function APITest() {
       const data = await response.json()
       setTestResult(data)
     } catch (error) {
-      setTestResult({ error: error.message })
+      setTestResult({ error: error instanceof Error ? error.message : String(error) })
     } finally {
       setLoading(false)
     }
@@ -26,7 +26,7 @@ export function APITest() {
       const data = await response.json()
       setTestResult({ gamePrompts: data })
     } catch (error) {
-      setTestResult({ error: error.message })
+      setTestResult({ error: error instanceof Error ? error.message : String(error) })
     } finally {
       setLoading(false)
     }
