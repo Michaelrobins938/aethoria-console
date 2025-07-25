@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
     const lastMessage = messages[messages.length - 1]
     const userInput = lastMessage.content
 
+    console.log('Processing input:', { cartridgeId, userInput })
+
     // Get the game prompt for this cartridge
     let gamePrompt = "You are an immersive Game Master running an interactive adventure. Respond in character, creating vivid descriptions and engaging scenarios. Keep responses concise but atmospheric."
     try {
@@ -24,6 +26,8 @@ export async function POST(request: NextRequest) {
       if (promptResponse.ok) {
         const prompt = await promptResponse.json()
         gamePrompt = prompt.content || gamePrompt
+      } else {
+        console.warn(`Failed to load game prompt for ${cartridgeId}: ${promptResponse.status}`)
       }
     } catch (error) {
       console.error('Failed to load game prompt:', error)
@@ -75,6 +79,7 @@ Respond as the Game Master, creating an immersive and engaging experience. Keep 
           }
           controller.close()
         } catch (error) {
+          console.error('Stream error:', error)
           controller.error(error)
         }
       },

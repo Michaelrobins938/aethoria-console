@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Aethoria Console - Universal AI Gaming Platform',
@@ -16,10 +13,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="min-h-screen bg-console-dark">
-          {children}
-        </div>
+      <body className="font-gaming bg-console-dark text-console-text min-h-screen">
+        {children}
       </body>
     </html>
   )
