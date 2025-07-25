@@ -11,7 +11,11 @@ export default function Home() {
   const [isGameActive, setIsGameActive] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
 
+  // Debug logging
+  console.log('Page state:', { showIntro, selectedCartridge, isGameActive })
+
   const handleCartridgeSelect = (cartridgeId: string) => {
+    console.log('Cartridge selected:', cartridgeId)
     setSelectedCartridge(cartridgeId)
     setIsGameActive(true)
   }
@@ -22,6 +26,7 @@ export default function Home() {
   }
 
   const handleStartAdventure = () => {
+    console.log('Start adventure clicked!')
     setShowIntro(false)
   }
 
@@ -83,12 +88,24 @@ export default function Home() {
             </div>
 
             {/* Start Button */}
-            <div className="mt-12">
+            <div className="mt-12 space-y-4">
               <button
                 onClick={handleStartAdventure}
-                className="console-button-primary text-xl px-8 py-4 animate-bounce"
+                className="console-button-primary text-xl px-8 py-4 animate-bounce cursor-pointer hover:bg-green-600 transition-colors"
+                style={{ zIndex: 1000 }}
               >
                 BEGIN YOUR ADVENTURE
+              </button>
+              
+              {/* Test button */}
+              <button
+                onClick={() => {
+                  console.log('Test button clicked!')
+                  alert('Test button works!')
+                }}
+                className="console-button text-lg px-6 py-3 cursor-pointer"
+              >
+                TEST BUTTON
               </button>
             </div>
           </div>
