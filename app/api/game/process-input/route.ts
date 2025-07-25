@@ -36,6 +36,17 @@ export async function POST(request: NextRequest) {
     // Get the appropriate model for this cartridge
     const model = getModelForCartridge(cartridgeId)
 
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
+      return NextResponse.json(
+        { 
+          error: 'OpenAI API key not configured',
+          message: 'Please set your OPENAI_API_KEY in the environment variables to use the AI chat feature.'
+        },
+        { status: 500 }
+      )
+    }
+
     // Initialize OpenAI client
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -74,9 +85,12 @@ Respond as the Game Master, creating an immersive and engaging experience. Keep 
           for await (const chunk of response) {
             const text = chunk.choices[0]?.delta?.content || ''
             if (text) {
-              controller.enqueue(new TextEncoder().encode(text))
+              // Format for AI SDK streaming
+              const data = `data: ${JSON.stringify({ content: text })}\n\n`
+              controller.enqueue(new TextEncoder().encode(data))
             }
           }
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
           controller.close()
         } catch (error) {
           console.error('Stream error:', error)
@@ -87,7 +101,7 @@ Respond as the Game Master, creating an immersive and engaging experience. Keep 
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
       },

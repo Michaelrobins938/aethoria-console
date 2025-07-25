@@ -37,18 +37,54 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
   } | null>(null)
   const [lastAIResponse, setLastAIResponse] = useState('')
 
+  // Debug logging
+  console.log('AIChat initialized with:', { cartridgeId, session, character, worldState })
+
   // Initialize chat with AI SDK
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+    onError: (error) => {
+      console.error('Chat error:', error)
+    },
     api: '/api/game/process-input',
     body: {
-      sessionId: session?.id,
+      sessionId: session?.id || 'default-session',
       cartridgeId,
       gameState: {
-        character,
-        worldState,
-        quests,
-        inventory,
-        combatState
+        character: character || {
+          name: 'Adventurer',
+          health: 100,
+          maxHealth: 100,
+          attack: 10,
+          defense: 5,
+          speed: 10,
+          level: 1,
+          experience: 0,
+          inventory: [],
+          skills: [],
+          statusEffects: {},
+          background: 'A mysterious traveler',
+          abilities: {
+            strength: 10,
+            dexterity: 10,
+            constitution: 10,
+            intelligence: 10,
+            wisdom: 10,
+            charisma: 10
+          }
+        },
+        worldState: worldState || {
+          location: 'Unknown',
+          timeOfDay: 'day',
+          weather: 'clear',
+          activeEvents: [],
+          npcStates: {},
+          discoveredLocations: [],
+          factionRelations: {},
+          worldEvents: []
+        },
+        quests: quests || [],
+        inventory: inventory || [],
+        combatState: combatState || null
       }
     },
     onFinish: (message) => {
@@ -133,6 +169,17 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {error && (
+              <div className="flex justify-start">
+                <div className="bg-red-900 text-red-100 border border-red-500 rounded-lg p-3 max-w-[70%]">
+                  <div className="text-sm">
+                    <strong>Error:</strong> {error.message || 'Failed to connect to AI service'}
+                    <br />
+                    <span className="text-xs">Please check your API configuration in the environment variables.</span>
+                  </div>
+                </div>
+              </div>
+            )}
             {messages.map((message) => (
               <div
                 key={message.id}

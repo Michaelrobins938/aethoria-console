@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { AIChat } from '@/components/AIChat'
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
+import { APITest } from '@/components/APITest'
 
 export default function Home() {
   const [selectedCartridge, setSelectedCartridge] = useState<string | null>(null)
@@ -96,16 +97,18 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8">
           {!isGameActive ? (
             <div className="space-y-8">
-              <div className="text-center">
-                <h1 className="text-4xl font-gaming font-bold text-console-accent mb-4 text-glow">
-                  AETHORIA CONSOLE
-                </h1>
-                <p className="text-console-text-dim text-lg">
-                  Choose Your Adventure
-                </p>
-              </div>
-              
-              <CartridgeSelector onSelect={handleCartridgeSelect} />
+                          <div className="text-center">
+              <h1 className="text-4xl font-gaming font-bold text-console-accent mb-4 text-glow">
+                AETHORIA CONSOLE
+              </h1>
+              <p className="text-console-text-dim text-lg">
+                Choose Your Adventure
+              </p>
+            </div>
+            
+            <APITest />
+            
+            <CartridgeSelector onSelect={handleCartridgeSelect} />
             </div>
           ) : (
             <AIChat 
