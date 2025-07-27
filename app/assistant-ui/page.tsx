@@ -1,6 +1,9 @@
 'use client'
 
 import { ThreadList } from "@/components/assistant-ui/thread-list";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 import { Thread } from "@/components/assistant-ui/thread";
 import { useState, useEffect } from "react";
 import { Character, GamePrompt } from "@/lib/types";

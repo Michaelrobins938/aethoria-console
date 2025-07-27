@@ -2,6 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
 import { HeroSection } from '@/components/HeroSection'
