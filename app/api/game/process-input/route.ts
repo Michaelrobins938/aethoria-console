@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
-import { getModelForCartridge } from '@/lib/ai'
+import { getModelForCartridge, getModelConfig, getModelDescription } from '@/lib/ai'
 
-// Updated API route for assistant-ui integration
+// Updated API route for OpenRouter integration with sophisticated model selection
 export async function POST(request: NextRequest) {
   try {
     const { messages, cartridgeId, gameState } = await request.json()
@@ -33,24 +32,23 @@ export async function POST(request: NextRequest) {
       console.error('Failed to load game prompt:', error)
     }
 
-    // Get the appropriate model for this cartridge
-    const model = getModelForCartridge(cartridgeId)
+    // Get the optimal model for this game genre
+    const selectedModel = getModelForCartridge(cartridgeId)
+    const modelConfig = getModelConfig(selectedModel)
+    const modelDescription = getModelDescription(cartridgeId)
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
+    console.log(`Using model: ${selectedModel} - ${modelDescription}`)
+
+    // Check if OpenRouter API key is configured
+    if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json(
         { 
-          error: 'OpenAI API key not configured',
-          message: 'Please set your OPENAI_API_KEY in the environment variables to use the AI chat feature.'
+          error: 'OpenRouter API key not configured',
+          message: 'Please set your OPENROUTER_API_KEY in the environment variables to use the AI chat feature.'
         },
         { status: 500 }
       )
     }
-
-    // Initialize OpenAI client
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    })
 
     // Create the system message with game state
     const systemMessage = {
@@ -66,31 +64,86 @@ Current Game State:
 - Inventory Items: ${gameState?.inventory?.length || 0}
 - In Combat: ${gameState?.combatState?.isActive ? 'Yes' : 'No'}
 
+Model: ${selectedModel} - ${modelDescription}
+
 Respond as the Game Master, creating an immersive and engaging experience. Keep responses concise but atmospheric.`
     }
 
-    // Generate AI response using OpenAI directly
-    const response = await openai.chat.completions.create({
-      model: model,
-      messages: [systemMessage, ...messages],
-      temperature: 0.8,
-      max_tokens: 500,
-      stream: true,
+    // Generate AI response using OpenRouter
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+        'X-Title': 'Aethoria Console'
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [systemMessage, ...messages],
+        temperature: modelConfig.temperature,
+        max_tokens: modelConfig.maxTokens,
+        top_p: modelConfig.topP,
+        frequency_penalty: modelConfig.frequencyPenalty,
+        presence_penalty: modelConfig.presencePenalty,
+        stream: true
+      })
     })
 
-    // Create a readable stream from the OpenAI response
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('OpenRouter API error:', response.status, errorData)
+      return NextResponse.json(
+        { 
+          error: 'Failed to generate AI response',
+          details: `OpenRouter API error: ${response.status}`
+        },
+        { status: 500 }
+      )
+    }
+
+    // Create a readable stream from the OpenRouter response
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of response) {
-            const text = chunk.choices[0]?.delta?.content || ''
-            if (text) {
-              // Format for AI SDK streaming
-              const data = `data: ${JSON.stringify({ content: text })}\n\n`
-              controller.enqueue(new TextEncoder().encode(data))
+          const reader = response.body?.getReader()
+          if (!reader) {
+            throw new Error('No response body')
+          }
+
+          const decoder = new TextDecoder()
+          
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            const chunk = decoder.decode(value)
+            const lines = chunk.split('\n')
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6)
+                if (data === '[DONE]') {
+                  controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
+                  break
+                }
+
+                try {
+                  const parsed = JSON.parse(data)
+                  if (parsed.choices?.[0]?.delta?.content) {
+                    const text = parsed.choices[0].delta.content
+                    // Format for AI SDK streaming
+                    const streamData = `data: ${JSON.stringify({ content: text })}\n\n`
+                    controller.enqueue(new TextEncoder().encode(streamData))
+                  }
+                } catch (e) {
+                  // Skip invalid JSON lines
+                  continue
+                }
+              }
             }
           }
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
+          
           controller.close()
         } catch (error) {
           console.error('Stream error:', error)

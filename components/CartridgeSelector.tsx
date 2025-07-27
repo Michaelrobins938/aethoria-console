@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Play, Sword, Ghost, Rocket, Shield, Zap, Skull } from 'lucide-react'
+import { Play, Sword, Ghost, Rocket, Shield, Zap, Skull, Cpu } from 'lucide-react'
 import type { GamePrompt } from '@/lib/types'
+import { getModelForCartridge, getModelDescription, getGenreForCartridge } from '@/lib/ai'
 
 interface Cartridge {
   id: string
@@ -12,6 +13,8 @@ interface Cartridge {
   difficulty: string
   icon: React.ReactNode
   color: string
+  aiModel: string
+  modelDescription: string
 }
 
 const getIconForGenre = (genre: string) => {
@@ -66,21 +69,29 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
     fetch('/api/game-prompts')
       .then(res => res.json())
       .then((data: GamePrompt[]) => {
-        const formattedCartridges = data.map((prompt: GamePrompt) => ({
-          id: prompt.id,
-          title: prompt.title,
-          description: prompt.description,
-          genre: prompt.genre.charAt(0).toUpperCase() + prompt.genre.slice(1),
-          difficulty: prompt.difficulty.charAt(0).toUpperCase() + prompt.difficulty.slice(1),
-          icon: getIconForGenre(prompt.genre),
-          color: getColorForGenre(prompt.genre)
-        }))
+        const formattedCartridges = data.map((prompt: GamePrompt) => {
+          const aiModel = getModelForCartridge(prompt.id)
+          const modelDescription = getModelDescription(prompt.id)
+          const genre = getGenreForCartridge(prompt.id)
+          
+          return {
+            id: prompt.id,
+            title: prompt.title,
+            description: prompt.description,
+            genre: genre.charAt(0).toUpperCase() + genre.slice(1),
+            difficulty: prompt.difficulty.charAt(0).toUpperCase() + prompt.difficulty.slice(1),
+            icon: getIconForGenre(genre),
+            color: getColorForGenre(genre),
+            aiModel,
+            modelDescription
+          }
+        })
         setCartridges(formattedCartridges)
         setIsLoading(false)
       })
       .catch(error => {
         console.error('Failed to fetch game prompts:', error)
-        // Fallback to default cartridges
+        // Fallback to default cartridges with AI model info
         setCartridges([
           {
             id: 'dnd-fantasy',
@@ -89,7 +100,9 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             genre: 'Fantasy',
             difficulty: 'Medium',
             icon: <Sword className="w-8 h-8" />,
-            color: 'border-yellow-500'
+            color: 'border-yellow-500',
+            aiModel: 'anthropic/claude-3-5-sonnet',
+            modelDescription: 'Claude 3.5 Sonnet - Excellent for epic fantasy world-building and character arcs'
           },
           {
             id: 'silent-hill-echoes',
@@ -98,7 +111,9 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             genre: 'Horror',
             difficulty: 'Hard',
             icon: <Ghost className="w-8 h-8" />,
-            color: 'border-red-500'
+            color: 'border-red-500',
+            aiModel: 'anthropic/claude-3-5-sonnet',
+            modelDescription: 'Claude 3.5 Sonnet - Excellent for psychological horror and atmospheric tension'
           },
           {
             id: 'portal-sci-fi',
@@ -107,7 +122,9 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             genre: 'Sci-Fi',
             difficulty: 'Medium',
             icon: <Rocket className="w-8 h-8" />,
-            color: 'border-blue-500'
+            color: 'border-blue-500',
+            aiModel: 'anthropic/claude-3-5-sonnet',
+            modelDescription: 'Claude 3.5 Sonnet - Excellent for complex sci-fi concepts and futuristic dialogue'
           },
           {
             id: 'pokemon-adventure',
@@ -116,7 +133,9 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             genre: 'Adventure',
             difficulty: 'Easy',
             icon: <Shield className="w-8 h-8" />,
-            color: 'border-green-500'
+            color: 'border-green-500',
+            aiModel: 'anthropic/claude-3-5-sonnet',
+            modelDescription: 'Claude 3.5 Sonnet - Excellent for creative writing and atmospheric storytelling'
           }
         ])
         setIsLoading(false)
@@ -173,6 +192,20 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
                   <p className="text-xs text-console-text-dim mt-2">
                     {cartridge.description}
                   </p>
+                  
+                  {/* AI Model Information */}
+                  <div className="mt-3 p-2 bg-console-dark rounded border border-console-border">
+                    <div className="flex items-center justify-center space-x-1 mb-1">
+                      <Cpu className="w-3 h-3 text-console-accent" />
+                      <span className="text-xs text-console-accent font-gaming">AI MODEL</span>
+                    </div>
+                    <p className="text-xs text-console-text-dim text-center">
+                      {cartridge.aiModel.split('/').pop()}
+                    </p>
+                    <p className="text-xs text-console-text-dim text-center mt-1">
+                      {cartridge.modelDescription.split(' - ')[1]}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

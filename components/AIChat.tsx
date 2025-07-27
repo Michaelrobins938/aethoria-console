@@ -2,20 +2,31 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { Send, Mic, MicOff, Volume2, VolumeX, Settings, Dice1, X } from 'lucide-react'
+import { Send, Mic, MicOff, Volume2, VolumeX, Settings, Dice1, X, Cpu, Save, Package, BookOpen, User, Sword, Map, HelpCircle } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
 import { VoiceSynthesis } from './VoiceSynthesis'
+import { VoiceRecognition } from './VoiceRecognition'
 import { DieRoller } from './DieRoller'
+import { SaveManager } from './SaveManager'
+import { Inventory } from './Inventory'
+import { QuestLog } from './QuestLog'
+import { CharacterSheet } from './CharacterSheet'
+import { CombatSystem } from './CombatSystem'
+import { WorldMap } from './WorldMap'
+import { Settings as SettingsComponent } from './Settings'
+import { Help } from './Help'
+import { getModelForCartridge, getModelDescription } from '@/lib/ai'
+import { Character } from '@/lib/types'
 
 interface AIChatProps {
   cartridgeId: string
   onGameEnd: () => void
+  character?: Character | null
 }
 
-export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
+export function AIChat({ cartridgeId, onGameEnd, character }: AIChatProps) {
   const {
     session,
-    character,
     worldState,
     quests,
     inventory,
@@ -25,10 +36,20 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
     setVoiceState,
     setAudioSettings,
     saveGame,
-    rollDice
+    rollDice,
+    updateCharacter,
+    loadGame
   } = useGameStore()
 
   const [isDieRollerOpen, setIsDieRollerOpen] = useState(false)
+  const [isSaveManagerOpen, setIsSaveManagerOpen] = useState(false)
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false)
+  const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
+  const [isCharacterSheetOpen, setIsCharacterSheetOpen] = useState(false)
+  const [isCombatSystemOpen, setIsCombatSystemOpen] = useState(false)
+  const [isWorldMapOpen, setIsWorldMapOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [requestedRoll, setRequestedRoll] = useState<{
     dice: string
     modifier?: number
@@ -36,9 +57,21 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
     type: string
   } | null>(null)
   const [lastAIResponse, setLastAIResponse] = useState('')
+  const [voiceError, setVoiceError] = useState<string | null>(null)
+
+  // Get AI model information
+  const aiModel = getModelForCartridge(cartridgeId)
+  const modelDescription = getModelDescription(cartridgeId)
+
+  // Initialize character in store if provided
+  useEffect(() => {
+    if (character && !session?.character) {
+      updateCharacter(character)
+    }
+  }, [character, session?.character, updateCharacter])
 
   // Debug logging
-  console.log('AIChat initialized with:', { cartridgeId, session, character, worldState })
+  console.log('AIChat initialized with:', { cartridgeId, session, character, worldState, aiModel })
 
   // Initialize chat with AI SDK
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
@@ -99,6 +132,21 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
     setVoiceState({ isListening: !voiceState.isListening })
   }
 
+  const handleVoiceTranscript = (transcript: string) => {
+    // Auto-submit voice input
+    if (transcript.trim()) {
+      // Simulate typing the transcript
+      handleInputChange({ target: { value: transcript } } as any)
+      // Submit the form
+      handleSubmit({ preventDefault: () => {} } as any)
+    }
+  }
+
+  const handleVoiceError = (error: string) => {
+    setVoiceError(error)
+    setTimeout(() => setVoiceError(null), 5000) // Clear error after 5 seconds
+  }
+
   const handleAudioToggle = () => {
     setAudioSettings({ voiceOutputEnabled: !audioSettings.voiceOutputEnabled })
   }
@@ -116,6 +164,15 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
     setRequestedRoll(null)
   }
 
+  const handleLoadGame = (sessionId: string) => {
+    loadGame(sessionId)
+  }
+
+  const handleNavigate = (locationId: string) => {
+    // TODO: Implement navigation logic
+    console.log('Navigating to:', locationId)
+  }
+
   return (
     <div className="h-screen flex flex-col">
       {/* Game Header */}
@@ -128,18 +185,111 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
             <div className="text-console-text-dim text-sm">
               AI Status: <span className="text-console-accent">ACTIVE</span>
             </div>
+            
+            {/* AI Model Information */}
+            <div className="flex items-center space-x-2 text-xs">
+              <Cpu className="w-3 h-3 text-console-accent" />
+              <span className="text-console-accent font-gaming">AI:</span>
+              <span className="text-console-text-dim">
+                {aiModel.split('/').pop()}
+              </span>
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">
             <button
-              onClick={handleVoiceToggle}
-              className={`console-button flex items-center space-x-2 ${
-                voiceState.isListening ? 'bg-console-accent text-console-dark' : ''
-              }`}
+              onClick={() => setIsHelpOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Help & Tutorial"
             >
-              {voiceState.isListening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-              <span className="text-xs">Voice</span>
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-xs">Help</span>
             </button>
+
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="text-xs">Settings</span>
+            </button>
+
+            <button
+              onClick={() => setIsSaveManagerOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Save/Load Game"
+            >
+              <Save className="w-4 h-4" />
+              <span className="text-xs">Save</span>
+            </button>
+
+            <button
+              onClick={() => setIsWorldMapOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="World Map"
+            >
+              <Map className="w-4 h-4" />
+              <span className="text-xs">Map</span>
+            </button>
+
+            <button
+              onClick={() => setIsCharacterSheetOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Character Sheet"
+            >
+              <User className="w-4 h-4" />
+              <span className="text-xs">Char</span>
+            </button>
+
+            <button
+              onClick={() => setIsQuestLogOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Quest Log"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="text-xs">Quests</span>
+              {quests.length > 0 && (
+                <span className="text-xs bg-console-accent text-console-dark px-1 rounded-full">
+                  {quests.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsInventoryOpen(true)}
+              className="console-button flex items-center space-x-2"
+              title="Inventory"
+            >
+              <Package className="w-4 h-4" />
+              <span className="text-xs">Items</span>
+              {inventory.length > 0 && (
+                <span className="text-xs bg-console-accent text-console-dark px-1 rounded-full">
+                  {inventory.length}
+                </span>
+              )}
+            </button>
+
+            {combatState && (
+              <button
+                onClick={() => setIsCombatSystemOpen(true)}
+                className="console-button flex items-center space-x-2 bg-red-900 hover:bg-red-800"
+                title="Combat System"
+              >
+                <Sword className="w-4 h-4" />
+                <span className="text-xs">Combat</span>
+                <span className="text-xs bg-red-600 text-white px-1 rounded-full animate-pulse">
+                  !
+                </span>
+              </button>
+            )}
+
+            <VoiceRecognition
+              isListening={voiceState.isListening}
+              onToggle={handleVoiceToggle}
+              onTranscript={handleVoiceTranscript}
+              onError={handleVoiceError}
+            />
             
             <VoiceSynthesis
               text={lastAIResponse}
@@ -163,6 +313,18 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
             </button>
           </div>
         </div>
+        
+        {/* Model Description */}
+        <div className="mt-2 text-xs text-console-text-dim">
+          {modelDescription}
+        </div>
+
+        {/* Voice Error Display */}
+        {voiceError && (
+          <div className="mt-2 p-2 bg-red-900 text-red-100 border border-red-500 rounded text-xs">
+            {voiceError}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex">
@@ -301,6 +463,56 @@ export function AIChat({ cartridgeId, onGameEnd }: AIChatProps) {
         onClose={() => setIsDieRollerOpen(false)}
         onRoll={handleDieRoll}
         requestedRoll={requestedRoll || undefined}
+      />
+
+      {/* Save Manager */}
+      <SaveManager
+        isOpen={isSaveManagerOpen}
+        onClose={() => setIsSaveManagerOpen(false)}
+        onLoadGame={handleLoadGame}
+      />
+
+      {/* Inventory */}
+      <Inventory
+        isOpen={isInventoryOpen}
+        onClose={() => setIsInventoryOpen(false)}
+      />
+
+      {/* Quest Log */}
+      <QuestLog
+        isOpen={isQuestLogOpen}
+        onClose={() => setIsQuestLogOpen(false)}
+      />
+
+      {/* Character Sheet */}
+      <CharacterSheet
+        isOpen={isCharacterSheetOpen}
+        onClose={() => setIsCharacterSheetOpen(false)}
+      />
+
+      {/* Combat System */}
+      <CombatSystem
+        isOpen={isCombatSystemOpen}
+        onClose={() => setIsCombatSystemOpen(false)}
+      />
+
+      {/* World Map */}
+      <WorldMap
+        isOpen={isWorldMapOpen}
+        onClose={() => setIsWorldMapOpen(false)}
+        onNavigate={handleNavigate}
+      />
+
+      {/* Settings */}
+      <SettingsComponent
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Help */}
+      <Help
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
       />
     </div>
   )

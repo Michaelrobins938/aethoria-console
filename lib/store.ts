@@ -51,8 +51,10 @@ interface GameStore {
   updateQuest: (questId: string, updates: Partial<Quest>) => void
   addItem: (item: Item) => void
   removeItem: (itemId: string) => void
+  updateInventory: (inventory: Item[]) => void
   startCombat: (enemies: Character[]) => void
   endCombat: () => void
+  updateCombatState: (combatState: CombatState | null) => void
   performCombatAction: (action: {
     type: 'attack' | 'defend' | 'special' | 'flee' | 'item' | 'skill'
     target?: string
@@ -170,6 +172,44 @@ export const useGameStore = create<GameStore>()(
             playTime: 0
           }
 
+          // Create comprehensive welcome message with game context
+          const welcomeMessage = {
+            id: 'welcome',
+            type: 'ai' as const,
+            content: `🎮 **Welcome to ${prompt.title}!** 🎮
+
+${prompt.description}
+
+**Game Genre:** ${prompt.genre}
+**Difficulty:** ${prompt.difficulty}
+**Themes:** ${prompt.themes.join(', ')}
+
+You are about to embark on an epic adventure where every choice matters. The AI Dungeon Master is ready to guide you through this immersive world.
+
+**What you can do:**
+• Speak or type your actions naturally
+• Explore the world and discover secrets
+• Engage in tactical combat
+• Build relationships with NPCs
+• Complete quests and advance your character
+
+**Ready to begin?** Create your character and let the adventure start!`,
+            timestamp: new Date()
+          }
+
+          // Create system message with game mechanics
+          const systemMessage = {
+            id: 'system-setup',
+            type: 'system' as const,
+            content: `Game Session Initialized:
+- Game: ${prompt.title}
+- Mechanics: ${prompt.mechanics.diceSystem} dice system
+- Combat: ${prompt.mechanics.combatSystem}
+- Skills: ${prompt.mechanics.skillSystem}
+- Special Rules: ${prompt.mechanics.specialRules.join(', ')}`,
+            timestamp: new Date()
+          }
+
           set({
             session,
             currentPrompt: prompt,
@@ -178,15 +218,34 @@ export const useGameStore = create<GameStore>()(
             quests: [],
             inventory: [],
             combatState: null,
-            messages: [{
-              id: 'welcome',
-              type: 'ai',
-              content: prompt.description,
-              timestamp: new Date()
-            }]
+            messages: [welcomeMessage, systemMessage]
           })
+
+          console.log('AI session initialized successfully with prompt:', prompt.title)
         } catch (error) {
           console.error('Failed to initialize session:', error)
+          // Fallback welcome message if prompt loading fails
+          const fallbackMessage = {
+            id: 'welcome-fallback',
+            type: 'ai' as const,
+            content: `🎮 **Welcome to Aethoria!** 🎮
+
+You are about to embark on an epic AI-powered adventure. The Dungeon Master is ready to guide you through an immersive world where every choice shapes your story.
+
+**Ready to begin?** Create your character and let the adventure start!`,
+            timestamp: new Date()
+          }
+
+          set({
+            session: null,
+            currentPrompt: null,
+            character: null,
+            worldState: initialWorldState,
+            quests: [],
+            inventory: [],
+            combatState: null,
+            messages: [fallbackMessage]
+          })
         } finally {
           set({ isLoading: false })
         }
@@ -320,6 +379,10 @@ export const useGameStore = create<GameStore>()(
         }))
       },
 
+      updateInventory: (inventory: Item[]) => {
+        set({ inventory })
+      },
+
       // Combat system
       startCombat: (enemies: Character[]) => {
         const { character } = get()
@@ -339,6 +402,10 @@ export const useGameStore = create<GameStore>()(
 
       endCombat: () => {
         set({ combatState: null })
+      },
+
+      updateCombatState: (combatState: CombatState | null) => {
+        set({ combatState })
       },
 
       performCombatAction: (action) => {

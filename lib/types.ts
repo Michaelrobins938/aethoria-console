@@ -33,6 +33,22 @@ export interface Item {
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
 }
 
+// Extended item types for inventory system
+export interface InventoryItem extends Omit<Item, 'effects'> {
+  quantity?: number
+  effects?: ItemEffect[]
+  primaryAbility?: keyof Character['abilities']
+}
+
+export interface ItemEffect {
+  type: string
+  value: number
+  description?: string
+}
+
+export type ItemType = 'weapon' | 'armor' | 'consumable' | 'magical' | 'quest' | 'currency'
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+
 export interface Skill {
   name: string
   level: number
@@ -40,27 +56,43 @@ export interface Skill {
   maxLevel: number
   description: string
   type: 'combat' | 'social' | 'exploration' | 'crafting'
+  primaryAbility?: keyof Character['abilities']
 }
 
 export interface Quest {
   id: string
   title: string
   description: string
-  status: 'not_started' | 'in_progress' | 'completed' | 'failed'
+  status: QuestStatus
+  type: QuestType
   objectives: QuestObjective[]
-  rewards: Item[]
-  experienceReward: number
+  rewards: QuestRewards
+  level?: number
+  location?: string
+  questGiver?: string
+  timeLimit?: string
   dependencies: string[]
   progress: number
   maxProgress: number
 }
 
+export type QuestStatus = 'not_started' | 'active' | 'completed' | 'failed'
+export type QuestType = 'main' | 'side' | 'bounty' | 'guild' | 'exploration'
+
 export interface QuestObjective {
   id: string
   description: string
   completed: boolean
-  progress: number
-  maxProgress: number
+  progress?: {
+    current: number
+    required: number
+  }
+}
+
+export interface QuestRewards {
+  experience: number
+  gold: number
+  items: Item[]
 }
 
 export interface WorldState {
@@ -69,10 +101,28 @@ export interface WorldState {
   weather: string
   activeEvents: string[]
   npcStates: Record<string, NPCState>
-  discoveredLocations: string[]
+  discoveredLocations: Location[]
   factionRelations: Record<string, number>
   worldEvents: WorldEvent[]
 }
+
+export interface Location {
+  id: string
+  name: string
+  description: string
+  type: LocationType
+  coordinates?: {
+    x: number
+    y: number
+  }
+  isCurrent: boolean
+  isDiscovered: boolean
+  danger?: string
+  features?: string[]
+  quests?: string[]
+}
+
+export type LocationType = 'town' | 'dungeon' | 'wilderness' | 'shop' | 'quest' | 'safe'
 
 export interface NPCState {
   name: string
@@ -102,10 +152,10 @@ export interface WorldEvent {
 
 // Combat system types
 export interface CombatAction {
-  type: 'attack' | 'defend' | 'special' | 'flee' | 'item' | 'skill'
-  target?: string
-  itemId?: string
-  skillName?: string
+  id: string
+  name: string
+  icon: React.ReactNode
+  type: 'offensive' | 'defensive' | 'magical' | 'utility' | 'movement'
 }
 
 export interface CombatState {
@@ -115,6 +165,31 @@ export interface CombatState {
   currentActor: string
   log: string[]
   environment: string
+  initiative?: {
+    player: number
+    enemies: Array<Character & { initiative: number }>
+  }
+  currentTurn?: 'player' | 'enemy'
+  currentEnemyId?: string
+  round?: number
+}
+
+export interface Combatant {
+  id: string
+  name: string
+  health: number
+  maxHealth: number
+  attack: number
+  defense: number
+  type: 'player' | 'enemy' | 'ally'
+  dexterity?: number
+}
+
+export interface CombatResult {
+  damage: number
+  message: string
+  combatEnded: boolean
+  victory: boolean
 }
 
 // AI system types

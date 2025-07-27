@@ -1,31 +1,50 @@
-# 🎮 Aethoria - AI-Powered Gaming Console
+# Aethoria - AI-Powered Interactive Storytelling Game
 
-Aethoria is a revolutionary AI-powered gaming console that transforms artificial intelligence into your personal Dungeon Master. Experience dynamic storytelling, immersive worlds, and voice interaction in a beautiful retro gaming interface.
+Aethoria is a next-generation interactive storytelling game that combines the power of artificial intelligence with immersive role-playing elements. Players can embark on epic adventures with dynamic, responsive narratives that adapt to their choices and actions.
 
-## ✨ Features
+## 🎮 Features
 
-- **🎲 Dynamic Storytelling**: AI that adapts to your choices and creates branching narratives in real-time
-- **🎭 Immersive Worlds**: 100+ game prompts across fantasy, horror, sci-fi, and adventure genres
-- **🎤 Voice Interaction**: Speak your actions and hear the world respond with natural voice synthesis
-- **🎯 Dice Rolling System**: Interactive D&D-style dice rolling with visual feedback
-- **💾 Persistent Game State**: Save and load your adventures with character progression
-- **🎨 Beautiful UI**: Apple-quality console interface with retro gaming aesthetics
-- **🤖 Advanced AI Chat**: Powered by [assistant-ui](https://github.com/assistant-ui/assistant-ui) for seamless AI interactions
+### Core Systems ✅
+- **Dynamic AI Storytelling**: Real-time narrative generation using OpenRouter API
+- **Character Creation**: Comprehensive character builder with backgrounds, abilities, and skills
+- **Voice Interaction**: Speech-to-text and text-to-speech capabilities
+- **Save/Load System**: Persistent game state with cloud-ready architecture
+- **Inventory Management**: Advanced item system with categories, effects, and rarity
+- **Quest System**: Multi-layered quest tracking with objectives and rewards
+- **Combat System**: Turn-based combat with initiative, actions, and tactical elements
+- **World Map**: Interactive world navigation with location discovery
+- **Settings Management**: Comprehensive game configuration options
+- **Help System**: In-game tutorials and documentation
 
-## 🚀 Quick Start
+### Technical Features ✅
+- **Next.js 14**: Modern React framework with App Router
+- **TypeScript**: Full type safety and developer experience
+- **Zustand**: Lightweight state management with persistence
+- **Tailwind CSS**: Utility-first styling with custom console theme
+- **AI SDK**: Seamless integration with multiple AI models
+- **Voice Recognition**: Web Speech API integration
+- **Responsive Design**: Mobile and desktop optimized
+
+### AI Integration ✅
+- **Dynamic Model Selection**: AI models chosen based on game genre
+- **Streaming Responses**: Real-time AI response streaming
+- **Context Awareness**: AI remembers character, world state, and history
+- **Multi-Modal Input**: Text and voice input support
+- **Adaptive Storytelling**: AI adapts narrative based on player choices
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js 18.0.0 or higher
-- npm or yarn package manager
-- AI API keys (OpenAI, Anthropic, or Groq)
+- Node.js 18+ 
+- npm or yarn
+- OpenRouter API key (for AI functionality)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd aethoria-console
+   git clone <repository-url>
+   cd AethoriaWindows-Copy
    ```
 
 2. **Install dependencies**
@@ -38,162 +57,176 @@ Aethoria is a revolutionary AI-powered gaming console that transforms artificial
    cp env.example .env.local
    ```
    
-   Edit `.env.local` and add your AI API keys:
-   ```env
-   OPENAI_API_KEY=your_openai_api_key_here
-   ANTHROPIC_API_KEY=your_anthropic_api_key_here
-   GROQ_API_KEY=your_groq_api_key_here
+   Edit `.env.local` and add your OpenRouter API key:
+   ```
+   OPENROUTER_API_KEY=your_api_key_here
    ```
 
-4. **Start the development server**
+4. **Run the development server**
    ```bash
    npm run dev
    ```
 
 5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to `http://localhost:3000`
 
-## 🎯 Available Games
+## 🎯 Game Flow
 
-Aethoria comes with 100+ pre-built game prompts including:
+### 1. Game Selection
+- Choose from 100+ pre-built game cartridges
+- Each cartridge represents a unique adventure or story
+- AI model automatically selected based on genre
 
-- **Fantasy**: D&D adventures, Legend of Zelda, Final Fantasy
-- **Horror**: Silent Hill, Resident Evil, Fatal Frame
-- **Sci-Fi**: Portal, BioShock, Alien
-- **Adventure**: Pokémon, Stardew Valley, Treasure Planet
-- **And many more...**
+### 2. Character Creation
+- **Background Selection**: Warrior, Mage, Rogue, Cleric, Ranger, Scholar
+- **Ability Points**: Distribute 27 points across 6 abilities
+- **Skill Selection**: Choose 4 skills from 10 available options
+- **Character Review**: Finalize your character before starting
 
-## 🛠️ Development
+### 3. Gameplay
+- **Voice Commands**: Speak your actions naturally
+- **Text Input**: Type commands for precise control
+- **AI Responses**: Dynamic storytelling that adapts to your choices
+- **Combat**: Turn-based tactical encounters
+- **Exploration**: Discover locations and uncover secrets
 
-### Project Structure
+### 4. Game Management
+- **Save System**: Multiple save slots with cloud sync
+- **Inventory**: Manage items, equipment, and consumables
+- **Quest Log**: Track objectives and progress
+- **Character Sheet**: View stats, skills, and progression
+- **World Map**: Navigate between discovered locations
+
+## 🛠️ Project Structure
 
 ```
-aethoria-console/
-├── app/                    # Next.js app directory
+AethoriaWindows-Copy/
+├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
+│   └── page.tsx           # Main page
 ├── components/            # React components
-│   ├── AIChat.tsx        # AI chat interface (assistant-ui)
-│   ├── CartridgeSelector.tsx # Game selection
-│   ├── VoiceSynthesis.tsx # Voice synthesis (Web Speech API)
-│   └── DieRoller.tsx      # Dice rolling system
-├── lib/                   # Utilities and types
-│   ├── store.ts           # Zustand state management
-│   ├── types.ts           # TypeScript definitions
-│   └── ai.ts              # AI configuration
-├── GamePrompts/           # Game prompt content
-└── api/                   # Python AI backend
+│   ├── AIChat.tsx         # Main game interface
+│   ├── CharacterCreator.tsx # Character creation
+│   ├── CharacterSheet.tsx # Character management
+│   ├── CombatSystem.tsx   # Combat interface
+│   ├── Help.tsx           # Help and tutorials
+│   ├── Inventory.tsx      # Inventory management
+│   ├── QuestLog.tsx       # Quest tracking
+│   ├── SaveManager.tsx    # Save/load system
+│   ├── Settings.tsx       # Game settings
+│   ├── VoiceRecognition.tsx # Voice input
+│   ├── VoiceSynthesis.tsx # Voice output
+│   ├── WorldMap.tsx       # World navigation
+│   └── ...                # Other UI components
+├── lib/                   # Core libraries
+│   ├── ai.ts              # AI integration
+│   ├── store.ts           # State management
+│   └── types.ts           # TypeScript definitions
+├── GamePrompts/           # Game cartridge data
+├── scripts/               # Utility scripts
+└── ...                    # Other assets
 ```
 
-### Available Scripts
+## 🎨 UI/UX Design
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
+### Console Theme
+- **Dark Mode**: Retro console aesthetic
+- **Gaming Fonts**: Custom typography for immersive feel
+- **Glow Effects**: Neon accents and visual feedback
+- **Responsive Layout**: Adapts to different screen sizes
 
-## 🤖 AI Integration
-
-### Assistant-UI Integration
-
-Aethoria uses [assistant-ui](https://github.com/assistant-ui/assistant-ui) for seamless AI chat functionality:
-
-- **Streaming Responses**: Real-time AI responses with typing indicators
-- **Auto-scrolling**: Automatic chat scrolling for smooth UX
-- **Accessibility**: Full keyboard navigation and screen reader support
-- **Customizable**: Fully customizable chat interface
-- **Multi-provider Support**: OpenAI, Anthropic, Groq, and more
-
-### Voice Synthesis
-
-Replaced MeloTTS with Web Speech API for better browser compatibility:
-
-- **No Installation Required**: Works in all modern browsers
-- **Multiple Voices**: Access to system voices
-- **Real-time Synthesis**: Instant voice feedback
-- **Cross-platform**: Works on Windows, Mac, Linux, and mobile
-
-### AI Providers
-
-Configure your preferred AI provider in `lib/ai.ts`:
-
-```typescript
-// Game-specific model configurations
-export const gameModels = {
-  'dnd-fantasy': 'gpt-4',
-  'silent-hill-echoes': 'gpt-4',
-  'portal-sci-fi': 'gpt-3.5-turbo',
-  'pokemon-adventure': 'gpt-3.5-turbo',
-  default: 'gpt-3.5-turbo'
-}
-```
-
-## 🌐 Deployment
-
-### Vercel (Recommended)
-
-1. **Install Vercel CLI**
-   ```bash
-   npm i -g vercel
-   ```
-
-2. **Deploy to Vercel**
-   ```bash
-   vercel
-   ```
-
-3. **Configure environment variables** in Vercel dashboard:
-   - `OPENAI_API_KEY`
-   - `ANTHROPIC_API_KEY`
-   - `GROQ_API_KEY`
-
-### Manual Deployment
-
-1. **Build the project**
-   ```bash
-   npm run build
-   ```
-
-2. **Start production server**
-   ```bash
-   npm start
-   ```
-
-## 🎨 Customization
-
-### Adding New Games
-
-1. Create a new game prompt file in `app/api/game-prompts/data/`
-2. Add the game to `app/api/game-prompts/data/index.json`
-3. The game will automatically appear in the cartridge selector
-
-### Styling
-
-The project uses Tailwind CSS with a custom console theme. Key color variables:
-
-- `console-dark`: #0a0a0a (Background)
-- `console-accent`: #00ff88 (Accent green)
-- `console-text`: #e0e0e0 (Text)
-- `console-border`: #333333 (Borders)
+### Component Design
+- **Modal System**: Overlay components for game features
+- **Tab Navigation**: Organized information display
+- **Progress Indicators**: Visual feedback for actions
+- **Status Icons**: Clear visual communication
 
 ## 🔧 Configuration
 
-### Environment Variables
+### AI Models
+The system automatically selects AI models based on game genre:
 
-Create a `.env.local` file for local development:
+- **Fantasy/Adventure**: Claude 3.5 Sonnet
+- **Horror/Thriller**: GPT-4 Turbo
+- **Sci-Fi**: Claude 3.5 Haiku
+- **Comedy**: Mixtral 8x7B
+- **Drama**: Llama 3.1 8B
 
-```env
-# AI API Keys
-OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-GROQ_API_KEY=your_groq_api_key
+### Voice Settings
+- **Input**: Web Speech API with confidence scoring
+- **Output**: Text-to-speech with adjustable speed/pitch
+- **Languages**: Multi-language support
+- **Accessibility**: Screen reader compatible
 
-# App Configuration
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
+### Game Settings
+- **Audio**: Master, voice, music, and SFX volume controls
+- **Display**: Theme, font size, and animation options
+- **Controls**: Keyboard layout and sensitivity settings
+- **Gameplay**: Difficulty, auto-save, and tutorial options
+
+## 🎲 Game Systems
+
+### Character System
+- **6 Core Abilities**: Strength, Dexterity, Constitution, Intelligence, Wisdom, Charisma
+- **Background Bonuses**: Starting bonuses based on character background
+- **Skill Progression**: Level-based skill advancement
+- **Status Effects**: Temporary buffs and debuffs
+
+### Combat System
+- **Initiative**: Dexterity-based turn order
+- **Actions**: Attack, Defend, Cast Spell, Use Item, Flee
+- **Targeting**: Select enemies or allies
+- **Damage Calculation**: Attack vs Defense with dice rolls
+- **Combat Log**: Detailed action history
+
+### Inventory System
+- **Item Categories**: Weapons, Armor, Consumables, Magical, Quest, Currency
+- **Rarity Levels**: Common, Uncommon, Rare, Epic, Legendary
+- **Item Effects**: Stat bonuses and special abilities
+- **Quantity Management**: Stackable items and weight limits
+
+### Quest System
+- **Quest Types**: Main, Side, Bounty, Guild, Exploration
+- **Objectives**: Multi-step quest progression
+- **Rewards**: Experience, gold, and items
+- **Time Limits**: Optional quest deadlines
+
+## 🚀 Development Status
+
+### ✅ Completed Features
+- [x] Core game architecture
+- [x] Character creation system
+- [x] AI integration with OpenRouter
+- [x] Voice recognition and synthesis
+- [x] Save/load system
+- [x] Inventory management
+- [x] Quest system
+- [x] Combat system
+- [x] World map navigation
+- [x] Settings management
+- [x] Help and tutorial system
+- [x] UI/UX design system
+- [x] TypeScript type definitions
+- [x] State management with Zustand
+
+### 🔄 In Progress
+- [ ] Enhanced combat AI
+- [ ] Multiplayer features
+- [ ] Advanced voice commands
+- [ ] Mobile app development
+- [ ] Cloud save synchronization
+
+### 📋 Planned Features
+- [ ] Character customization (appearance)
+- [ ] Advanced crafting system
+- [ ] Faction system
+- [ ] Weather and time systems
+- [ ] NPC relationship system
+- [ ] Advanced quest branching
+- [ ] Mod support
+- [ ] Performance optimizations
 
 ## 🤝 Contributing
 
@@ -209,17 +242,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with [Next.js](https://nextjs.org/)
-- AI Chat powered by [assistant-ui](https://github.com/assistant-ui/assistant-ui)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- State management with [Zustand](https://zustand-demo.pmnd.rs/)
-- Icons from [Lucide React](https://lucide.dev/)
-- AI integration with [AI SDK](https://sdk.vercel.ai/)
+- **OpenRouter**: AI model access and integration
+- **Next.js Team**: Amazing React framework
+- **Zustand**: Lightweight state management
+- **Tailwind CSS**: Utility-first styling
+- **Lucide Icons**: Beautiful icon library
 
 ## 📞 Support
 
-For support, email support@aethoria.com or join our Discord community.
+For support, questions, or feature requests:
+- Create an issue on GitHub
+- Join our Discord community
+- Email: support@aethoria.com
 
 ---
 
-**Aethoria** - Where AI Becomes Your Dungeon Master 🎮✨
+**Aethoria** - Where AI Becomes Your Dungeon Master
+
+*"The greatest stories are not told, they are lived."*
