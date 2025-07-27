@@ -212,7 +212,7 @@ export function CharacterCreator({ onComplete, onBack }: CharacterCreatorProps) 
 
   const canProceed = () => {
     switch (currentStep) {
-      case 'name': return character.name?.trim().length > 0
+      case 'name': return character.name && character.name.trim().length > 0
       case 'background': return selectedBackground.length > 0
       case 'abilities': return remainingPoints === 0
       case 'skills': return selectedSkills.length === 4
