@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { AIChat } from '@/components/AIChat'
+
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
 import { HeroSection } from '@/components/HeroSection'
 import { LoadingOverlay } from '@/components/LoadingSpinner'
 import { FeaturesSection } from '@/components/FeaturesSection'
 import { CharacterCreator } from '@/components/CharacterCreator'
+import { GameInterface } from '@/components/GameInterface'
 import { Character, GamePrompt } from '@/lib/types'
 import { ArrowUp, Gamepad2, Users, BookOpen, Mail } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
@@ -187,15 +188,13 @@ export default function Home() {
     )
   }
 
-  if (isGameActive) {
+  if (isGameActive && character && gamePrompt) {
     return (
-      <main className="min-h-screen bg-console-dark">
-        <AIChat 
-          cartridgeId={selectedCartridge!}
-          onGameEnd={handleGameEnd}
-          character={character}
-        />
-      </main>
+      <GameInterface
+        character={character}
+        gamePrompt={gamePrompt}
+        onBack={handleGameEnd}
+      />
     )
   }
 
@@ -223,6 +222,17 @@ export default function Home() {
             onStartAdventure={handleStartAdventure}
             onScrollToFeatures={handleScrollToFeatures}
           />
+
+          {/* Quick Access to Assistant-UI */}
+          <div className="fixed top-24 right-4 z-40">
+            <a 
+              href="/assistant-ui"
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-console-accent hover:bg-console-accent-dark text-console-dark font-console rounded-lg transition-colors duration-200 shadow-lg"
+            >
+              <span>🧠</span>
+              <span>Try Assistant-UI</span>
+            </a>
+          </div>
 
           {/* Features Section */}
           <div ref={featuresRef}>
