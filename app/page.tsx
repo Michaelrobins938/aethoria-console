@@ -81,6 +81,7 @@ export default function Home() {
   }
 
   const handleNavigation = (section: string) => {
+    console.log('Navigation requested:', section)
     setCurrentSection(section)
     
     switch (section) {
@@ -88,25 +89,43 @@ export default function Home() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         break
       case 'features':
-        featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (featuresRef.current) {
+          featuresRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          console.warn('Features ref not found')
+        }
         break
       case 'games':
-        gamesRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (gamesRef.current) {
+          gamesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          console.warn('Games ref not found')
+        }
         break
       case 'about':
-        aboutRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (aboutRef.current) {
+          aboutRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          console.warn('About ref not found')
+        }
         break
       case 'contact':
-        contactRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (contactRef.current) {
+          contactRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          console.warn('Contact ref not found')
+        }
         break
       case 'settings':
         // TODO: Open settings modal
-        // Settings opened
+        console.log('Settings requested - modal not implemented yet')
         break
       case 'help':
         // TODO: Open help modal
-        // Help opened
+        console.log('Help requested - modal not implemented yet')
         break
+      default:
+        console.warn('Unknown navigation section:', section)
     }
   }
 
