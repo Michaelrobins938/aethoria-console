@@ -84,49 +84,58 @@ export default function Home() {
     console.log('Navigation requested:', section)
     setCurrentSection(section)
     
-    switch (section) {
-      case 'home':
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-        break
-      case 'features':
-        if (featuresRef.current) {
-          featuresRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        } else {
-          console.warn('Features ref not found')
-        }
-        break
-      case 'games':
-        if (gamesRef.current) {
-          gamesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        } else {
-          console.warn('Games ref not found')
-        }
-        break
-      case 'about':
-        if (aboutRef.current) {
-          aboutRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        } else {
-          console.warn('About ref not found')
-        }
-        break
-      case 'contact':
-        if (contactRef.current) {
-          contactRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        } else {
-          console.warn('Contact ref not found')
-        }
-        break
-      case 'settings':
-        // TODO: Open settings modal
-        console.log('Settings requested - modal not implemented yet')
-        break
-      case 'help':
-        // TODO: Open help modal
-        console.log('Help requested - modal not implemented yet')
-        break
-      default:
-        console.warn('Unknown navigation section:', section)
-    }
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      switch (section) {
+        case 'home':
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+          break
+        case 'features':
+          if (featuresRef.current) {
+            featuresRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            console.warn('Features ref not found, using fallback scroll')
+            window.scrollTo({ top: 600, behavior: 'smooth' })
+          }
+          break
+        case 'games':
+          if (gamesRef.current) {
+            gamesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            console.warn('Games ref not found, using fallback scroll')
+            window.scrollTo({ top: 1200, behavior: 'smooth' })
+          }
+          break
+        case 'about':
+          if (aboutRef.current) {
+            aboutRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            console.warn('About ref not found, using fallback scroll')
+            window.scrollTo({ top: 1800, behavior: 'smooth' })
+          }
+          break
+        case 'contact':
+          if (contactRef.current) {
+            contactRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          } else {
+            console.warn('Contact ref not found, using fallback scroll')
+            window.scrollTo({ top: 2400, behavior: 'smooth' })
+          }
+          break
+        case 'settings':
+          // TODO: Open settings modal
+          console.log('Settings requested - modal not implemented yet')
+          alert('Settings modal not implemented yet')
+          break
+        case 'help':
+          // TODO: Open help modal
+          console.log('Help requested - modal not implemented yet')
+          alert('Help modal not implemented yet')
+          break
+        default:
+          console.warn('Unknown navigation section:', section)
+      }
+    }, 100)
   }
 
   const scrollToTop = () => {
@@ -169,6 +178,11 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-console-dark">
       <Header onNavigate={handleNavigation} />
+      
+      {/* Debug indicator - remove in production */}
+      <div className="fixed top-20 left-4 z-50 bg-console-darker p-2 rounded border border-console-accent text-xs">
+        Current: {currentSection}
+      </div>
       
       {showIntro ? (
         <>
