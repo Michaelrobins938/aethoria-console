@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getModelForCartridge, getModelConfig, getModelDescription } from '@/lib/ai'
+import { z } from "zod";
 
 export const maxDuration = 30;
 
@@ -81,7 +82,172 @@ IMPORTANT GUIDELINES:
 Begin the adventure and respond to the player's actions accordingly.`
     };
 
-    // Generate AI response using OpenRouter
+    // Define game tools
+    const gameTools = {
+      rollDice: {
+        description: "Roll dice for skill checks, attacks, or other game mechanics",
+        parameters: z.object({
+          dice: z.string().describe("Dice notation (e.g., 'd20', '2d6', 'd100')"),
+          reason: z.string().optional().describe("Reason for the roll (e.g., 'attack roll', 'stealth check')")
+        }),
+        execute: async ({ dice, reason }: { dice: string; reason?: string }) => {
+          // Parse dice notation (e.g., "2d6" = 2 dice with 6 sides)
+          const match = dice.match(/^(\d+)?d(\d+)$/);
+          if (!match) {
+            throw new Error(`Invalid dice notation: ${dice}`);
+          }
+          
+          const numDice = parseInt(match[1]) || 1;
+          const sides = parseInt(match[2]);
+          
+          const rolls = [];
+          let total = 0;
+          
+          for (let i = 0; i < numDice; i++) {
+            const roll = Math.floor(Math.random() * sides) + 1;
+            rolls.push(roll);
+            total += roll;
+          }
+          
+          return {
+            result: total,
+            rolls: rolls,
+            total: total
+          };
+        }
+      },
+      
+      updateCharacter: {
+        description: "Update character stats, health, experience, or other attributes",
+        parameters: z.object({
+          action: z.string().optional().describe("What action was taken that caused the update")
+        }),
+        execute: async ({ action }: { action?: string }) => {
+          // This would typically update the character in a database
+          // For now, we'll return a mock character update
+          return {
+            character: {
+              name: "Adventurer",
+              health: 95,
+              maxHealth: 100,
+              level: 1,
+              experience: 150,
+              abilities: {
+                strength: 14,
+                dexterity: 12,
+                constitution: 16,
+                intelligence: 10,
+                wisdom: 8,
+                charisma: 12
+              }
+            },
+            changes: action ? `Character updated due to: ${action}` : "Character stats updated"
+          };
+        }
+      },
+      
+      combatAction: {
+        description: "Execute combat actions like attacks, spells, or defensive maneuvers",
+        parameters: z.object({
+          action: z.string().describe("The combat action (attack, cast spell, defend, etc.)"),
+          target: z.string().optional().describe("Target of the action")
+        }),
+        execute: async ({ action, target }: { action: string; target?: string }) => {
+          // Simulate combat action
+          const hit = Math.random() > 0.3; // 70% hit chance
+          const damage = hit ? Math.floor(Math.random() * 10) + 1 : 0;
+          
+          return {
+            result: {
+              hit: hit,
+              damage: damage,
+              remainingHealth: 85
+            },
+            combatState: {
+              turn: 2,
+              enemies: [{ name: "Goblin", health: 15 }]
+            }
+          };
+        }
+      },
+      
+      manageInventory: {
+        description: "Add, remove, or view items in the character's inventory",
+        parameters: z.object({
+          action: z.string().describe("The inventory action (add, remove, view, use)"),
+          item: z.string().optional().describe("Item name if applicable")
+        }),
+        execute: async ({ action, item }: { action: string; item?: string }) => {
+          // Mock inventory management
+          const mockInventory = [
+            { name: "Health Potion", type: "Consumable", quantity: 3 },
+            { name: "Iron Sword", type: "Weapon", quantity: 1 },
+            { name: "Leather Armor", type: "Armor", quantity: 1 }
+          ];
+          
+          return {
+            inventory: mockInventory,
+            changes: `${action} ${item || 'items'}`
+          };
+        }
+      },
+      
+      manageQuests: {
+        description: "View, accept, complete, or update quest progress",
+        parameters: z.object({
+          action: z.string().describe("The quest action (view, accept, complete, update)"),
+          questId: z.string().optional().describe("Quest identifier if applicable")
+        }),
+        execute: async ({ action, questId }: { action: string; questId?: string }) => {
+          // Mock quest management
+          const mockQuests = [
+            {
+              title: "Clear the Goblin Cave",
+              description: "Defeat the goblins threatening the village",
+              status: "in_progress",
+              progress: { current: 2, total: 5 }
+            },
+            {
+              title: "Find the Lost Artifact",
+              description: "Locate the ancient artifact in the ruins",
+              status: "active",
+              progress: { current: 0, total: 1 }
+            }
+          ];
+          
+          return {
+            quests: mockQuests,
+            changes: `${action} quest${questId ? `: ${questId}` : ''}`
+          };
+        }
+      },
+      
+      navigateMap: {
+        description: "Move to different locations on the game map",
+        parameters: z.object({
+          action: z.string().describe("The navigation action (move, explore, travel)"),
+          location: z.string().optional().describe("Target location name")
+        }),
+        execute: async ({ action, location }: { action: string; location?: string }) => {
+          // Mock map navigation
+          const availableLocations = [
+            "The Crossroads",
+            "Dark Forest",
+            "Ancient Ruins",
+            "Village of Elders",
+            "Mystic Tower"
+          ];
+          
+          return {
+            currentLocation: location || "The Crossroads",
+            availableLocations: availableLocations,
+            description: `You are now at ${location || "The Crossroads"}. The air is thick with adventure.`
+          };
+        }
+      }
+    };
+
+    // Generate AI response using OpenRouter with tools
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -93,6 +259,15 @@ Begin the adventure and respond to the player's actions accordingly.`
       body: JSON.stringify({
         model: selectedModel,
         messages: [systemMessage, ...messages],
+        tools: Object.entries(gameTools).map(([name, tool]) => ({
+          type: "function",
+          function: {
+            name: name,
+            description: tool.description,
+            parameters: tool.parameters._def
+          }
+        })),
+        tool_choice: "auto",
         temperature: modelConfig.temperature,
         max_tokens: modelConfig.maxTokens,
         top_p: modelConfig.topP,
