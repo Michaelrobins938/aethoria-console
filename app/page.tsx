@@ -31,6 +31,7 @@ export default function Home() {
 
   // Initialize the page
   useEffect(() => {
+    // Remove the loading state immediately
     setIsLoading(false)
   }, [])
 
@@ -147,19 +148,6 @@ export default function Home() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <main className="min-h-screen bg-console-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-console-accent mx-auto mb-4"></div>
-          <h2 className="text-2xl font-gaming text-console-accent mb-2">Loading Aethoria</h2>
-          <p className="text-console-text-dim">Initializing the future of gaming...</p>
-        </div>
-      </main>
-    )
   }
 
   // Game flow components
