@@ -230,7 +230,7 @@ export default function Home() {
               className="inline-flex items-center space-x-2 px-4 py-2 bg-console-accent hover:bg-console-accent-dark text-console-dark font-console rounded-lg transition-colors duration-200 shadow-lg"
             >
               <span>🧠</span>
-              <span>Try Assistant-UI</span>
+              <span>Try Assistant-UI (v2)</span>
             </a>
           </div>
 
