@@ -67,7 +67,12 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
   useEffect(() => {
     // Fetch game prompts from API
     fetch('/api/game-prompts')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        return res.json()
+      })
       .then((data: GamePrompt[]) => {
         const formattedCartridges = data.map((prompt: GamePrompt) => {
           const aiModel = getModelForCartridge(prompt.id)
@@ -99,8 +104,8 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             description: 'A classic fantasy adventure in the world of Aetheria, filled with magic, monsters, and epic quests.',
             genre: 'Fantasy',
             difficulty: 'Medium',
-            icon: <Sword className="w-8 h-8" />,
-            color: 'border-yellow-500',
+            icon: getIconForGenre('fantasy'),
+            color: getColorForGenre('fantasy'),
             aiModel: 'anthropic/claude-3-5-sonnet',
             modelDescription: 'Claude 3.5 Sonnet - Excellent for epic fantasy world-building and character arcs'
           },
@@ -110,32 +115,32 @@ export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
             description: 'A psychological horror adventure where reality and nightmare blur together in a fog-shrouded town.',
             genre: 'Horror',
             difficulty: 'Hard',
-            icon: <Ghost className="w-8 h-8" />,
-            color: 'border-red-500',
+            icon: getIconForGenre('horror'),
+            color: getColorForGenre('horror'),
             aiModel: 'anthropic/claude-3-5-sonnet',
             modelDescription: 'Claude 3.5 Sonnet - Excellent for psychological horror and atmospheric tension'
           },
           {
-            id: 'portal-sci-fi',
-            title: 'Portal: Test Subject\'s Odyssey',
-            description: 'Navigate through Aperture Science test chambers with portals, physics puzzles, and AI commentary.',
+            id: 'portal-rattmann',
+            title: 'Portal: Rattmann\'s Descent',
+            description: 'Navigate through Aperture Science\'s testing chambers with the help of your trusty portal gun.',
             genre: 'Sci-Fi',
             difficulty: 'Medium',
-            icon: <Rocket className="w-8 h-8" />,
-            color: 'border-blue-500',
+            icon: getIconForGenre('sci-fi'),
+            color: getColorForGenre('sci-fi'),
             aiModel: 'anthropic/claude-3-5-sonnet',
             modelDescription: 'Claude 3.5 Sonnet - Excellent for complex sci-fi concepts and futuristic dialogue'
           },
           {
-            id: 'pokemon-adventure',
-            title: 'Pokémon: Legends of Antiquity',
-            description: 'Become a Pokémon trainer in a world where ancient legends come to life and new discoveries await.',
+            id: 'pokemon-legends-olympus',
+            title: 'Pokémon Legends: Olympus',
+            description: 'Explore the ancient world of Olympus where Pokémon and Greek mythology intertwine.',
             genre: 'Adventure',
             difficulty: 'Easy',
-            icon: <Shield className="w-8 h-8" />,
-            color: 'border-green-500',
+            icon: getIconForGenre('adventure'),
+            color: getColorForGenre('adventure'),
             aiModel: 'anthropic/claude-3-5-sonnet',
-            modelDescription: 'Claude 3.5 Sonnet - Excellent for creative writing and atmospheric storytelling'
+            modelDescription: 'Claude 3.5 Sonnet - Excellent for epic fantasy world-building and character arcs'
           }
         ])
         setIsLoading(false)

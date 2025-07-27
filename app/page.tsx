@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { AIChat } from '@/components/AIChat'
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
@@ -19,6 +19,8 @@ export default function Home() {
   const [character, setCharacter] = useState<Character | null>(null)
   const [currentSection, setCurrentSection] = useState<string>('home')
   const [isInitializing, setIsInitializing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   const featuresRef = useRef<HTMLDivElement>(null)
   const gamesRef = useRef<HTMLDivElement>(null)
@@ -27,32 +29,31 @@ export default function Home() {
 
   const { initializeSession } = useGameStore()
 
-  // Debug logging
-  // Debug logging removed for production
+  // Initialize the page
+  useEffect(() => {
+    setIsLoading(false)
+  }, [])
 
   const handleCartridgeSelect = async (cartridgeId: string) => {
-    // Cartridge selection logged
+    console.log('Cartridge selected:', cartridgeId)
     setSelectedCartridge(cartridgeId)
     setIsInitializing(true)
+    setError(null)
     
     try {
-      // Initialize the AI session with the selected game prompt
       await initializeSession(cartridgeId)
-      // AI session initialized
-      
-      // Now open character creator
       setShowCharacterCreator(true)
     } catch (error) {
       console.error('Failed to initialize AI session:', error)
-      // Still allow character creation even if AI init fails
-      setShowCharacterCreator(true)
+      setError('Failed to initialize game session. Please try again.')
+      setShowCharacterCreator(true) // Still allow character creation
     } finally {
       setIsInitializing(false)
     }
   }
 
   const handleCharacterComplete = (newCharacter: Character) => {
-    // Character created successfully
+    console.log('Character created:', newCharacter)
     setCharacter(newCharacter)
     setShowCharacterCreator(false)
     setIsGameActive(true)
@@ -67,17 +68,25 @@ export default function Home() {
     setIsGameActive(false)
     setSelectedCartridge(null)
     setCharacter(null)
+    setShowIntro(true)
   }
 
   const handleStartAdventure = () => {
-    // Adventure started
+    console.log('Starting adventure')
     setShowIntro(false)
     setCurrentSection('games')
+    // Scroll to games section
+    setTimeout(() => {
+      gamesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   const handleScrollToFeatures = () => {
-    featuresRef.current?.scrollIntoView({ behavior: 'smooth' })
+    console.log('Scrolling to features')
     setCurrentSection('features')
+    setTimeout(() => {
+      featuresRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
   }
 
   const handleNavigation = (section: string) => {
@@ -123,12 +132,10 @@ export default function Home() {
           }
           break
         case 'settings':
-          // TODO: Open settings modal
           console.log('Settings requested - modal not implemented yet')
           alert('Settings modal not implemented yet')
           break
         case 'help':
-          // TODO: Open help modal
           console.log('Help requested - modal not implemented yet')
           alert('Help modal not implemented yet')
           break
@@ -140,6 +147,19 @@ export default function Home() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-console-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-console-accent mx-auto mb-4"></div>
+          <h2 className="text-2xl font-gaming text-console-accent mb-2">Loading Aethoria</h2>
+          <p className="text-console-text-dim">Initializing the future of gaming...</p>
+        </div>
+      </main>
+    )
   }
 
   // Game flow components
@@ -183,6 +203,19 @@ export default function Home() {
       <div className="fixed top-20 left-4 z-50 bg-console-darker p-2 rounded border border-console-accent text-xs">
         Current: {currentSection}
       </div>
+      
+      {error && (
+        <div className="fixed top-20 right-4 z-50 bg-red-900 p-4 rounded border border-red-500 text-white max-w-sm">
+          <h3 className="font-bold mb-2">Error</h3>
+          <p className="text-sm">{error}</p>
+          <button 
+            onClick={() => setError(null)}
+            className="mt-2 text-xs bg-red-700 px-2 py-1 rounded hover:bg-red-600"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       
       {showIntro ? (
         <>
@@ -357,71 +390,17 @@ export default function Home() {
               </div>
             </div>
           </section>
-
-          {/* Footer */}
-          <footer className="py-12 px-4 border-t border-console-border">
-            <div className="container mx-auto max-w-6xl">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                  <h3 className="font-gaming font-bold text-console-accent mb-4">AETHORIA</h3>
-                  <p className="text-sm text-console-text-dim">
-                    The future of AI-powered interactive storytelling.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-gaming font-bold text-console-text mb-4">Product</h4>
-                  <ul className="space-y-2 text-sm text-console-text-dim">
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Features</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Games</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Pricing</a></li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-gaming font-bold text-console-text mb-4">Support</h4>
-                  <ul className="space-y-2 text-sm text-console-text-dim">
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Help Center</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Documentation</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Contact</a></li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-gaming font-bold text-console-text mb-4">Legal</h4>
-                  <ul className="space-y-2 text-sm text-console-text-dim">
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Privacy Policy</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Terms of Service</a></li>
-                    <li><a href="#" className="hover:text-console-accent transition-colors">Cookie Policy</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div className="border-t border-console-border mt-8 pt-8 text-center">
-                <p className="text-sm text-console-text-dim">
-                  © 2024 Aethoria. All rights reserved.
-                </p>
-              </div>
-            </div>
-          </footer>
         </>
       ) : (
-        <div className="container mx-auto px-4 py-8 pt-24">
-          <div className="space-y-8">
-            <div className="text-center">
-              <h1 className="text-4xl font-gaming font-bold text-console-accent mb-4 text-glow">
-                AETHORIA CONSOLE
-              </h1>
-              <p className="text-console-text-dim text-lg">
-                Choose Your Adventure
-              </p>
-            </div>
-            
-            <CartridgeSelector onSelect={handleCartridgeSelect} />
-          </div>
+        <div className="pt-20">
+          <CartridgeSelector onSelect={handleCartridgeSelect} />
         </div>
       )}
 
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-8 right-8 console-button p-3 rounded-full hover:scale-110 transition-transform duration-300 z-40"
+        className="fixed bottom-8 right-8 console-button p-3 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 z-40"
         title="Scroll to top"
       >
         <ArrowUp className="w-6 h-6" />

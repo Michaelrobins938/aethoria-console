@@ -10,7 +10,11 @@ function loadGamePrompts() {
     
     if (fs.existsSync(indexFile)) {
       const data = fs.readFileSync(indexFile, 'utf8')
-      return JSON.parse(data)
+      const parsed = JSON.parse(data)
+      console.log(`Loaded ${parsed.length} game prompts from migration data`)
+      return parsed
+    } else {
+      console.log('Migration data not found, using fallback prompts')
     }
   } catch (error) {
     console.error('Error loading game prompts:', error)
@@ -49,6 +53,38 @@ function loadGamePrompts() {
         questSystem: 'epic storylines',
         specialRules: ['Spellcasting', 'Character Classes', 'Experience Points']
       }
+    },
+    {
+      id: 'portal-rattmann',
+      title: 'Portal: Rattmann\'s Descent',
+      description: 'Navigate through Aperture Science\'s testing chambers with the help of your trusty portal gun.',
+      genre: 'sci-fi',
+      difficulty: 'medium' as const,
+      themes: ['puzzle', 'science', 'humor'],
+      mechanics: {
+        diceSystem: 'd6',
+        combatSystem: 'puzzle-based',
+        skillSystem: 'logic, spatial reasoning, creativity',
+        inventorySystem: 'portal gun only',
+        questSystem: 'test chamber progression',
+        specialRules: ['Portal Physics', 'GLaDOS Commentary', 'Test Chamber Logic']
+      }
+    },
+    {
+      id: 'pokemon-legends-olympus',
+      title: 'Pokémon Legends: Olympus',
+      description: 'Explore the ancient world of Olympus where Pokémon and Greek mythology intertwine.',
+      genre: 'adventure',
+      difficulty: 'easy' as const,
+      themes: ['exploration', 'mythology', 'friendship'],
+      mechanics: {
+        diceSystem: 'd20',
+        combatSystem: 'turn-based Pokémon battles',
+        skillSystem: 'trainer skills, Pokémon bonding, exploration',
+        inventorySystem: 'Pokémon team, items, Poké Balls',
+        questSystem: 'mythological quests',
+        specialRules: ['Pokémon Evolution', 'Mythical Encounters', 'Olympian Trials']
+      }
     }
   ]
 }
@@ -57,6 +93,7 @@ const gamePrompts = loadGamePrompts()
 
 export async function GET(request: NextRequest) {
   try {
+    console.log(`Returning ${gamePrompts.length} game prompts`)
     return NextResponse.json(gamePrompts)
   } catch (error) {
     console.error('Error fetching game prompts:', error)
