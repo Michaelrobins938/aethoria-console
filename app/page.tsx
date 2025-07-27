@@ -28,17 +28,17 @@ export default function Home() {
   const { initializeSession } = useGameStore()
 
   // Debug logging
-  console.log('Page state:', { showIntro, selectedCartridge, isGameActive, showCharacterCreator, currentSection })
+  // Debug logging removed for production
 
   const handleCartridgeSelect = async (cartridgeId: string) => {
-    console.log('Cartridge selected:', cartridgeId)
+    // Cartridge selection logged
     setSelectedCartridge(cartridgeId)
     setIsInitializing(true)
     
     try {
       // Initialize the AI session with the selected game prompt
       await initializeSession(cartridgeId)
-      console.log('AI session initialized with game prompt:', cartridgeId)
+      // AI session initialized
       
       // Now open character creator
       setShowCharacterCreator(true)
@@ -52,7 +52,7 @@ export default function Home() {
   }
 
   const handleCharacterComplete = (newCharacter: Character) => {
-    console.log('Character created:', newCharacter)
+    // Character created successfully
     setCharacter(newCharacter)
     setShowCharacterCreator(false)
     setIsGameActive(true)
@@ -70,7 +70,7 @@ export default function Home() {
   }
 
   const handleStartAdventure = () => {
-    console.log('Start adventure clicked!')
+    // Adventure started
     setShowIntro(false)
     setCurrentSection('games')
   }
@@ -101,11 +101,11 @@ export default function Home() {
         break
       case 'settings':
         // TODO: Open settings modal
-        console.log('Open settings')
+        // Settings opened
         break
       case 'help':
         // TODO: Open help modal
-        console.log('Open help')
+        // Help opened
         break
     }
   }

@@ -204,7 +204,7 @@ export function CharacterCreator({ onComplete, onBack }: CharacterCreatorProps) 
         experience: 0,
         maxLevel: 10,
         description: `Proficiency in ${skillName}`,
-        type: skills.find(s => s.name === skillName)?.type as any || 'exploration'
+        type: (skills.find(s => s.name === skillName)?.type as 'exploration' | 'combat' | 'social' | 'crafting') || 'exploration'
       }))
     }
     onComplete(finalCharacter)

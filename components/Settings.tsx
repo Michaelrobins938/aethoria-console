@@ -77,22 +77,22 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
     { id: 'system', label: 'System', icon: <SettingsIcon className="w-4 h-4" /> }
   ]
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key: string, value: string | number | boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }))
     
     // Update store for immediate settings
     if (key === 'voiceOutputEnabled') {
-      setAudioSettings({ voiceOutputEnabled: value })
+      setAudioSettings({ voiceOutputEnabled: value as boolean })
     }
     if (key === 'voiceInputEnabled') {
-      setVoiceState({ isListening: value })
+      setVoiceState({ isListening: value as boolean })
     }
   }
 
   const handleSaveSettings = () => {
     // Save settings to localStorage
     localStorage.setItem('aethoria_settings', JSON.stringify(settings))
-    console.log('Settings saved')
+    // Settings saved successfully
   }
 
   const handleResetSettings = () => {

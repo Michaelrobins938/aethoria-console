@@ -1,14 +1,21 @@
+// Define proper types for WebSocket messages
+interface WebSocketMessage {
+  type: string
+  data?: unknown
+  [key: string]: unknown
+}
+
 export class GameWebSocket {
   private ws: WebSocket | null = null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectDelay = 1000
-  private messageQueue: any[] = []
+  private messageQueue: WebSocketMessage[] = []
   private isConnected = false
 
   constructor(
     private url: string,
-    private onMessage: (data: any) => void,
+    private onMessage: (data: WebSocketMessage) => void,
     private onConnect?: () => void,
     private onDisconnect?: () => void
   ) {}
@@ -26,7 +33,9 @@ export class GameWebSocket {
         // Send queued messages
         while (this.messageQueue.length > 0) {
           const message = this.messageQueue.shift()
-          this.send(message)
+          if (message) {
+            this.send(message)
+          }
         }
       }
 
@@ -67,7 +76,7 @@ export class GameWebSocket {
     }
   }
 
-  send(message: any) {
+  send(message: WebSocketMessage) {
     if (this.ws && this.isConnected) {
       this.ws.send(JSON.stringify(message))
     } else {

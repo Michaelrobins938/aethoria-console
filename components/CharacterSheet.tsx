@@ -62,7 +62,7 @@ export function CharacterSheet({ isOpen, onClose }: CharacterSheetProps) {
   }
 
   const calculateTotalSkillBonus = (skill: Skill) => {
-    const abilityMod = getAbilityModifier(character.abilities[skill.primaryAbility])
+    const abilityMod = getAbilityModifier(character.abilities[skill.primaryAbility || 'strength'])
     const proficiencyBonus = Math.floor(character.level / 4) + 2
     return abilityMod + proficiencyBonus + skill.level
   }
@@ -115,7 +115,7 @@ export function CharacterSheet({ isOpen, onClose }: CharacterSheetProps) {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'overview' | 'combat' | 'skills' | 'inventory' | 'progression')}
               className={`console-button flex items-center space-x-2 ${
                 activeTab === tab.id ? 'bg-console-accent text-console-dark' : ''
               }`}

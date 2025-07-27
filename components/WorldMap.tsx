@@ -73,7 +73,7 @@ export function WorldMap({ isOpen, onClose, onNavigate }: WorldMapProps) {
   const getDistance = (location: Location) => {
     // Simple distance calculation based on location coordinates
     const currentLocation = worldState?.discoveredLocations.find(l => l.isCurrent)
-    if (!currentLocation || !location.coordinates) return 'Unknown'
+    if (!currentLocation || !location.coordinates || !currentLocation.coordinates) return 'Unknown'
     
     const dx = location.coordinates.x - currentLocation.coordinates.x
     const dy = location.coordinates.y - currentLocation.coordinates.y

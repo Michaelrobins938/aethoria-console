@@ -159,7 +159,7 @@ export function FeaturesSection({ onStartGame }: FeaturesSectionProps) {
           ].map((category) => (
             <button
               key={category.id}
-              onClick={() => setActiveCategory(category.id as any)}
+              onClick={() => setActiveCategory(category.id as 'ai' | 'voice' | 'gameplay' | 'social')}
               className={`console-button px-6 py-3 transition-all duration-300 ${
                 activeCategory === category.id 
                   ? 'bg-console-accent text-console-dark font-bold' 

@@ -1,8 +1,20 @@
 import os
 import json
 import networkx as nx
+from typing import List, Dict, Any, Optional
+import tiktoken
 
-def setup_new_transcript_file(transcript_dir):
+# Global variables
+session_data: Dict[str, Any] = {"events": []}
+character_data: Dict[str, Any] = {}
+
+class KnowledgeGraphManager:
+    def __init__(self):
+        self.graph = nx.Graph()
+
+knowledge_graph_manager = KnowledgeGraphManager()
+
+def setup_new_transcript_file(transcript_dir: str) -> str:
     """
     Initializes a new transcript file in the specified directory.
     Creates the directory if it doesn't exist and writes an initial line to the transcript file.
@@ -15,7 +27,7 @@ def setup_new_transcript_file(transcript_dir):
     print(f"New transcript file created at {transcript_path}")
     return transcript_path
 
-def save_journal_entry(journal_entry, journal_path="journal.txt"):
+def save_journal_entry(journal_entry: str, journal_path: str = "journal.txt") -> None:
     """
     Appends a journal entry to the specified journal file.
     Creates the file if it doesn't exist.
@@ -24,7 +36,7 @@ def save_journal_entry(journal_entry, journal_path="journal.txt"):
         f.write(journal_entry + "\n")
     print(f"Journal entry saved to {journal_path}")
 
-def save_transcript(transcript, transcript_path):
+def save_transcript(transcript: str, transcript_path: str) -> None:
     """
     Appends a transcript entry to the specified transcript file.
     """
@@ -32,27 +44,27 @@ def save_transcript(transcript, transcript_path):
         f.write(transcript + "\n")
     print(f"Transcript saved to {transcript_path}")
 
-def save_session_data():
+def save_session_data() -> None:
     """
     Saves the session data to a JSON file.
     """
     with open("session_data.json", "w") as f:
         json.dump(session_data, f)
 
-def save_character_data():
+def save_character_data() -> None:
     """
     Saves the character data to a JSON file.
     """
     with open("character_data.json", "w") as f:
         json.dump(character_data, f)
 
-def save_knowledge_graph():
+def save_knowledge_graph() -> None:
     """
     Saves the knowledge graph to a GPickle file.
     """
     nx.write_gpickle(knowledge_graph_manager.graph, "knowledge_graph.gpickle")
 
-def load_session_data():
+def load_session_data() -> None:
     """
     Loads session data from a JSON file. Initializes to an empty session if the file is not found.
     """
@@ -63,7 +75,7 @@ def load_session_data():
     except FileNotFoundError:
         session_data = {"events": []}
 
-def load_character_data():
+def load_character_data() -> None:
     """
     Loads character data from a JSON file. Initializes to an empty dictionary if the file is not found.
     """
@@ -74,7 +86,7 @@ def load_character_data():
     except FileNotFoundError:
         character_data = {}
 
-def load_knowledge_graph():
+def load_knowledge_graph() -> None:
     """
     Loads the knowledge graph from a GPickle file. Initializes to an empty graph if the file is not found.
     """
@@ -85,7 +97,7 @@ def load_knowledge_graph():
     except FileNotFoundError:
         knowledge_graph_manager.graph = nx.Graph()
 
-def num_tokens_from_messages(messages):
+def num_tokens_from_messages(messages: List[Dict[str, str]]) -> int:
     """
     Calculates the number of tokens used in a series of messages for a specific model.
     This is useful for managing token limits in AI models like GPT-3/4.

@@ -20,7 +20,7 @@ export function VoiceRecognition({
   const [transcript, setTranscript] = useState('')
   const [confidence, setConfidence] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<any | null>(null)
 
   useEffect(() => {
     // Check if speech recognition is supported
@@ -50,7 +50,7 @@ export function VoiceRecognition({
       setIsProcessing(true)
     }
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       let finalTranscript = ''
       let interimTranscript = ''
 
@@ -73,7 +73,7 @@ export function VoiceRecognition({
       }
     }
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error)
       setIsProcessing(false)
       

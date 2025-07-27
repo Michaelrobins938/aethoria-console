@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 export function APITest() {
-  const [testResult, setTestResult] = useState<any>(null)
+  const [testResult, setTestResult] = useState<{ error?: string; gamePrompts?: unknown } | null>(null)
   const [loading, setLoading] = useState(false)
 
   const testAPI = async () => {

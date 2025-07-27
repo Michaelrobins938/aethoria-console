@@ -71,7 +71,7 @@ export function AIChat({ cartridgeId, onGameEnd, character }: AIChatProps) {
   }, [character, session?.character, updateCharacter])
 
   // Debug logging
-  console.log('AIChat initialized with:', { cartridgeId, session, character, worldState, aiModel })
+      // AIChat initialized
 
   // Initialize chat with AI SDK
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
@@ -136,9 +136,9 @@ export function AIChat({ cartridgeId, onGameEnd, character }: AIChatProps) {
     // Auto-submit voice input
     if (transcript.trim()) {
       // Simulate typing the transcript
-      handleInputChange({ target: { value: transcript } } as any)
+      handleInputChange({ target: { value: transcript } } as React.ChangeEvent<HTMLInputElement>)
       // Submit the form
-      handleSubmit({ preventDefault: () => {} } as any)
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>)
     }
   }
 
@@ -170,7 +170,7 @@ export function AIChat({ cartridgeId, onGameEnd, character }: AIChatProps) {
 
   const handleNavigate = (locationId: string) => {
     // TODO: Implement navigation logic
-    console.log('Navigating to:', locationId)
+    // Navigating to location
   }
 
   return (

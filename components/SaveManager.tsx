@@ -112,7 +112,7 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
       // Refresh save slots
       loadSaveSlots()
       
-      console.log('Game saved successfully')
+      // Game saved successfully
     } catch (error) {
       console.error('Failed to save game:', error)
       setError('Failed to save game')
@@ -149,10 +149,10 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
     }
   }
 
-  const saveToCloud = async (saveData: any) => {
+  const saveToCloud = async (saveData: { sessionId: string; data: unknown; timestamp: Date; version: string }) => {
     // TODO: Implement cloud save functionality
     // This would typically involve an API call to your backend
-    console.log('Cloud save not implemented yet')
+    // Cloud save not implemented yet
   }
 
   const formatPlayTime = (minutes: number) => {

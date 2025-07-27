@@ -18,11 +18,25 @@ import {
   Clock
 } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
-import { CombatState, Combatant, CombatAction, CombatResult } from '@/lib/types'
+import { CombatState, Combatant, CombatAction, CombatResult, Character } from '@/lib/types'
 
 interface CombatSystemProps {
   isOpen: boolean
   onClose: () => void
+}
+
+// Helper function to get enemies from participants
+const getEnemies = (participants: Character[]): Combatant[] => {
+  return participants.map(p => ({
+    id: p.name,
+    name: p.name,
+    health: p.health,
+    maxHealth: p.maxHealth,
+    attack: p.attack,
+    defense: p.defense,
+    type: 'enemy' as const,
+    dexterity: p.abilities.dexterity
+  }))
 }
 
 export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
@@ -52,24 +66,24 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
   const rollInitiative = () => {
     if (!combatState) return
 
-    const playerInitiative = rollDice('d20', character?.abilities.dexterity || 10)
-    const enemyInitiative = rollDice('d20', 10) // Simple enemy initiative
+    const playerInitiativeRoll = rollDice('d20', character?.abilities.dexterity || 10)
+    const enemyInitiativeRoll = rollDice('d20', 10) // Simple enemy initiative
 
     const newCombatState: CombatState = {
       ...combatState,
       initiative: {
-        player: playerInitiative,
-        enemies: combatState.enemies.map(enemy => ({
+        player: playerInitiativeRoll.total,
+        enemies: combatState.participants.map(enemy => ({
           ...enemy,
-          initiative: rollDice('d20', enemy.dexterity || 10)
+          initiative: rollDice('d20', enemy.abilities.dexterity || 10).total
         }))
       },
-      currentTurn: playerInitiative > enemyInitiative ? 'player' : 'enemy',
+      currentTurn: playerInitiativeRoll.total > enemyInitiativeRoll.total ? 'player' : 'enemy',
       round: 1
     }
 
     updateCombatState(newCombatState)
-    addToCombatLog(`Initiative rolled! Player: ${playerInitiative}, Enemies: ${enemyInitiative}`)
+    addToCombatLog(`Initiative rolled! Player: ${playerInitiativeRoll.total}, Enemies: ${enemyInitiativeRoll.total}`)
   }
 
   const addToCombatLog = (message: string) => {
@@ -90,7 +104,8 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
         type: 'player'
       }
     } else {
-      return combatState.enemies.find(e => e.id === combatState.currentEnemyId) || null
+      const enemies = getEnemies(combatState.participants)
+      return enemies.find(e => e.id === combatState.currentEnemyId) || null
     }
   }
 
@@ -98,7 +113,8 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
     if (!combatState) return []
 
     if (combatState.currentTurn === 'player') {
-      return combatState.enemies.filter(e => e.health > 0)
+      const enemies = getEnemies(combatState.participants)
+      return enemies.filter(e => e.health > 0)
     } else {
       return [{
         id: 'player',
@@ -127,8 +143,8 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
     // Update combat state based on result
     updateCombatState({
       ...combatState,
-      enemies: combatState.enemies.map(enemy => 
-        enemy.id === selectedTarget.id ? { ...enemy, health: Math.max(0, enemy.health - result.damage) } : enemy
+      participants: combatState.participants.map(participant => 
+        participant.name === selectedTarget.id ? { ...participant, health: Math.max(0, participant.health - result.damage) } : participant
       )
     })
 
@@ -151,8 +167,9 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
     switch (action.id) {
       case 'attack':
         const attackRoll = rollDice('d20', attacker.attack)
-        const hit = attackRoll >= target.defense
-        const damage = hit ? rollDice('d6', attacker.attack) : 0
+        const hit = attackRoll.total >= target.defense
+        const damage = hit ? rollDice('d6', attacker.attack).total : 0
+        
         return {
           damage,
           message: hit ? `${attacker.name} hits for ${damage} damage!` : `${attacker.name} misses!`,
@@ -170,12 +187,13 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
 
       case 'flee':
         const fleeRoll = rollDice('d20', character?.abilities.dexterity || 10)
-        const fleeSuccess = fleeRoll >= 15
+        const fleeSuccess = fleeRoll.total >= 15
+        
         return {
           damage: 0,
           message: fleeSuccess ? `${attacker.name} successfully flees!` : `${attacker.name} fails to flee!`,
           combatEnded: fleeSuccess,
-          victory: false
+          victory: fleeSuccess
         }
 
       default:
@@ -191,34 +209,32 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
   const nextTurn = () => {
     if (!combatState) return
 
-    if (combatState.currentTurn === 'player') {
-      // Enemy turn
-      const aliveEnemies = combatState.enemies.filter(e => e.health > 0)
-      if (aliveEnemies.length === 0) {
-        endCombat(true) // Player victory
-        return
-      }
-
-      const nextEnemy = aliveEnemies[0]
-      updateCombatState({
-        ...combatState,
-        currentTurn: 'enemy',
-        currentEnemyId: nextEnemy.id
-      })
-    } else {
-      // Player turn
-      updateCombatState({
-        ...combatState,
-        currentTurn: 'player',
-        round: combatState.round + 1
-      })
+    const aliveEnemies = getEnemies(combatState.participants).filter(e => e.health > 0)
+    
+    if (aliveEnemies.length === 0) {
+      endCombat(true)
+      return
     }
+
+    // Simple turn switching
+    const newTurn = combatState.currentTurn === 'player' ? 'enemy' : 'player'
+    const nextEnemy = aliveEnemies[0]
+
+    updateCombatState({
+      ...combatState,
+      currentTurn: newTurn,
+      currentEnemyId: newTurn === 'enemy' ? nextEnemy.id : undefined,
+      round: (combatState.round || 0) + 1
+    })
+
+    addToCombatLog(`Turn: ${newTurn === 'player' ? 'Player' : nextEnemy.name}`)
   }
 
   const endCombat = (victory: boolean) => {
-    addToCombatLog(victory ? 'Victory! All enemies defeated!' : 'Defeat! Combat ended.')
+    if (!combatState) return
+
     updateCombatState(null)
-    setTimeout(() => onClose(), 2000)
+    addToCombatLog(victory ? 'Combat ended in victory!' : 'Combat ended in defeat!')
   }
 
   const getHealthPercentage = (combatant: Combatant) => {
@@ -236,6 +252,7 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
 
   const currentCombatant = getCurrentCombatant()
   const availableTargets = getAvailableTargets()
+  const enemies = getEnemies(combatState.participants)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -244,9 +261,9 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Sword className="w-6 h-6 text-console-accent" />
-            <h2 className="text-2xl font-gaming text-console-accent">Combat</h2>
+            <h2 className="text-2xl font-gaming text-console-accent">Combat System</h2>
             <span className="text-console-text-dim">
-              Round {combatState.round} • {currentCombatant?.name}'s Turn
+              Round {combatState.round || 1} • Turn: {combatState.currentTurn === 'player' ? 'Player' : 'Enemy'}
             </span>
           </div>
           <button onClick={onClose} className="console-button">
@@ -256,41 +273,61 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Combatants */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Player */}
-            <div className="console-card">
-              <h3 className="font-gaming text-console-accent mb-3">Player</h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-gaming text-console-accent">{character?.name}</div>
-                  <div className="text-sm text-console-text-dim">
-                    HP: {character?.health}/{character?.maxHealth}
-                  </div>
+          <div className="lg:col-span-2">
+            <div className="console-card mb-6">
+              <h3 className="font-gaming text-console-accent mb-4">Combatants</h3>
+              
+              {/* Player */}
+              <div className="mb-4 p-4 border border-console-border rounded">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-gaming text-console-accent">{character?.name || 'Player'}</h4>
+                  <span className={`text-sm ${getHealthColor(getHealthPercentage({
+                    id: 'player',
+                    name: character?.name || 'Player',
+                    health: character?.health || 0,
+                    maxHealth: character?.maxHealth || 0,
+                    attack: character?.attack || 0,
+                    defense: character?.defense || 0,
+                    type: 'player'
+                  }))}`}>
+                    {character?.health || 0}/{character?.maxHealth || 0} HP
+                  </span>
                 </div>
-                <div className="w-32 bg-console-border rounded-full h-2">
+                <div className="w-full bg-console-border rounded-full h-2">
                   <div 
-                    className="bg-green-400 h-2 rounded-full transition-all"
-                    style={{ width: `${getHealthPercentage({ health: character?.health || 0, maxHealth: character?.maxHealth || 0 } as Combatant)}%` }}
+                    className="bg-console-accent h-2 rounded-full transition-all"
+                    style={{ width: `${getHealthPercentage({
+                      id: 'player',
+                      name: character?.name || 'Player',
+                      health: character?.health || 0,
+                      maxHealth: character?.maxHealth || 0,
+                      attack: character?.attack || 0,
+                      defense: character?.defense || 0,
+                      type: 'player'
+                    })}%` }}
                   ></div>
                 </div>
               </div>
-            </div>
 
-            {/* Enemies */}
-            <div className="console-card">
-              <h3 className="font-gaming text-console-accent mb-3">Enemies</h3>
+              {/* Enemies */}
               <div className="space-y-2">
-                {combatState.enemies.map((enemy) => (
-                  <div key={enemy.id} className="flex items-center justify-between p-2 border border-console-border rounded">
-                    <div>
-                      <div className="font-gaming text-console-accent">{enemy.name}</div>
-                      <div className="text-sm text-console-text-dim">
-                        HP: {enemy.health}/{enemy.maxHealth}
-                      </div>
+                {enemies.map((enemy) => (
+                  <div
+                    key={enemy.id}
+                    className={`p-3 border rounded cursor-pointer transition-all ${
+                      selectedTarget?.id === enemy.id ? 'border-console-accent console-glow' : 'border-console-border'
+                    } ${enemy.health <= 0 ? 'opacity-50' : ''}`}
+                    onClick={() => enemy.health > 0 && setSelectedTarget(enemy)}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-gaming text-console-accent">{enemy.name}</h4>
+                      <span className={`text-sm ${getHealthColor(getHealthPercentage(enemy))}`}>
+                        {enemy.health}/{enemy.maxHealth} HP
+                      </span>
                     </div>
-                    <div className="w-32 bg-console-border rounded-full h-2">
+                    <div className="w-full bg-console-border rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full transition-all ${getHealthColor(getHealthPercentage(enemy)).replace('text-', 'bg-')}`}
+                        className="bg-red-400 h-2 rounded-full transition-all"
                         style={{ width: `${getHealthPercentage(enemy)}%` }}
                       ></div>
                     </div>
@@ -298,86 +335,50 @@ export function CombatSystem({ isOpen, onClose }: CombatSystemProps) {
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Action Panel */}
-          <div className="space-y-4">
-            {/* Current Turn */}
-            <div className="console-card">
-              <h3 className="font-gaming text-console-accent mb-3">Current Turn</h3>
-              <div className="flex items-center space-x-2">
-                <Clock className="w-4 h-4 text-console-accent" />
-                <span className="text-console-accent">{currentCombatant?.name}</span>
-              </div>
-            </div>
 
             {/* Actions */}
             <div className="console-card">
-              <h3 className="font-gaming text-console-accent mb-3">Actions</h3>
-              <div className="space-y-2">
+              <h3 className="font-gaming text-console-accent mb-4">Actions</h3>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 {actions.map((action) => (
                   <button
                     key={action.id}
                     onClick={() => setSelectedAction(action)}
                     disabled={isProcessing || combatState.currentTurn !== 'player'}
-                    className={`console-button w-full flex items-center space-x-2 ${
+                    className={`console-button flex items-center space-x-2 ${
                       selectedAction?.id === action.id ? 'bg-console-accent text-console-dark' : ''
                     }`}
                   >
                     {action.icon}
-                    <span className="text-sm">{action.name}</span>
+                    <span className="text-xs">{action.name}</span>
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Targets */}
-            {selectedAction && (
-              <div className="console-card">
-                <h3 className="font-gaming text-console-accent mb-3">Targets</h3>
-                <div className="space-y-2">
-                  {availableTargets.map((target) => (
-                    <button
-                      key={target.id}
-                      onClick={() => setSelectedTarget(target)}
-                      disabled={isProcessing}
-                      className={`console-button w-full text-left ${
-                        selectedTarget?.id === target.id ? 'bg-console-accent text-console-dark' : ''
-                      }`}
-                    >
-                      <div className="font-gaming text-console-accent">{target.name}</div>
-                      <div className="text-xs text-console-text-dim">
-                        HP: {target.health}/{target.maxHealth}
-                      </div>
-                    </button>
-                  ))}
+              
+              {selectedAction && (
+                <div className="mt-4">
+                  <button
+                    onClick={executeAction}
+                    disabled={!selectedTarget || isProcessing}
+                    className="console-button-primary w-full"
+                  >
+                    {isProcessing ? 'Processing...' : `Execute ${selectedAction.name}`}
+                  </button>
                 </div>
-              </div>
-            )}
-
-            {/* Execute Action */}
-            {selectedAction && selectedTarget && (
-              <button
-                onClick={executeAction}
-                disabled={isProcessing}
-                className="console-button-primary w-full flex items-center justify-center space-x-2"
-              >
-                {isProcessing ? <Play className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                <span>{isProcessing ? 'Processing...' : 'Execute Action'}</span>
-              </button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Combat Log */}
-        <div className="mt-6 p-4 border-t border-console-border">
-          <h3 className="font-gaming text-console-accent mb-3">Combat Log</h3>
-          <div className="max-h-32 overflow-y-auto space-y-1 text-sm">
-            {combatLog.slice(-10).map((log, index) => (
-              <div key={index} className="text-console-text-dim">
-                {log}
-              </div>
-            ))}
+          {/* Combat Log */}
+          <div className="console-card">
+            <h3 className="font-gaming text-console-accent mb-4">Combat Log</h3>
+            <div className="max-h-[400px] overflow-y-auto space-y-1 text-sm">
+              {combatLog.map((entry, index) => (
+                <div key={index} className="text-console-text-dim">
+                  {entry}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -60,7 +60,7 @@ Current Game State:
 - Location: ${gameState?.worldState?.location || 'Unknown'}
 - Health: ${gameState?.character?.health || 0}/${gameState?.character?.maxHealth || 0}
 - Level: ${gameState?.character?.level || 1}
-- Active Quests: ${gameState?.quests?.filter((q: any) => q.status === 'in_progress').length || 0}
+- Active Quests: ${gameState?.quests?.filter((q: { status: string }) => q.status === 'in_progress').length || 0}
 - Inventory Items: ${gameState?.inventory?.length || 0}
 - In Combat: ${gameState?.combatState?.isActive ? 'Yes' : 'No'}
 
