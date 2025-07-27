@@ -230,6 +230,7 @@ export interface GamePrompt {
   mechanics: GameMechanics
   themes: string[]
   difficulty: 'easy' | 'medium' | 'hard' | 'expert'
+  aiModel?: string
 }
 
 export interface GameMechanics {

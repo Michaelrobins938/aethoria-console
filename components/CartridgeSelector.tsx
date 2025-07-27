@@ -1,234 +1,328 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Play, Sword, Ghost, Rocket, Shield, Zap, Skull, Cpu } from 'lucide-react'
-import type { GamePrompt } from '@/lib/types'
-import { getModelForCartridge, getModelDescription, getGenreForCartridge } from '@/lib/ai'
+import Slider from 'react-slick'
+import { Gamepad2, Star, Play, ArrowLeft, ArrowRight, CheckCircle, Cpu, Zap } from 'lucide-react'
+import { LoadingSpinner } from './LoadingSpinner'
+import { GamePrompt } from '@/lib/types'
 
-interface Cartridge {
-  id: string
-  title: string
-  genre: string
-  description: string
-  difficulty: string
-  icon: React.ReactNode
-  color: string
-  aiModel: string
-  modelDescription: string
-}
-
-const getIconForGenre = (genre: string) => {
-  switch (genre.toLowerCase()) {
-    case 'fantasy':
-      return <Sword className="w-8 h-8" />
-    case 'horror':
-      return <Ghost className="w-8 h-8" />
-    case 'sci-fi':
-      return <Rocket className="w-8 h-8" />
-    case 'adventure':
-      return <Shield className="w-8 h-8" />
-    case 'cyberpunk':
-      return <Zap className="w-8 h-8" />
-    case 'survival horror':
-      return <Skull className="w-8 h-8" />
-    default:
-      return <Shield className="w-8 h-8" />
-  }
-}
-
-const getColorForGenre = (genre: string) => {
-  switch (genre.toLowerCase()) {
-    case 'fantasy':
-      return 'border-yellow-500'
-    case 'horror':
-      return 'border-red-500'
-    case 'sci-fi':
-      return 'border-blue-500'
-    case 'adventure':
-      return 'border-green-500'
-    case 'cyberpunk':
-      return 'border-purple-500'
-    case 'survival horror':
-      return 'border-red-600'
-    default:
-      return 'border-gray-500'
-  }
-}
+// Import slick carousel styles
+import 'slick-carousel/slick/slick.css'
+import 'slick-carousel/slick/slick-theme.css'
 
 interface CartridgeSelectorProps {
-  onSelect: (cartridgeId: string) => void
+  onCartridgeSelect: (cartridgeId: string) => void
+  onBack?: () => void
 }
 
-export function CartridgeSelector({ onSelect }: CartridgeSelectorProps) {
-  const [selectedCartridge, setSelectedCartridge] = useState<string | null>(null)
-  const [cartridges, setCartridges] = useState<Cartridge[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelectorProps) {
+  const [cartridges, setCartridges] = useState<GamePrompt[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedCartridge, setSelectedCartridge] = useState<GamePrompt | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Fetch game prompts from API
-    fetch('/api/game-prompts')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`)
-        }
-        return res.json()
-      })
-      .then((data: GamePrompt[]) => {
-        const formattedCartridges = data.map((prompt: GamePrompt) => {
-          const aiModel = getModelForCartridge(prompt.id)
-          const modelDescription = getModelDescription(prompt.id)
-          const genre = getGenreForCartridge(prompt.id)
-          
-          return {
-            id: prompt.id,
-            title: prompt.title,
-            description: prompt.description,
-            genre: genre.charAt(0).toUpperCase() + genre.slice(1),
-            difficulty: prompt.difficulty.charAt(0).toUpperCase() + prompt.difficulty.slice(1),
-            icon: getIconForGenre(genre),
-            color: getColorForGenre(genre),
-            aiModel,
-            modelDescription
-          }
-        })
-        setCartridges(formattedCartridges)
-        setIsLoading(false)
-      })
-      .catch(error => {
-        console.error('Failed to fetch game prompts:', error)
-        // Fallback to default cartridges with AI model info
-        setCartridges([
-          {
-            id: 'dnd-fantasy',
-            title: 'D&D Fantasy Adventure',
-            description: 'A classic fantasy adventure in the world of Aetheria, filled with magic, monsters, and epic quests.',
-            genre: 'Fantasy',
-            difficulty: 'Medium',
-            icon: getIconForGenre('fantasy'),
-            color: getColorForGenre('fantasy'),
-            aiModel: 'anthropic/claude-3-5-sonnet',
-            modelDescription: 'Claude 3.5 Sonnet - Excellent for epic fantasy world-building and character arcs'
-          },
-          {
-            id: 'silent-hill-echoes',
-            title: 'Silent Hill: Echoes of the Fog',
-            description: 'A psychological horror adventure where reality and nightmare blur together in a fog-shrouded town.',
-            genre: 'Horror',
-            difficulty: 'Hard',
-            icon: getIconForGenre('horror'),
-            color: getColorForGenre('horror'),
-            aiModel: 'anthropic/claude-3-5-sonnet',
-            modelDescription: 'Claude 3.5 Sonnet - Excellent for psychological horror and atmospheric tension'
-          },
-          {
-            id: 'portal-rattmann',
-            title: 'Portal: Rattmann\'s Descent',
-            description: 'Navigate through Aperture Science\'s testing chambers with the help of your trusty portal gun.',
-            genre: 'Sci-Fi',
-            difficulty: 'Medium',
-            icon: getIconForGenre('sci-fi'),
-            color: getColorForGenre('sci-fi'),
-            aiModel: 'anthropic/claude-3-5-sonnet',
-            modelDescription: 'Claude 3.5 Sonnet - Excellent for complex sci-fi concepts and futuristic dialogue'
-          },
-          {
-            id: 'pokemon-legends-olympus',
-            title: 'Pokémon Legends: Olympus',
-            description: 'Explore the ancient world of Olympus where Pokémon and Greek mythology intertwine.',
-            genre: 'Adventure',
-            difficulty: 'Easy',
-            icon: getIconForGenre('adventure'),
-            color: getColorForGenre('adventure'),
-            aiModel: 'anthropic/claude-3-5-sonnet',
-            modelDescription: 'Claude 3.5 Sonnet - Excellent for epic fantasy world-building and character arcs'
-          }
-        ])
-        setIsLoading(false)
-      })
+    setIsVisible(true)
+    fetchCartridges()
   }, [])
 
-  const handleCartridgeClick = (cartridgeId: string) => {
-    setSelectedCartridge(cartridgeId)
+  const fetchCartridges = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/game-prompts')
+      if (!response.ok) {
+        throw new Error('Failed to fetch game cartridges')
+      }
+      const data = await response.json()
+      setCartridges(data)
+    } catch (err) {
+      console.error('Error fetching cartridges:', err)
+      setError('Failed to load game cartridges')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getColorForGenre = (genre: string) => {
+    const colors: { [key: string]: string } = {
+      'Horror': 'border-red-500 hover:border-red-400',
+      'Fantasy': 'border-purple-500 hover:border-purple-400',
+      'Sci-Fi': 'border-blue-500 hover:border-blue-400',
+      'Adventure': 'border-green-500 hover:border-green-400',
+      'Mystery': 'border-yellow-500 hover:border-yellow-400',
+      'Comedy': 'border-pink-500 hover:border-pink-400',
+      'Action': 'border-orange-500 hover:border-orange-400',
+      'Drama': 'border-indigo-500 hover:border-indigo-400',
+      'Thriller': 'border-red-600 hover:border-red-500',
+      'Romance': 'border-rose-500 hover:border-rose-400'
+    }
+    return colors[genre] || 'border-console-accent hover:border-green-400'
+  }
+
+  const getDifficultyColor = (difficulty: string) => {
+    const colors: { [key: string]: string } = {
+      'Easy': 'text-green-400',
+      'Medium': 'text-yellow-400',
+      'Hard': 'text-red-400',
+      'Expert': 'text-purple-400'
+    }
+    return colors[difficulty] || 'text-console-text'
+  }
+
+  const handleCartridgeClick = (cartridge: GamePrompt) => {
+    setSelectedCartridge(cartridge)
   }
 
   const handleStartGame = () => {
     if (selectedCartridge) {
-      onSelect(selectedCartridge)
+      onCartridgeSelect(selectedCartridge.id)
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-gaming text-console-accent mb-2">
-          INSERT CARTRIDGE
-        </h2>
-        <p className="text-console-text-dim">
-          Select a game cartridge to begin your adventure
-        </p>
-      </div>
+  const handleBack = () => {
+    if (onBack) {
+      onBack()
+    }
+  }
 
-      {isLoading ? (
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-console-accent"></div>
-          <p className="text-console-text-dim mt-2">Loading game cartridges...</p>
+  // Carousel settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 4000,
+    pauseOnHover: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1
+        }
+      }
+    ]
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-console-dark flex items-center justify-center">
+        <LoadingSpinner 
+          message="Loading Game Cartridges..." 
+          variant="gaming"
+          size="lg"
+        />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-console-dark flex items-center justify-center">
+        <div className="console-panel text-center">
+          <h2 className="text-2xl font-gaming text-red-400 mb-4">Error Loading Games</h2>
+          <p className="text-console-text mb-6">{error}</p>
+          <button 
+            onClick={fetchCartridges}
+            className="console-button-primary"
+          >
+            Try Again
+          </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {cartridges.map((cartridge) => (
-            <div
-              key={cartridge.id}
-              onClick={() => handleCartridgeClick(cartridge.id)}
-              className={`cartridge-slot ${cartridge.color} ${
-                selectedCartridge === cartridge.id ? 'cartridge-active' : ''
-              }`}
-            >
-              <div className="flex flex-col items-center space-y-3">
-                <div className="text-console-accent">
-                  {cartridge.icon}
-                </div>
-                <div className="text-center">
-                  <h3 className="font-gaming font-bold text-console-text">
-                    {cartridge.title}
-                  </h3>
-                  <p className="text-xs text-console-text-dim mt-1">
-                    {cartridge.genre} • {cartridge.difficulty}
-                  </p>
-                  <p className="text-xs text-console-text-dim mt-2">
-                    {cartridge.description}
-                  </p>
-                  
-                  {/* AI Model Information */}
-                  <div className="mt-3 p-2 bg-console-dark rounded border border-console-border">
-                    <div className="flex items-center justify-center space-x-1 mb-1">
-                      <Cpu className="w-3 h-3 text-console-accent" />
-                      <span className="text-xs text-console-accent font-gaming">AI MODEL</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`min-h-screen bg-console-dark transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Header */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            {onBack && (
+              <button
+                onClick={handleBack}
+                className="console-button-secondary flex items-center space-x-2"
+              >
+                <ArrowLeft size={20} />
+                <span>Back</span>
+              </button>
+            )}
+            <div className="flex items-center space-x-3">
+              <Gamepad2 className="text-console-accent" size={32} />
+              <h1 className="text-4xl font-gaming text-console-accent">Game Cartridges</h1>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-console-text font-console">Available Games: {cartridges.length}</p>
+            <p className="text-console-text-dim text-sm">Select your adventure</p>
+          </div>
+        </div>
+
+        {/* Carousel Container */}
+        <div className="relative mb-12">
+          <Slider {...sliderSettings} className="game-carousel">
+            {cartridges.map((cartridge, index) => (
+              <div key={cartridge.id} className="px-4">
+                <div 
+                  className={`cartridge-slot ${getColorForGenre(cartridge.genre)} ${
+                    selectedCartridge?.id === cartridge.id ? 'cartridge-active' : ''
+                  } transition-all duration-300 transform hover:scale-105`}
+                  onClick={() => handleCartridgeClick(cartridge)}
+                >
+                  {/* Selection Indicator */}
+                  {selectedCartridge?.id === cartridge.id && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <CheckCircle className="text-console-accent" size={24} />
                     </div>
-                    <p className="text-xs text-console-text-dim text-center">
-                      {cartridge.aiModel.split('/').pop()}
+                  )}
+
+                  {/* Cartridge Content */}
+                  <div className="space-y-4">
+                    {/* Icon */}
+                    <div className="flex justify-center">
+                      <Gamepad2 className="text-console-accent" size={48} />
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-gaming font-bold text-console-accent">
+                      {cartridge.title}
+                    </h3>
+
+                    {/* Genre & Difficulty */}
+                    <div className="flex justify-center space-x-2">
+                      <span className={`bg-console-darker px-2 py-1 rounded text-xs font-console ${getColorForGenre(cartridge.genre).replace('border-', 'text-').replace(' hover:border-', '')}`}>
+                        {cartridge.genre}
+                      </span>
+                      <span className={`bg-console-darker px-2 py-1 rounded text-xs font-console ${getDifficultyColor(cartridge.difficulty)}`}>
+                        {cartridge.difficulty}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-console-text text-sm font-console leading-relaxed">
+                      {cartridge.description.length > 120 
+                        ? `${cartridge.description.substring(0, 120)}...` 
+                        : cartridge.description
+                      }
                     </p>
-                    <p className="text-xs text-console-text-dim text-center mt-1">
-                      {cartridge.modelDescription.split(' - ')[1]}
-                    </p>
+
+                    {/* AI Model Info */}
+                    <div className="flex items-center justify-center space-x-2 text-xs text-console-text-dim">
+                      <Cpu size={14} />
+                      <span className="font-console">AI: {cartridge.aiModel}</span>
+                    </div>
+
+                    {/* Themes */}
+                    <div className="flex flex-wrap justify-center gap-1">
+                      {cartridge.themes.slice(0, 3).map((theme, idx) => (
+                        <span 
+                          key={idx} 
+                          className="bg-console-accent/20 text-console-accent text-xs px-2 py-1 rounded"
+                        >
+                          {theme}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </Slider>
         </div>
-      )}
 
-      {selectedCartridge && (
-        <div className="text-center animate-fade-in">
-          <button
-            onClick={handleStartGame}
-            className="console-button-primary flex items-center space-x-2 mx-auto"
-          >
-            <Play className="w-4 h-4" />
-            <span>START GAME</span>
-          </button>
+        {/* Selection Summary */}
+        {selectedCartridge && (
+          <div className="console-panel mb-8 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Star className="text-console-accent" size={24} />
+                  <h3 className="text-2xl font-gaming text-console-accent">
+                    Selected: {selectedCartridge.title}
+                  </h3>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-console-text font-console">
+                    Genre: <span className="text-console-accent">{selectedCartridge.genre}</span>
+                  </p>
+                  <p className="text-console-text font-console">
+                    Difficulty: <span className={getDifficultyColor(selectedCartridge.difficulty)}>{selectedCartridge.difficulty}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={handleStartGame}
+                  className="console-button-primary flex items-center space-x-2 animate-pulse-glow"
+                >
+                  <Play size={20} />
+                  <span>START GAME</span>
+                  <Zap size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Instructions */}
+        <div className="text-center">
+          <p className="text-console-text-dim font-console">
+            Click on a cartridge to select it, then press START GAME to begin your adventure
+          </p>
         </div>
-      )}
+      </div>
+
+      {/* Custom Carousel Styles */}
+      <style jsx global>{`
+        .game-carousel .slick-dots {
+          bottom: -40px;
+        }
+        
+        .game-carousel .slick-dots li button:before {
+          color: #00ff41;
+          opacity: 0.5;
+        }
+        
+        .game-carousel .slick-dots li.slick-active button:before {
+          color: #00ff41;
+          opacity: 1;
+        }
+        
+        .game-carousel .slick-prev,
+        .game-carousel .slick-next {
+          color: #00ff41;
+          z-index: 10;
+        }
+        
+        .game-carousel .slick-prev:hover,
+        .game-carousel .slick-next:hover {
+          color: #00ff88;
+        }
+        
+        .game-carousel .slick-track {
+          display: flex;
+          align-items: stretch;
+        }
+        
+        .game-carousel .slick-slide {
+          height: auto;
+        }
+        
+        .game-carousel .slick-slide > div {
+          height: 100%;
+        }
+      `}</style>
     </div>
   )
 } 

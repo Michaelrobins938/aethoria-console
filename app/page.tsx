@@ -5,14 +5,16 @@ import { AIChat } from '@/components/AIChat'
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
 import { HeroSection } from '@/components/HeroSection'
+import { LoadingOverlay } from '@/components/LoadingSpinner'
 import { FeaturesSection } from '@/components/FeaturesSection'
 import { CharacterCreator } from '@/components/CharacterCreator'
-import { Character } from '@/lib/types'
+import { Character, GamePrompt } from '@/lib/types'
 import { ArrowUp, Gamepad2, Users, BookOpen, Mail } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
 
 export default function Home() {
   const [selectedCartridge, setSelectedCartridge] = useState<string | null>(null)
+  const [gamePrompt, setGamePrompt] = useState<GamePrompt | null>(null)
   const [isGameActive, setIsGameActive] = useState(false)
   const [showIntro, setShowIntro] = useState(true)
   const [showCharacterCreator, setShowCharacterCreator] = useState(false)
@@ -42,15 +44,29 @@ export default function Home() {
     setError(null)
     
     try {
+      // Fetch the game prompt
+      const response = await fetch(`/api/game-prompts/${cartridgeId}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch game prompt')
+      }
+      const prompt: GamePrompt = await response.json()
+      setGamePrompt(prompt)
+      
       await initializeSession(cartridgeId)
       setShowCharacterCreator(true)
     } catch (error) {
       console.error('Failed to initialize AI session:', error)
       setError('Failed to initialize game session. Please try again.')
-      setShowCharacterCreator(true) // Still allow character creation
     } finally {
       setIsInitializing(false)
     }
+  }
+
+  const handleBackToCartridges = () => {
+    setShowCharacterCreator(false)
+    setSelectedCartridge(null)
+    setCharacter(null)
+    setIsGameActive(false)
   }
 
   const handleCharacterComplete = (newCharacter: Character) => {
@@ -155,18 +171,18 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-console-dark">
         {isInitializing && (
-          <div className="fixed inset-0 bg-console-dark/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="console-panel text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-console-accent mx-auto mb-4"></div>
-              <h3 className="text-xl font-gaming text-console-accent mb-2">Initializing AI</h3>
-              <p className="text-console-text-dim">Loading game world and preparing your adventure...</p>
-            </div>
-          </div>
+          <LoadingOverlay 
+            message="Initializing AI - Loading game world and preparing your adventure..." 
+            variant="gaming" 
+          />
         )}
-        <CharacterCreator 
-          onComplete={handleCharacterComplete}
-          onBack={handleCharacterBack}
-        />
+                    {gamePrompt && (
+              <CharacterCreator
+                onComplete={handleCharacterComplete}
+                onBack={handleCharacterBack}
+                gamePrompt={gamePrompt}
+              />
+            )}
       </main>
     )
   }
@@ -187,18 +203,13 @@ export default function Home() {
     <main className="min-h-screen bg-console-dark">
       <Header onNavigate={handleNavigation} />
       
-      {/* Debug indicator - remove in production */}
-      <div className="fixed top-20 left-4 z-50 bg-console-darker p-2 rounded border border-console-accent text-xs">
-        Current: {currentSection}
-      </div>
-      
       {error && (
-        <div className="fixed top-20 right-4 z-50 bg-red-900 p-4 rounded border border-red-500 text-white max-w-sm">
-          <h3 className="font-bold mb-2">Error</h3>
-          <p className="text-sm">{error}</p>
+        <div className="fixed top-20 right-4 z-50 bg-red-900/90 backdrop-blur-sm p-4 rounded-lg border border-red-500 text-white max-w-sm animate-slide-in-right">
+          <h3 className="font-bold mb-2 font-gaming">ERROR</h3>
+          <p className="text-sm font-console">{error}</p>
           <button 
             onClick={() => setError(null)}
-            className="mt-2 text-xs bg-red-700 px-2 py-1 rounded hover:bg-red-600"
+            className="mt-2 text-xs bg-red-700 px-3 py-1 rounded hover:bg-red-600 transition-colors duration-300"
           >
             Dismiss
           </button>
@@ -225,12 +236,12 @@ export default function Home() {
                 <h2 className="text-4xl md:text-6xl font-gaming font-bold text-glow mb-6">
                   GAME WORLDS
                 </h2>
-                <p className="text-xl text-console-text-dim max-w-3xl mx-auto leading-relaxed">
+                <p className="text-xl text-console-text-dim max-w-3xl mx-auto leading-relaxed font-console">
                   Choose from over 100 unique adventures across fantasy, horror, sci-fi, and more.
                 </p>
               </div>
               
-              <CartridgeSelector onSelect={handleCartridgeSelect} />
+              <CartridgeSelector onCartridgeSelect={handleCartridgeSelect} onBack={handleBackToCartridges} />
             </div>
           </section>
 
@@ -242,7 +253,7 @@ export default function Home() {
                 <h2 className="text-4xl md:text-6xl font-gaming font-bold text-glow mb-6">
                   ABOUT AETHORIA
                 </h2>
-                <p className="text-xl text-console-text-dim max-w-4xl mx-auto leading-relaxed">
+                <p className="text-xl text-console-text-dim max-w-4xl mx-auto leading-relaxed font-console">
                   Aethoria represents the future of interactive storytelling, combining cutting-edge AI technology 
                   with immersive gaming experiences.
                 </p>
@@ -254,12 +265,12 @@ export default function Home() {
                     <h3 className="text-2xl font-gaming font-bold text-console-accent mb-6">
                       Our Mission
                     </h3>
-                    <p className="text-console-text leading-relaxed mb-6">
+                    <p className="text-console-text leading-relaxed mb-6 font-console">
                       To revolutionize storytelling by creating dynamic, AI-powered narratives that adapt to 
                       each player's unique choices and playstyle. We believe that the best stories are those 
                       that are lived, not just told.
                     </p>
-                    <p className="text-console-text leading-relaxed">
+                    <p className="text-console-text leading-relaxed font-console">
                       Aethoria combines the creativity of human imagination with the computational power of 
                       artificial intelligence to create gaming experiences that are truly one-of-a-kind.
                     </p>
@@ -272,31 +283,31 @@ export default function Home() {
                       Technology
                     </h3>
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-console-accent to-green-500 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center space-x-4 group">
+                        <div className="w-12 h-12 bg-gradient-to-br from-console-accent to-console-accent-dark rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Gamepad2 className="w-6 h-6 text-console-dark" />
                         </div>
                         <div>
                           <h4 className="font-gaming font-bold text-console-text">Next.js 14</h4>
-                          <p className="text-sm text-console-text-dim">Modern React Framework</p>
+                          <p className="text-sm text-console-text-dim font-console">Modern React Framework</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center space-x-4 group">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Users className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h4 className="font-gaming font-bold text-console-text">OpenRouter AI</h4>
-                          <p className="text-sm text-console-text-dim">Advanced AI Models</p>
+                          <p className="text-sm text-console-text-dim font-console">Advanced AI Models</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center space-x-4 group">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <BookOpen className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <h4 className="font-gaming font-bold text-console-text">Web Speech API</h4>
-                          <p className="text-sm text-console-text-dim">Voice Interaction</p>
+                          <p className="text-sm text-console-text-dim font-console">Voice Interaction</p>
                         </div>
                       </div>
                     </div>
@@ -313,7 +324,7 @@ export default function Home() {
                 <h2 className="text-4xl md:text-6xl font-gaming font-bold text-glow mb-6">
                   GET IN TOUCH
                 </h2>
-                <p className="text-xl text-console-text-dim max-w-2xl mx-auto leading-relaxed">
+                <p className="text-xl text-console-text-dim max-w-2xl mx-auto leading-relaxed font-console">
                   Have questions, suggestions, or want to join our community? We'd love to hear from you.
                 </p>
               </div>
@@ -325,22 +336,22 @@ export default function Home() {
                       Contact Information
                     </h3>
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-console-accent to-green-500 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center space-x-4 group">
+                        <div className="w-10 h-10 bg-gradient-to-br from-console-accent to-console-accent-dark rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Mail className="w-5 h-5 text-console-dark" />
                         </div>
                         <div>
                           <h4 className="font-gaming font-bold text-console-text">Email</h4>
-                          <p className="text-sm text-console-text-dim">contact@aethoria.com</p>
+                          <p className="text-sm text-console-text-dim font-console">contact@aethoria.com</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center space-x-4 group">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Users className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <h4 className="font-gaming font-bold text-console-text">Discord</h4>
-                          <p className="text-sm text-console-text-dim">Join our community</p>
+                          <p className="text-sm text-console-text-dim font-console">Join our community</p>
                         </div>
                       </div>
                     </div>
@@ -381,17 +392,17 @@ export default function Home() {
         </>
       ) : (
         <div className="pt-20">
-          <CartridgeSelector onSelect={handleCartridgeSelect} />
+                      <CartridgeSelector onCartridgeSelect={handleCartridgeSelect} onBack={handleBackToCartridges} />
         </div>
       )}
 
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-8 right-8 console-button p-3 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 z-40"
+        className="fixed bottom-8 right-8 console-button p-3 rounded-full shadow-console hover:scale-110 transition-transform duration-300 z-40 group"
         title="Scroll to top"
       >
-        <ArrowUp className="w-6 h-6" />
+        <ArrowUp className="w-6 h-6 group-hover:text-console-accent transition-colors duration-300" />
       </button>
     </main>
   )
