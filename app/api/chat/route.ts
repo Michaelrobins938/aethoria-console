@@ -48,6 +48,40 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Process messages to handle attachments
+    const processedMessages = messages.map((msg: any) => {
+      if (msg.role === "user" && msg.content && Array.isArray(msg.content)) {
+        // Handle messages with attachments
+        const textParts = msg.content.filter((part: any) => part.type === "text").map((part: any) => part.text).join("\n");
+        const imageParts = msg.content.filter((part: any) => part.type === "image");
+        
+        if (imageParts.length > 0) {
+          // Format for vision-capable models
+          return {
+            role: "user",
+            content: [
+              { type: "text", text: textParts },
+              ...imageParts.map((part: any) => ({
+                type: "image_url",
+                image_url: { url: part.image }
+              }))
+            ]
+          };
+        } else {
+          return {
+            role: msg.role,
+            content: textParts
+          };
+        }
+      }
+      
+      // Regular text messages
+      return {
+        role: msg.role,
+        content: typeof msg.content === 'string' ? msg.content : msg.content?.filter((part: any) => part.type === "text").map((part: any) => part.text).join("\n") || ""
+      };
+    });
+
     // Create a system message that includes game context
     const systemMessage = {
       role: "system" as const,
@@ -78,6 +112,8 @@ IMPORTANT GUIDELINES:
 6. Respond in a conversational, immersive style
 7. Use the character's stats and abilities when relevant
 8. Maintain consistency with the game's established lore and mechanics
+9. If the player uploads images, describe what you see and incorporate it into the game narrative
+10. If the player uploads character sheets or documents, use that information to enhance the game
 
 Begin the adventure and respond to the player's actions accordingly.`
     };
@@ -258,7 +294,7 @@ Begin the adventure and respond to the player's actions accordingly.`
       },
       body: JSON.stringify({
         model: selectedModel,
-        messages: [systemMessage, ...messages],
+        messages: [systemMessage, ...processedMessages],
         tools: Object.entries(gameTools).map(([name, tool]) => ({
           type: "function",
           function: {
