@@ -76,7 +76,7 @@ export interface Quest {
   maxProgress: number
 }
 
-export type QuestStatus = 'not_started' | 'active' | 'completed' | 'failed'
+export type QuestStatus = 'not_started' | 'active' | 'in_progress' | 'completed' | 'failed'
 export type QuestType = 'main' | 'side' | 'bounty' | 'guild' | 'exploration'
 
 export interface QuestObjective {
