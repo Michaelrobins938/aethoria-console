@@ -5,23 +5,5 @@
       "src": "package.json",
       "use": "@vercel/next"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "functions": {
-    "app/page.tsx": {
-      "maxDuration": 30
-    },
-    "app/assistant-ui/page.tsx": {
-      "maxDuration": 30
-    }
-  }
+  ]
 } 

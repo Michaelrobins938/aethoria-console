@@ -13,11 +13,19 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default function RootLayout({
+// Force server-side rendering
+async function getTimestamp() {
+  return { timestamp: Date.now() }
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Force server-side rendering
+  await getTimestamp()
+  
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>
