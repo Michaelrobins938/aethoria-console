@@ -1,10 +1,17 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
+const inter = Inter({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: 'Aethoria Console - Universal AI Gaming Platform',
-  description: 'The first AI-powered universal gaming console. Insert cartridges, start playing with voice commands.',
+  title: 'Aethoria AI Gaming Console',
+  description: 'AI-powered interactive storytelling and gaming platform',
 }
+
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function RootLayout({
   children,
@@ -13,9 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 } 

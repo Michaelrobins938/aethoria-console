@@ -15,5 +15,13 @@
       "src": "/(.*)",
       "dest": "/"
     }
-  ]
+  ],
+  "functions": {
+    "app/page.tsx": {
+      "maxDuration": 30
+    },
+    "app/assistant-ui/page.tsx": {
+      "maxDuration": 30
+    }
+  }
 } 
