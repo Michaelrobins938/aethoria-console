@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     console.log('- All env vars:', Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER')))
 
     // Try to use the actual OpenRouter API
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY || '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';
     
     if (!apiKey) {
       console.log('No API key found, returning test response');
