@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const maxDuration = 30;
 
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
+}
+
 export async function POST(req: NextRequest) {
   try {
     console.log('=== CHAT API CALLED ===')
@@ -33,7 +44,7 @@ export async function POST(req: NextRequest) {
     console.log('Sending test response:', testResponse)
 
     // Return a simple JSON response instead of streaming for now
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: testResponse,
       debug: {
@@ -46,7 +57,14 @@ export async function POST(req: NextRequest) {
           vercelEnv: process.env.VERCEL_ENV
         }
       }
-    })
+    }, { status: 200 })
+    
+    // Add CORS headers
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type')
+    
+    return response
 
   } catch (error) {
     console.error('Chat API error:', error)
