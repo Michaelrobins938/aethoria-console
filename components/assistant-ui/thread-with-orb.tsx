@@ -27,6 +27,7 @@ interface Message {
   content: string | Array<{ type: 'text' | 'image'; text?: string; image?: string }>;
   timestamp: number;
   attachments?: any[];
+  audio?: string; // Add audio field for ElevenLabs audio data
 }
 
 interface GameState {
@@ -126,7 +127,7 @@ export function ThreadWithOrb() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(true); // Enable voice output by default
   const [recognition, setRecognition] = useState<any>(null);
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
 
@@ -230,7 +231,8 @@ export function ThreadWithOrb() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: responseData.message.content,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        audio: responseData.audio // Store the ElevenLabs audio data
       };
 
       // Add the AI message to the state
@@ -239,12 +241,17 @@ export function ThreadWithOrb() {
         messages: [...prev.messages, aiMessage]
       }));
 
-      // Speak the response if enabled
-      if (synthesis && isSpeaking) {
-        const utterance = new SpeechSynthesisUtterance(responseData.message.content);
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        synthesis.speak(utterance);
+      // Play ElevenLabs audio if available
+      if (responseData.audio && isSpeaking) {
+        try {
+          const audio = new Audio(responseData.audio);
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          audio.play();
+        } catch (error) {
+          console.error('Failed to play audio:', error);
+          setIsSpeaking(false);
+        }
       }
 
       saveGameState({
@@ -284,23 +291,27 @@ export function ThreadWithOrb() {
   };
 
   const toggleVoiceOutput = () => {
-    if (!synthesis) return;
-
     if (isSpeaking) {
-      synthesis.cancel();
       setIsSpeaking(false);
     } else {
       setIsSpeaking(true);
-      // Speak the last AI message
+      // Play the last AI message audio if available
       const lastAIMessage = gameState.messages
         .filter(m => m.role === 'assistant')
         .pop();
       
-      if (lastAIMessage) {
-        const utterance = new SpeechSynthesisUtterance(lastAIMessage.content as string);
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        synthesis.speak(utterance);
+      if (lastAIMessage && lastAIMessage.audio) {
+        try {
+          const audio = new Audio(lastAIMessage.audio);
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          audio.play();
+        } catch (error) {
+          console.error('Failed to play audio:', error);
+          setIsSpeaking(false);
+        }
+      } else {
+        setIsSpeaking(false);
       }
     }
   };
