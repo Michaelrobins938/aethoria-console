@@ -1,0 +1,291 @@
+NARRATOR ORB INTEGRATION GUIDE
+==============================
+
+🎮 OVERVIEW
+===========
+
+The NarratorOrb is a sophisticated 3D nebula-style particle system that provides real-time visual feedback for AI interactions in the Aethoria game. It creates an immersive, reactive background that responds to voice input, AI processing, and game events.
+
+🏗️ ARCHITECTURE
+===============
+
+COMPONENTS:
+- NarratorOrb.tsx: React component wrapper for the 3D orb
+- useNarratorOrb.ts: Custom hook for state management
+- AIChat.tsx: Enhanced with orb integration
+- Demo page: /narrator-orb-demo for testing
+
+TECHNICAL STACK:
+- Three.js for 3D rendering
+- WebGL shaders for nebula effects
+- Web Speech API for audio reactivity
+- React hooks for state management
+- TypeScript for type safety
+
+🎯 FEATURES
+===========
+
+1. REAL-TIME AUDIO REACTIVITY
+   - Responds to voice input levels
+   - Dynamic particle size and color changes
+   - Smooth audio level transitions
+   - Background noise filtering
+
+2. AI INTERACTION FEEDBACK
+   - Pulsing during AI thinking
+   - Color shifts during message processing
+   - Intensity changes for different states
+   - Smooth state transitions
+
+3. VISUAL EFFECTS
+   - Nebula-style particle system
+   - Flowing tendrils and wisps
+   - Dynamic color gradients
+   - Breathing animations
+   - Audio-reactive scaling
+
+4. PERFORMANCE OPTIMIZATION
+   - Efficient particle rendering
+   - GPU-accelerated shaders
+   - Responsive frame rates
+   - Memory management
+
+🎨 VISUAL DESIGN
+===============
+
+COLOR SCHEME:
+- Core: Cyan to blue gradients
+- Tendrils: Magenta to pink wisps
+- Audio reactive: Dynamic intensity
+- State changes: Color temperature shifts
+
+ANIMATION STYLES:
+- Organic flowing motion
+- Nebula density variations
+- Audio-reactive scaling
+- Breathing cycles
+- Particle clustering
+
+EFFECTS:
+- Additive blending for glow
+- Depth-based transparency
+- Noise-based organic shapes
+- Fractal Brownian Motion
+- Curl noise for tendrils
+
+⚙️ INTEGRATION
+==============
+
+HOOK USAGE:
+```typescript
+import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
+
+const { orbState, handleMessageActivity, handleAIThinking, handleAIResponse } = useNarratorOrb()
+```
+
+COMPONENT INTEGRATION:
+```typescript
+import { NarratorOrbComponent } from '@/components/NarratorOrb'
+
+<NarratorOrbComponent 
+  isVisible={true}
+  intensity={orbState.intensity}
+  audioLevel={orbState.audioLevel}
+  className="absolute inset-0"
+/>
+```
+
+STATE MANAGEMENT:
+```typescript
+interface NarratorOrbState {
+  intensity: number      // Visual brightness (0.5 - 2.0)
+  audioLevel: number     // Audio reactivity (0.1 - 1.0)
+  isActive: boolean      // General activity state
+  isThinking: boolean    // AI processing state
+  isSpeaking: boolean    // Voice output state
+  isListening: boolean   // Voice input state
+}
+```
+
+🎯 RESPONSE PATTERNS
+===================
+
+VOICE INPUT:
+- Intensity: 1.3 (moderate glow)
+- Audio Level: 0.6 (responsive)
+- Color: Enhanced cyan/purple
+- Animation: Flowing tendrils
+
+AI THINKING:
+- Intensity: 1.8 (bright glow)
+- Audio Level: 0.8 (high activity)
+- Color: Bright cyan core
+- Animation: Pulsing nebula
+
+AI RESPONSE:
+- Intensity: 1.2 (steady glow)
+- Audio Level: 0.4 (moderate)
+- Color: Balanced gradients
+- Animation: Smooth transitions
+
+IDLE STATE:
+- Intensity: 1.0 (base glow)
+- Audio Level: 0.2 (minimal)
+- Color: Subtle gradients
+- Animation: Gentle breathing
+
+🔧 CONFIGURATION
+===============
+
+PARTICLE COUNTS:
+- Core particles: 3000-4000
+- Tendril particles: 2000-3000
+- Adjustable for performance
+
+RADIUS SETTINGS:
+- Core radius: 1.0-1.2
+- Tendril radius: 2.5-3.5
+- Scale with screen size
+
+AUDIO SETTINGS:
+- FFT size: 256 (frequency bins)
+- Update rate: 60fps
+- Smoothing: 0.2 (lerp factor)
+
+PERFORMANCE TUNING:
+- Particle count reduction for mobile
+- Shader complexity adjustment
+- Frame rate limiting
+- Memory cleanup
+
+🎮 GAME INTEGRATION
+==================
+
+AI CHAT ENHANCEMENT:
+- Visual feedback for typing
+- Audio reactivity for voice
+- State transitions for responses
+- Error state handling
+
+VOICE COMMANDS:
+- "send" - Triggers message send
+- "clear" - Clears input
+- "help" - Shows commands
+- Custom command support
+
+ACCESSIBILITY:
+- Reduced motion option
+- Color blind friendly
+- Screen reader support
+- Keyboard navigation
+
+📊 PERFORMANCE METRICS
+=====================
+
+TARGET FRAME RATES:
+- Desktop: 60fps
+- Mobile: 30fps
+- Low-end: 15fps
+
+MEMORY USAGE:
+- Base: ~50MB
+- Peak: ~100MB
+- Cleanup: Automatic
+
+LOADING TIMES:
+- Initial: <2 seconds
+- Shader compilation: <1 second
+- Audio setup: <500ms
+
+🎯 DEVELOPMENT ROADMAP
+=====================
+
+PHASE 1: CORE INTEGRATION ✅
+- Basic orb rendering
+- Audio reactivity
+- State management
+- Component integration
+
+PHASE 2: ENHANCED FEATURES 🔄
+- Advanced shader effects
+- Multiple orb types
+- Custom color schemes
+- Performance optimization
+
+PHASE 3: GAME INTEGRATION 📋
+- Combat reactivity
+- Quest completion effects
+- Character interaction feedback
+- World event responses
+
+PHASE 4: ADVANCED FEATURES 📋
+- Multi-orb systems
+- Synchronized effects
+- Custom particle shapes
+- Advanced audio analysis
+
+🚀 USAGE EXAMPLES
+=================
+
+BASIC INTEGRATION:
+```typescript
+// In your component
+const { orbState } = useNarratorOrb()
+
+return (
+  <div className="relative">
+    <NarratorOrbComponent 
+      intensity={orbState.intensity}
+      audioLevel={orbState.audioLevel}
+    />
+    <YourContent />
+  </div>
+)
+```
+
+CUSTOM REACTIONS:
+```typescript
+// Custom event handling
+const handleCustomEvent = () => {
+  handleMessageActivity()
+  // Orb will react to the event
+}
+```
+
+AUDIO INTEGRATION:
+```typescript
+// Audio level monitoring
+const handleAudioLevel = (level: number) => {
+  handleVoiceActivity(level)
+  // Orb responds to audio input
+}
+```
+
+🎯 BEST PRACTICES
+================
+
+PERFORMANCE:
+- Monitor frame rates
+- Adjust particle counts
+- Clean up resources
+- Use efficient shaders
+
+ACCESSIBILITY:
+- Provide alternatives
+- Support reduced motion
+- Test with screen readers
+- Ensure keyboard navigation
+
+USER EXPERIENCE:
+- Smooth transitions
+- Responsive feedback
+- Clear state indicators
+- Intuitive interactions
+
+MAINTENANCE:
+- Regular performance checks
+- Shader optimization
+- Memory leak prevention
+- Cross-browser testing
+
+This integration provides a sophisticated visual feedback system that enhances the AI storytelling experience while maintaining performance and accessibility standards. 

@@ -121,7 +121,7 @@ export function Inventory({ isOpen, onClose }: InventoryProps) {
 
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
-    let filtered = inventoryItems.filter(item => {
+    const filtered = inventoryItems.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            item.description.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesType = selectedType === 'all' || item.type === selectedType

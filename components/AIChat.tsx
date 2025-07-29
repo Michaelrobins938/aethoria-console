@@ -1,519 +1,309 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
-import { useChat } from '@ai-sdk/react'
-import { Send, Mic, MicOff, Volume2, VolumeX, Settings, Dice1, X, Cpu, Save, Package, BookOpen, User, Sword, Map, HelpCircle } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles, MessageSquare } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
-import { VoiceSynthesis } from './VoiceSynthesis'
-import { VoiceRecognition } from './VoiceRecognition'
-import { DieRoller } from './DieRoller'
-import { SaveManager } from './SaveManager'
-import { Inventory } from './Inventory'
-import { QuestLog } from './QuestLog'
-import { CharacterSheet } from './CharacterSheet'
-import { CombatSystem } from './CombatSystem'
-import { WorldMap } from './WorldMap'
-import { Settings as SettingsComponent } from './Settings'
-import { Help } from './Help'
-import { getModelForCartridge, getModelDescription } from '@/lib/ai'
-import { Character } from '@/lib/types'
+import { NarratorOrbComponent } from './NarratorOrb'
+import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
 
 interface AIChatProps {
-  cartridgeId: string
-  onGameEnd: () => void
-  character?: Character | null
+  onClose?: () => void
+  className?: string
 }
 
-export function AIChat({ cartridgeId, onGameEnd, character }: AIChatProps) {
-  const {
-    session,
-    worldState,
-    quests,
-    inventory,
-    combatState,
+export function AIChat({ onClose, className = '' }: AIChatProps) {
+  const [input, setInput] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  
+  const { orbState, handleMessageActivity, handleAIThinking, handleAIResponse } = useNarratorOrb()
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const recognitionRef = useRef<any>(null)
+  const synthesisRef = useRef<SpeechSynthesis | null>(null)
+  
+  const { 
+    messages, 
+    addMessage, 
+    sendMessage, 
+    isTyping: storeIsTyping,
     voiceState,
-    audioSettings,
-    setVoiceState,
-    setAudioSettings,
-    saveGame,
-    rollDice,
-    updateCharacter,
-    loadGame
+    audioSettings 
   } = useGameStore()
 
-  const [isDieRollerOpen, setIsDieRollerOpen] = useState(false)
-  const [isSaveManagerOpen, setIsSaveManagerOpen] = useState(false)
-  const [isInventoryOpen, setIsInventoryOpen] = useState(false)
-  const [isQuestLogOpen, setIsQuestLogOpen] = useState(false)
-  const [isCharacterSheetOpen, setIsCharacterSheetOpen] = useState(false)
-  const [isCombatSystemOpen, setIsCombatSystemOpen] = useState(false)
-  const [isWorldMapOpen, setIsWorldMapOpen] = useState(false)
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [isHelpOpen, setIsHelpOpen] = useState(false)
-  const [requestedRoll, setRequestedRoll] = useState<{
-    dice: string
-    modifier?: number
-    difficultyClass?: number
-    type: string
-  } | null>(null)
-  const [lastAIResponse, setLastAIResponse] = useState('')
-  const [voiceError, setVoiceError] = useState<string | null>(null)
-
-  // Get AI model information
-  const aiModel = getModelForCartridge(cartridgeId)
-  const modelDescription = getModelDescription(cartridgeId)
-
-  // Initialize character in store if provided
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
-    if (character && !session?.character) {
-      updateCharacter(character)
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Handle typing state changes
+  useEffect(() => {
+    setIsTyping(storeIsTyping)
+    if (storeIsTyping) {
+      handleAIThinking()
+    } else {
+      handleAIResponse()
     }
-  }, [character, session?.character, updateCharacter])
+  }, [storeIsTyping, handleAIThinking, handleAIResponse])
 
-  // Debug logging
-      // AIChat initialized
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition
+      recognitionRef.current = new SpeechRecognition()
+      
+      recognitionRef.current.continuous = false
+      recognitionRef.current.interimResults = true
+      recognitionRef.current.lang = 'en-US'
 
-  // Initialize chat with AI SDK
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-    onError: (error) => {
-      console.error('Chat error:', error)
-    },
-    api: '/api/game/process-input',
-    body: {
-      sessionId: session?.id || 'default-session',
-      cartridgeId,
-      gameState: {
-        character: character || {
-          name: 'Adventurer',
-          health: 100,
-          maxHealth: 100,
-          attack: 10,
-          defense: 5,
-          speed: 10,
-          level: 1,
-          experience: 0,
-          inventory: [],
-          skills: [],
-          statusEffects: {},
-          background: 'A mysterious traveler',
-          abilities: {
-            strength: 10,
-            dexterity: 10,
-            constitution: 10,
-            intelligence: 10,
-            wisdom: 10,
-            charisma: 10
-          }
-        },
-        worldState: worldState || {
-          location: 'Unknown',
-          timeOfDay: 'day',
-          weather: 'clear',
-          activeEvents: [],
-          npcStates: {},
-          discoveredLocations: [],
-          factionRelations: {},
-          worldEvents: []
-        },
-        quests: quests || [],
-        inventory: inventory || [],
-        combatState: combatState || null
+      recognitionRef.current.onstart = () => {
+        setIsListening(true)
       }
-    },
-    onFinish: (message) => {
-      // Store the last AI response for voice synthesis
-      if (message.role === 'assistant') {
-        setLastAIResponse(message.content)
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('')
+        
+        setInput(transcript)
+      }
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false)
+      }
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
       }
     }
-  })
 
-  const handleVoiceToggle = () => {
-    setVoiceState({ isListening: !voiceState.isListening })
-  }
-
-  const handleVoiceTranscript = (transcript: string) => {
-    // Auto-submit voice input
-    if (transcript.trim()) {
-      // Simulate typing the transcript
-      handleInputChange({ target: { value: transcript } } as React.ChangeEvent<HTMLInputElement>)
-      // Submit the form
-      handleSubmit({ preventDefault: () => {} } as React.FormEvent<HTMLFormElement>)
+    // Initialize speech synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      synthesisRef.current = window.speechSynthesis
     }
-  }
+  }, [])
 
-  const handleVoiceError = (error: string) => {
-    setVoiceError(error)
-    setTimeout(() => setVoiceError(null), 5000) // Clear error after 5 seconds
-  }
+  const handleSendMessage = async () => {
+    if (!input.trim() || isTyping) return
 
-  const handleAudioToggle = () => {
-    setAudioSettings({ voiceOutputEnabled: !audioSettings.voiceOutputEnabled })
-  }
-
-  const openDieRoller = (dice: string, type: string, modifier?: number, difficultyClass?: number) => {
-    setRequestedRoll({ dice, type, modifier, difficultyClass })
-    setIsDieRollerOpen(true)
-  }
-
-  const handleDieRoll = (result: number, dice: string, modifier: number, success: boolean, difficultyClass?: number) => {
-    const rollMessage = `🎲 Rolled ${dice} + ${modifier >= 0 ? '+' : ''}${modifier} = ${result + modifier}${difficultyClass ? ` (DC ${difficultyClass})` : ''} - ${success ? 'SUCCESS!' : 'FAILURE!'}`
+    const userMessage = input.trim()
+    setInput('')
     
-    // Close die roller
-    setIsDieRollerOpen(false)
-    setRequestedRoll(null)
+    // Add user message
+    addMessage({
+      id: Date.now().toString(),
+      type: 'user',
+      content: userMessage,
+      timestamp: new Date()
+    })
+
+    // Set orb to active state
+    handleMessageActivity()
+
+    try {
+      await sendMessage(userMessage)
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      addMessage({
+        id: (Date.now() + 1).toString(),
+        type: 'system',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date()
+      })
+    } finally {
+      // Orb state will be handled by the hook
+    }
   }
 
-  const handleLoadGame = (sessionId: string) => {
-    loadGame(sessionId)
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
+    }
   }
 
-  const handleNavigate = (locationId: string) => {
-    // TODO: Implement navigation logic
-    // Navigating to location
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) return
+
+    if (isListening) {
+      recognitionRef.current.stop()
+    } else {
+      recognitionRef.current.start()
+    }
+  }
+
+  const toggleVoiceOutput = () => {
+    if (!synthesisRef.current) return
+
+    if (isSpeaking) {
+      synthesisRef.current.cancel()
+      setIsSpeaking(false)
+    } else {
+      setIsSpeaking(true)
+      // Speak the last AI message
+      const lastAIMessage = messages
+        .filter(m => m.type === 'ai')
+        .pop()
+      
+      if (lastAIMessage) {
+        const utterance = new SpeechSynthesisUtterance(lastAIMessage.content)
+        utterance.onend = () => setIsSpeaking(false)
+        utterance.onerror = () => setIsSpeaking(false)
+        synthesisRef.current.speak(utterance)
+      }
+    }
+  }
+
+  const handleVoiceCommand = (command: string) => {
+    const lowerCommand = command.toLowerCase()
+    
+    if (lowerCommand.includes('send') || lowerCommand.includes('submit')) {
+      handleSendMessage()
+    } else if (lowerCommand.includes('clear') || lowerCommand.includes('reset')) {
+      setInput('')
+    } else if (lowerCommand.includes('help')) {
+      addMessage({
+        id: Date.now().toString(),
+        type: 'system',
+        content: 'Available voice commands: "send", "clear", "help"',
+        timestamp: new Date()
+      })
+    }
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Game Header */}
-      <div className="bg-console-darker border-b border-console-border p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-gaming text-console-accent">
-              {cartridgeId.replace('-', ' ').toUpperCase()}
-            </h2>
-            <div className="text-console-text-dim text-sm">
-              AI Status: <span className="text-console-accent">ACTIVE</span>
-            </div>
-            
-            {/* AI Model Information */}
-            <div className="flex items-center space-x-2 text-xs">
-              <Cpu className="w-3 h-3 text-console-accent" />
-              <span className="text-console-accent font-gaming">AI:</span>
-              <span className="text-console-text-dim">
-                {aiModel.split('/').pop()}
-              </span>
-            </div>
+    <div className={`ai-chat-container relative ${className}`}>
+             {/* NarratorOrb Background */}
+       <NarratorOrbComponent 
+         isVisible={true}
+         intensity={orbState.intensity}
+         audioLevel={orbState.audioLevel}
+         className="absolute inset-0"
+       />
+
+      {/* Chat Interface */}
+      <div className="relative z-20 flex flex-col h-full bg-black/20 backdrop-blur-sm rounded-lg border border-cyan-500/30">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-cyan-500/30">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-cyan-400" />
+            <h3 className="text-lg font-semibold text-cyan-400">AI Dungeon Master</h3>
           </div>
           
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setIsHelpOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Help & Tutorial"
+              onClick={toggleVoiceInput}
+              className={`p-2 rounded-lg transition-colors ${
+                isListening 
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                  : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30'
+              }`}
+              title={isListening ? 'Stop listening' : 'Start voice input'}
             >
-              <HelpCircle className="w-4 h-4" />
-              <span className="text-xs">Help</span>
-            </button>
-
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Settings"
-            >
-              <Settings className="w-4 h-4" />
-              <span className="text-xs">Settings</span>
-            </button>
-
-            <button
-              onClick={() => setIsSaveManagerOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Save/Load Game"
-            >
-              <Save className="w-4 h-4" />
-              <span className="text-xs">Save</span>
-            </button>
-
-            <button
-              onClick={() => setIsWorldMapOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="World Map"
-            >
-              <Map className="w-4 h-4" />
-              <span className="text-xs">Map</span>
-            </button>
-
-            <button
-              onClick={() => setIsCharacterSheetOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Character Sheet"
-            >
-              <User className="w-4 h-4" />
-              <span className="text-xs">Char</span>
-            </button>
-
-            <button
-              onClick={() => setIsQuestLogOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Quest Log"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span className="text-xs">Quests</span>
-              {quests.length > 0 && (
-                <span className="text-xs bg-console-accent text-console-dark px-1 rounded-full">
-                  {quests.length}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setIsInventoryOpen(true)}
-              className="console-button flex items-center space-x-2"
-              title="Inventory"
-            >
-              <Package className="w-4 h-4" />
-              <span className="text-xs">Items</span>
-              {inventory.length > 0 && (
-                <span className="text-xs bg-console-accent text-console-dark px-1 rounded-full">
-                  {inventory.length}
-                </span>
-              )}
-            </button>
-
-            {combatState && (
-              <button
-                onClick={() => setIsCombatSystemOpen(true)}
-                className="console-button flex items-center space-x-2 bg-red-900 hover:bg-red-800"
-                title="Combat System"
-              >
-                <Sword className="w-4 h-4" />
-                <span className="text-xs">Combat</span>
-                <span className="text-xs bg-red-600 text-white px-1 rounded-full animate-pulse">
-                  !
-                </span>
-              </button>
-            )}
-
-            <VoiceRecognition
-              isListening={voiceState.isListening}
-              onToggle={handleVoiceToggle}
-              onTranscript={handleVoiceTranscript}
-              onError={handleVoiceError}
-            />
-            
-            <VoiceSynthesis
-              text={lastAIResponse}
-              enabled={audioSettings.voiceOutputEnabled}
-              onToggle={(enabled) => setAudioSettings({ voiceOutputEnabled: enabled })}
-            />
-
-            <button
-              onClick={() => openDieRoller('d20', 'Manual Roll')}
-              className="console-button flex items-center space-x-2"
-            >
-              <Dice1 className="w-4 h-4" />
-              <span className="text-xs">Dice</span>
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
             
             <button
-              onClick={onGameEnd}
-              className="console-button"
+              onClick={toggleVoiceOutput}
+              className={`p-2 rounded-lg transition-colors ${
+                isSpeaking 
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+                  : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30'
+              }`}
+              title={isSpeaking ? 'Stop speaking' : 'Start voice output'}
             >
-              <X className="w-4 h-4" />
+              {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
           </div>
         </div>
-        
-        {/* Model Description */}
-        <div className="mt-2 text-xs text-console-text-dim">
-          {modelDescription}
-        </div>
 
-        {/* Voice Error Display */}
-        {voiceError && (
-          <div className="mt-2 p-2 bg-red-900 text-red-100 border border-red-500 rounded text-xs">
-            {voiceError}
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 flex">
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {error && (
-              <div className="flex justify-start">
-                <div className="bg-red-900 text-red-100 border border-red-500 rounded-lg p-3 max-w-[70%]">
-                  <div className="text-sm">
-                    <strong>Error:</strong> {error.message || 'Failed to connect to AI service'}
-                    <br />
-                    <span className="text-xs">Please check your API configuration in the environment variables.</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            {messages.map((message) => (
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Start your adventure by typing a message or using voice commands</p>
+            </div>
+          ) : (
+            messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
-                    message.role === 'user'
-                      ? 'bg-console-accent text-console-dark'
-                      : 'bg-console-darker text-console-text border border-console-border'
+                  className={`max-w-[80%] rounded-lg p-3 ${
+                    message.type === 'user'
+                      ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/30'
+                      : message.type === 'ai'
+                      ? 'bg-purple-500/20 text-purple-100 border border-purple-500/30'
+                      : 'bg-gray-500/20 text-gray-100 border border-gray-500/30'
                   }`}
                 >
-                  <div className="text-sm">{message.content}</div>
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.diceRolls && message.diceRolls.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-current/20">
+                      <p className="text-sm opacity-75">Dice Rolls:</p>
+                      {message.diceRolls.map((roll, index) => (
+                        <p key={index} className="text-xs">
+                          {roll.type}: {roll.result} {roll.success ? '✅' : '❌'}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-console-darker text-console-text border border-console-border rounded-lg p-3">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-100"></div>
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-200"></div>
-                  </div>
+            ))
+          )}
+          
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-purple-500/20 text-purple-100 border border-purple-500/30 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>AI is thinking...</span>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Chat Input */}
-          <div className="border-t border-console-border bg-console-darker p-4">
-            <form onSubmit={handleSubmit} className="flex space-x-2">
-              <input
-                type="text"
-                value={input}
-                onChange={handleInputChange}
-                placeholder="Type your action or speak..."
-                className="flex-1 bg-console-dark text-console-text border border-console-border rounded px-3 py-2 focus:outline-none focus:border-console-accent"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="console-button flex items-center space-x-2"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
         </div>
 
-        {/* Game State Panel */}
-        <div className="w-80 border-l border-console-border">
-          <div className="p-4">
-            <h3 className="font-gaming text-console-accent mb-4">Game State</h3>
-            <div className="space-y-4">
-              {character && (
-                <div className="console-card">
-                  <h4 className="font-gaming text-console-text mb-2">Character</h4>
-                  <div className="text-sm text-console-text-dim">
-                    <div>Name: {character.name}</div>
-                    <div>Health: {character.health}/{character.maxHealth}</div>
-                    <div>Level: {character.level}</div>
-                    <div>Attack: {character.attack}</div>
-                    <div>Defense: {character.defense}</div>
-                  </div>
-                </div>
-              )}
-              
-              {worldState && (
-                <div className="console-card">
-                  <h4 className="font-gaming text-console-text mb-2">World</h4>
-                  <div className="text-sm text-console-text-dim">
-                    <div>Location: {worldState.location}</div>
-                    <div>Time: {worldState.timeOfDay}</div>
-                    <div>Weather: {worldState.weather}</div>
-                  </div>
-                </div>
-              )}
-
-              {quests && quests.length > 0 && (
-                <div className="console-card">
-                  <h4 className="font-gaming text-console-text mb-2">Quests</h4>
-                  <div className="text-sm text-console-text-dim">
-                    {quests.filter(q => q.status === 'in_progress').map(quest => (
-                      <div key={quest.id} className="mb-1">
-                        • {quest.title}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {inventory && inventory.length > 0 && (
-                <div className="console-card">
-                  <h4 className="font-gaming text-console-text mb-2">Inventory</h4>
-                  <div className="text-sm text-console-text-dim">
-                    {inventory.slice(0, 5).map(item => (
-                      <div key={item.id} className="mb-1">
-                        • {item.name}
-                      </div>
-                    ))}
-                    {inventory.length > 5 && (
-                      <div className="text-xs text-console-text-dim">
-                        +{inventory.length - 5} more items
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Input */}
+        <div className="p-4 border-t border-cyan-500/30">
+          <div className="flex space-x-2">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type your message or use voice commands..."
+              className="flex-1 bg-black/40 text-cyan-100 placeholder-cyan-300/50 border border-cyan-500/30 rounded-lg p-3 resize-none focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+              rows={2}
+              disabled={isTyping}
+            />
+            
+            <button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isTyping}
+              className="px-4 py-3 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
+          
+          {/* Voice Command Hints */}
+          {isListening && (
+                         <div className="mt-2 text-xs text-cyan-300/70">
+               Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
+             </div>
+          )}
         </div>
       </div>
-
-      {/* Die Roller */}
-      <DieRoller
-        isOpen={isDieRollerOpen}
-        onClose={() => setIsDieRollerOpen(false)}
-        onRoll={handleDieRoll}
-        requestedRoll={requestedRoll || undefined}
-      />
-
-      {/* Save Manager */}
-      <SaveManager
-        isOpen={isSaveManagerOpen}
-        onClose={() => setIsSaveManagerOpen(false)}
-        onLoadGame={handleLoadGame}
-      />
-
-      {/* Inventory */}
-      <Inventory
-        isOpen={isInventoryOpen}
-        onClose={() => setIsInventoryOpen(false)}
-      />
-
-      {/* Quest Log */}
-      <QuestLog
-        isOpen={isQuestLogOpen}
-        onClose={() => setIsQuestLogOpen(false)}
-      />
-
-      {/* Character Sheet */}
-      <CharacterSheet
-        isOpen={isCharacterSheetOpen}
-        onClose={() => setIsCharacterSheetOpen(false)}
-      />
-
-      {/* Combat System */}
-      <CombatSystem
-        isOpen={isCombatSystemOpen}
-        onClose={() => setIsCombatSystemOpen(false)}
-      />
-
-      {/* World Map */}
-      <WorldMap
-        isOpen={isWorldMapOpen}
-        onClose={() => setIsWorldMapOpen(false)}
-        onNavigate={handleNavigate}
-      />
-
-      {/* Settings */}
-      <SettingsComponent
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
-
-      {/* Help */}
-      <Help
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
     </div>
   )
 } 

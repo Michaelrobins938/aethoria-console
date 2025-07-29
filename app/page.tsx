@@ -16,6 +16,7 @@ import { GameInterface } from '@/components/GameInterface'
 import { Character, GamePrompt } from '@/lib/types'
 import { ArrowUp, Gamepad2, Users, BookOpen, Mail } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
+import { AssistantModal } from '@/components/assistant-ui/assistant-modal'
 
 export default function Home() {
   const [selectedCartridge, setSelectedCartridge] = useState<string | null>(null)
@@ -281,7 +282,7 @@ export default function Home() {
                     </h3>
                     <p className="text-console-text leading-relaxed mb-6 font-console">
                       To revolutionize storytelling by creating dynamic, AI-powered narratives that adapt to 
-                      each player's unique choices and playstyle. We believe that the best stories are those 
+                      each player&apos;s unique choices and playstyle. We believe that the best stories are those 
                       that are lived, not just told.
                     </p>
                     <p className="text-console-text leading-relaxed font-console">
@@ -339,7 +340,7 @@ export default function Home() {
                   GET IN TOUCH
                 </h2>
                 <p className="text-xl text-console-text-dim max-w-2xl mx-auto leading-relaxed font-console">
-                  Have questions, suggestions, or want to join our community? We'd love to hear from you.
+                  Have questions, suggestions, or want to join our community? We&apos;d love to hear from you.
                 </p>
               </div>
 
@@ -418,6 +419,14 @@ export default function Home() {
       >
         <ArrowUp className="w-6 h-6 group-hover:text-console-accent transition-colors duration-300" />
       </button>
+
+      {/* Assistant Modal */}
+      <AssistantModal 
+        title="Aethoria AI Assistant"
+        description="Your AI Game Master is here to help!"
+        placeholder="Ask about your adventure..."
+        apiEndpoint="/api/chat"
+      />
     </main>
   )
 } 

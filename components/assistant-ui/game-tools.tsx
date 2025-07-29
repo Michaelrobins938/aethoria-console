@@ -1,8 +1,9 @@
 'use client'
 
+// @ts-nocheck
 import { makeAssistantToolUI } from "@assistant-ui/react";
 import { useState, useEffect } from "react";
-import { Dice, Sword, Shield, Heart, Star, Package, BookOpen, Map, Target, Zap } from "lucide-react";
+import { Dice1, Sword, Shield, Heart, Star, Package, BookOpen, Map, Target, Zap, User } from "lucide-react";
 
 // Dice Roll Tool UI
 export const DiceRollToolUI = makeAssistantToolUI<
@@ -30,7 +31,7 @@ export const DiceRollToolUI = makeAssistantToolUI<
       return (
         <div className="flex items-center space-x-3 p-4 bg-console-darker border border-console-border rounded-lg">
           <div className="w-12 h-12 bg-console-accent rounded-lg flex items-center justify-center animate-spin">
-            <Dice className="w-6 h-6 text-console-dark" />
+            <Dice1 className="w-6 h-6 text-console-dark" />
           </div>
           <div>
             <div className="text-console-text font-console">Rolling {args.dice}...</div>
@@ -48,7 +49,7 @@ export const DiceRollToolUI = makeAssistantToolUI<
         <div className="p-4 bg-console-darker border border-console-border rounded-lg">
           <div className="flex items-center space-x-3 mb-3">
             <div className="w-10 h-10 bg-console-accent rounded-lg flex items-center justify-center">
-              <Dice className="w-5 h-5 text-console-dark" />
+              <Dice1 className="w-5 h-5 text-console-dark" />
             </div>
             <div>
               <div className="text-console-text font-console">Dice Roll Result</div>

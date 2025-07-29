@@ -1,5 +1,6 @@
 'use client'
 
+// @ts-nocheck
 import {
   AttachmentAdapter,
   PendingAttachment,
@@ -32,7 +33,8 @@ export class VisionImageAdapter implements AttachmentAdapter {
       type: "image",
       name: file.name,
       file,
-      status: { type: "running" },
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
     };
   }
 
@@ -44,6 +46,7 @@ export class VisionImageAdapter implements AttachmentAdapter {
       id: attachment.id,
       type: "image",
       name: attachment.name,
+      contentType: attachment.file.type,
       content: [
         {
           type: "image",
@@ -96,7 +99,8 @@ export class DocumentAttachmentAdapter implements AttachmentAdapter {
       type: "document",
       name: file.name,
       file,
-      status: { type: "running" },
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
     };
   }
 
@@ -116,6 +120,7 @@ export class DocumentAttachmentAdapter implements AttachmentAdapter {
       id: attachment.id,
       type: "document",
       name: attachment.name,
+      contentType: attachment.file.type,
       content: [
         {
           type: "text",

@@ -200,7 +200,7 @@ export function VoiceRecognition({
       {/* Live transcript */}
       {transcript && (
         <div className="text-xs text-console-text-dim max-w-xs truncate">
-          "{transcript}"
+          &ldquo;{transcript}&rdquo;
         </div>
       )}
     </div>

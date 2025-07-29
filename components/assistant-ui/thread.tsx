@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings, Paperclip, Image, FileText } from "lucide-react";
+import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings } from "lucide-react";
 import { Character, GamePrompt } from "@/lib/types";
 import { 
   DiceRollToolUI, 
@@ -10,8 +10,14 @@ import {
   InventoryToolUI, 
   QuestToolUI, 
   MapToolUI 
-} from "./game-tools";
-import { AethoriaAttachmentAdapter } from "./attachment-adapters";
+} from "./game-tools.jsx";
+import { AttachmentProvider } from "./attachment-provider";
+import {
+  ComposerAttachments,
+  ComposerAddAttachment,
+  UserMessageAttachments,
+} from "@/components/attachment.jsx";
+import { ComposerPrimitive, MessagePrimitive } from "@assistant-ui/react";
 
 interface Message {
   id: string;
@@ -120,57 +126,20 @@ export function Thread() {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [attachmentAdapter] = useState(() => new AethoriaAttachmentAdapter());
 
   // Save game state whenever it changes
   useEffect(() => {
     saveGameState(gameState);
   }, [gameState]);
 
-  const handleFileUpload = async (files: FileList) => {
-    const newFiles = Array.from(files);
-    setAttachments(prev => [...prev, ...newFiles]);
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if ((!input.trim() && attachments.length === 0) || isLoading) return;
-
-    // Process attachments
-    const attachmentContents = [];
-    for (const file of attachments) {
-      try {
-        const pendingAttachment = await attachmentAdapter.add({ file });
-        const completeAttachment = await attachmentAdapter.send(pendingAttachment);
-        attachmentContents.push(...completeAttachment.content);
-      } catch (error) {
-        console.error('Failed to process attachment:', error);
-      }
-    }
+  const handleSubmit = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: attachments.length > 0 
-        ? [
-            { type: 'text' as const, text: input || 'See attached files' },
-            ...attachmentContents.map(content => {
-              if (content.type === 'text') {
-                return { type: 'text' as const, text: content.text || '' };
-              } else if (content.type === 'image') {
-                return { type: 'image' as const, image: content.image || '' };
-              }
-              return { type: 'text' as const, text: '[File attachment]' };
-            })
-          ]
-        : input,
-      timestamp: Date.now(),
-      attachments: attachments
+      content: input,
+      timestamp: Date.now()
     };
 
     setGameState(prev => ({
@@ -178,7 +147,6 @@ export function Thread() {
       messages: [...prev.messages, userMessage]
     }));
     setInput('');
-    setAttachments([]);
     setIsLoading(true);
 
     try {
@@ -277,7 +245,8 @@ export function Thread() {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-console-dark border border-console-border rounded-lg">
+    <AttachmentProvider>
+      <div className="h-full flex flex-col bg-console-dark border border-console-border rounded-lg">
       {/* Header */}
       <div className="p-4 border-b border-console-border bg-console-darker">
         <div className="flex items-center justify-between">
@@ -372,66 +341,30 @@ export function Thread() {
 
       {/* Input */}
       <div className="p-4 border-t border-console-border bg-console-darker">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Attachment Area */}
-          <div className="flex items-center space-x-2">
-            <label className="p-2 bg-console-dark border border-console-border rounded-lg text-console-text-dim hover:text-console-text hover:border-console-accent transition-colors duration-200 cursor-pointer">
-              <Paperclip className="w-4 h-4" />
-              <input
-                type="file"
-                multiple
-                accept="image/*,text/*,application/json,application/pdf"
-                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                className="hidden"
-              />
-            </label>
-            <div className="text-console-text-dim text-xs">
-              Upload images, character sheets, or documents
-            </div>
-          </div>
-          
+        <ComposerPrimitive.Root className="space-y-3">
           {/* Attachments Display */}
-          {attachments.length > 0 && (
-            <div className="space-y-2">
-              {attachments.map((file, index) => (
-                <div key={index} className="flex items-center space-x-2 p-2 bg-console-dark border border-console-border rounded-lg">
-                  {file.type.startsWith('image/') ? (
-                    <Image className="w-4 h-4 text-console-accent" />
-                  ) : (
-                    <FileText className="w-4 h-4 text-console-accent" />
-                  )}
-                  <span className="text-console-text text-sm flex-1">{file.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(index)}
-                    className="text-console-text-dim hover:text-red-400 transition-colors"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <ComposerAttachments />
           
           {/* Input and Send */}
           <div className="flex space-x-2">
-            <input
-              type="text"
+            <ComposerPrimitive.Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your action or command..."
               className="flex-1 bg-console-dark border border-console-border rounded-lg px-4 py-2 text-console-text font-console placeholder-console-text-dim focus:outline-none focus:border-console-accent focus:ring-1 focus:ring-console-accent"
               disabled={isLoading}
             />
+            <ComposerAddAttachment />
             <button
-              type="submit"
-              disabled={isLoading || (!input.trim() && attachments.length === 0)}
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !input.trim()}
               className="px-4 py-2 bg-console-accent hover:bg-console-accent-dark disabled:bg-console-border disabled:cursor-not-allowed rounded-lg transition-colors duration-200 flex items-center justify-center"
             >
               <Send className="w-4 h-4 text-console-dark" />
             </button>
           </div>
-        </form>
+        </ComposerPrimitive.Root>
       </div>
 
       {/* Tool UIs */}
@@ -441,6 +374,7 @@ export function Thread() {
       <InventoryToolUI />
       <QuestToolUI />
       <MapToolUI />
-    </div>
+      </div>
+    </AttachmentProvider>
   );
 } 

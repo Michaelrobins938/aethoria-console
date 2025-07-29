@@ -45,17 +45,20 @@ Your Assistant-UI chat interface is now **fully set up and working**! Here's wha
 ## 🎮 Features
 
 ### Chat Interface
+
 - Real-time message streaming
 - User/assistant message distinction
 - Loading indicators
 - Error handling
 
 ### Quick Actions
+
 - **Explore** - "I want to explore the area"
 - **Actions** - "What can I do here?"
 - **Character** - "Tell me about my character"
 
 ### Game State Sidebar
+
 - Character information (health, level, stats)
 - Game details (title, genre, difficulty)
 - Navigation buttons (Settings, Map, Character, etc.)
@@ -64,14 +67,18 @@ Your Assistant-UI chat interface is now **fully set up and working**! Here's wha
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Your `.env.local` file already contains the necessary API keys:
-```
+
+```env
 OPENAI_API_KEY=your-openai-key
 OPENROUTER_API_KEY=your-openrouter-key
 ```
 
 ### API Endpoint
+
 The chat interface uses your existing `/api/chat/route.ts` endpoint, which:
+
 - Accepts game context (character, game prompt)
 - Returns streaming responses
 - Handles game-specific AI instructions
@@ -79,12 +86,14 @@ The chat interface uses your existing `/api/chat/route.ts` endpoint, which:
 ## 🎯 Next Steps
 
 ### Immediate Improvements
+
 1. **Add Voice Support** - Integrate with your existing voice components
 2. **Dice Rolling** - Add interactive dice rolling functionality
 3. **Save/Load** - Integrate with your save system
 4. **Character Management** - Add character sheet integration
 
 ### Advanced Features
+
 1. **Thread Management** - Multiple conversation threads
 2. **Game State Persistence** - Save chat history with game state
 3. **Multiplayer Support** - Shared chat sessions
@@ -107,7 +116,9 @@ The chat interface uses your existing `/api/chat/route.ts` endpoint, which:
    - Check for missing CSS classes
 
 ### Debug Mode
+
 Add `console.log` statements in the thread component to debug:
+
 ```typescript
 console.log('Messages:', messages);
 console.log('Loading:', isLoading);

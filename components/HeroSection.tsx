@@ -99,7 +99,7 @@ export function HeroSection({ onStartAdventure, onScrollToFeatures }: HeroSectio
             Every adventure is unique to you.
           </p>
           <p className="text-console-accent font-gaming text-xl md:text-2xl font-bold animate-pulse-glow">
-            "The greatest stories are not told, they are lived."
+            &ldquo;The greatest stories are not told, they are lived.&rdquo;
           </p>
         </div>
 
