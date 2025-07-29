@@ -8,6 +8,20 @@ const NarratorOrb = (() => {
   // This will be the NarratorOrb class implementation
   // We'll include it inline to avoid module loading issues
   return class NarratorOrb {
+    private scene: THREE.Scene;
+    private camera: THREE.Camera;
+    private renderer: THREE.WebGLRenderer;
+    private analyserNode: AnalyserNode | null;
+    private config: any;
+    private frequencyData: Uint8Array;
+    private time: number;
+    private breathingPhase: number;
+    private lastAudioLevel: number;
+    private nebulaMaterial: THREE.ShaderMaterial;
+    private tendrilMaterial: THREE.ShaderMaterial;
+    private nebulaCore: THREE.Points;
+    private nebulaTendrils: THREE.Points;
+    private orbGroup: THREE.Group;
     constructor(scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, analyserNode: AnalyserNode | null = null, config: any = {}) {
       this.scene = scene;
       this.camera = camera;
