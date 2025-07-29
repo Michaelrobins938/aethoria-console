@@ -47,15 +47,9 @@ const useFileSrc = (file: File | undefined) => {
 };
 
 const useAttachmentSrc = () => {
-  const { file, src } = useAttachment(
-    shallow((a): { file?: File; src?: string } => {
-      if (a.type !== "image") return {};
-      if (a.file) return { file: a.file };
-      const src = a.content?.filter((c) => c.type === "image")[0]?.image;
-      if (!src) return {};
-      return { src };
-    }),
-  );
+  const attachment = useAttachment();
+  const file = attachment?.file;
+  const src = attachment?.content?.filter((c) => c.type === "image")[0]?.image;
 
   return useFileSrc(file) ?? src;
 };
@@ -159,7 +153,7 @@ const AttachmentUI = () => {
   );
 };
 
-const AttachmentRemove: FC = () => {
+const AttachmentRemove = () => {
   return (
     <AttachmentPrimitive.Remove asChild>
       <TooltipIconButton
@@ -173,7 +167,7 @@ const AttachmentRemove: FC = () => {
   );
 };
 
-export const UserMessageAttachments: FC = () => {
+export const UserMessageAttachments = () => {
   return (
     <div className="flex w-full flex-row gap-3 col-span-full col-start-1 row-start-1 justify-end">
       <MessagePrimitive.Attachments components={{ Attachment: AttachmentUI }} />
@@ -181,7 +175,7 @@ export const UserMessageAttachments: FC = () => {
   );
 };
 
-export const ComposerAttachments: FC = () => {
+export const ComposerAttachments = () => {
   return (
     <div className="flex w-full flex-row gap-3 overflow-x-auto">
       <ComposerPrimitive.Attachments
@@ -191,7 +185,7 @@ export const ComposerAttachments: FC = () => {
   );
 };
 
-export const ComposerAddAttachment: FC = () => {
+export const ComposerAddAttachment = () => {
   return (
     <ComposerPrimitive.AddAttachment asChild>
       <TooltipIconButton
@@ -205,7 +199,7 @@ export const ComposerAddAttachment: FC = () => {
   );
 };
 
-const AttachmentDialogContent: FC<PropsWithChildren> = ({ children }) => (
+const AttachmentDialogContent = ({ children }: PropsWithChildren) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitiveContent className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] fixed left-[50%] top-[50%] z-50 grid translate-x-[-50%] translate-y-[-50%] shadow-lg duration-200">

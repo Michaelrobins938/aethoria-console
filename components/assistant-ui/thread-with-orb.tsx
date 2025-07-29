@@ -331,7 +331,19 @@ export function ThreadWithOrb() {
                       : 'bg-console-darker/80 backdrop-blur-sm text-console-text border border-console-border'
                   }`}
                 >
-                  <div className="text-sm font-console">{message.content}</div>
+                  <div className="text-sm font-console">
+                    {typeof message.content === 'string' 
+                      ? message.content 
+                      : message.content.map((item, index) => (
+                          <div key={index}>
+                            {item.type === 'text' && item.text}
+                            {item.type === 'image' && item.image && (
+                              <img src={item.image} alt="Attachment" className="max-w-full h-auto mt-2 rounded" />
+                            )}
+                          </div>
+                        ))
+                    }
+                  </div>
                 </div>
               </div>
             ))
