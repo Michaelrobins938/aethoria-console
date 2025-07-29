@@ -18,11 +18,6 @@ async function synthesizeSpeech(text: string, voiceId: string = 'JoYo65swyP8hH6f
   try {
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY || 'sk_20c16a8e731826189e8dcb33a047c314fb4bfb5e67fbd075';
     
-    console.log('Attempting voice synthesis with ElevenLabs...');
-    console.log('Voice ID:', voiceId);
-    console.log('Text length:', text.length);
-    console.log('API Key length:', elevenLabsKey.length);
-    
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -40,9 +35,6 @@ async function synthesizeSpeech(text: string, voiceId: string = 'JoYo65swyP8hH6f
       }),
     });
 
-    console.log('ElevenLabs response status:', response.status);
-    console.log('ElevenLabs response ok:', response.ok);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.log('ElevenLabs API error:', response.status, errorText);
@@ -50,16 +42,12 @@ async function synthesizeSpeech(text: string, voiceId: string = 'JoYo65swyP8hH6f
     }
 
     const audioBuffer = await response.arrayBuffer();
-    console.log('Audio buffer size:', audioBuffer.byteLength);
-    
     const base64Audio = Buffer.from(audioBuffer).toString('base64');
     const audioDataUrl = `data:audio/mpeg;base64,${base64Audio}`;
     
-    console.log('Generated audio data URL length:', audioDataUrl.length);
     return audioDataUrl;
   } catch (error) {
     console.log('Voice synthesis error:', error);
-    console.log('Error message:', error instanceof Error ? error.message : 'Unknown error');
     return '';
   }
 }
