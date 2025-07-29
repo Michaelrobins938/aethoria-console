@@ -10,13 +10,13 @@ import {
   InventoryToolUI, 
   QuestToolUI, 
   MapToolUI 
-} from "./game-tools.jsx";
+} from "./game-tools";
 import { AttachmentProvider } from "./attachment-provider";
 import {
   ComposerAttachments,
   ComposerAddAttachment,
   UserMessageAttachments,
-} from "@/components/attachment.jsx";
+} from "@/components/attachment";
 import { ComposerPrimitive, MessagePrimitive } from "@assistant-ui/react";
 
 interface Message {
