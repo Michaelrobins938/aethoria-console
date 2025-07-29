@@ -47,13 +47,16 @@ const NarratorOrb = (() => {
     }
 
     createNebulaOrb() {
+      // Determine if we're on mobile for shader optimization
+      const isMobile = window.innerWidth <= 768
+      
       // Main nebula material with balanced intensity
       this.nebulaMaterial = new THREE.ShaderMaterial({
         uniforms: {
           time: { value: 0 },
           audioLevel: { value: 0 },
           breathingPhase: { value: 0 },
-          intensity: { value: 1.8 }
+          intensity: { value: isMobile ? 1.2 : 1.8 } // Reduced intensity on mobile
         },
         vertexShader: nebulaVertexShader,
         fragmentShader: nebulaFragmentShader,
@@ -68,7 +71,7 @@ const NarratorOrb = (() => {
         uniforms: {
           time: { value: 0 },
           audioLevel: { value: 0 },
-          intensity: { value: 1.5 }
+          intensity: { value: isMobile ? 1.0 : 1.5 } // Reduced intensity on mobile
         },
         vertexShader: tendrilVertexShader,
         fragmentShader: tendrilFragmentShader,
@@ -640,6 +643,10 @@ export function NarratorOrbComponent({
       antialias: true,
       powerPreference: "high-performance"
     })
+    
+    // Handle device pixel ratio for crisp rendering on mobile
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 2) // Cap at 2 for performance
+    renderer.setPixelRatio(pixelRatio)
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
     renderer.setClearColor(0x000000, 0)
     containerRef.current.appendChild(renderer.domElement)
@@ -656,13 +663,17 @@ export function NarratorOrbComponent({
       console.log('Audio context not available, using fallback')
     }
 
-    // Create NarratorOrb
-    const orb = new NarratorOrb(scene, camera, renderer, analyserNode, {
-      coreParticleCount: 3000,
-      tendrilParticleCount: 2000,
-      coreRadius: 1.0,
-      tendrilRadius: 2.5
-    })
+    // Determine if we're on mobile for performance optimization
+    const isMobile = window.innerWidth <= 768
+    const mobileConfig = {
+      coreParticleCount: isMobile ? 1500 : 3000,
+      tendrilParticleCount: isMobile ? 1000 : 2000,
+      coreRadius: isMobile ? 0.8 : 1.0,
+      tendrilRadius: isMobile ? 2.0 : 2.5
+    }
+
+    // Create NarratorOrb with mobile-optimized settings
+    const orb = new NarratorOrb(scene, camera, renderer, analyserNode, mobileConfig)
     orbRef.current = orb
 
     // Animation loop
@@ -688,8 +699,13 @@ export function NarratorOrbComponent({
       const width = containerRef.current.clientWidth
       const height = containerRef.current.clientHeight
       
+      // Update camera aspect ratio
       camera.aspect = width / height
       camera.updateProjectionMatrix()
+      
+      // Update renderer with proper pixel ratio
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2)
+      renderer.setPixelRatio(pixelRatio)
       renderer.setSize(width, height)
     }
 
