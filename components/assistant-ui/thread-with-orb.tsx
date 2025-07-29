@@ -208,6 +208,10 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     if (gamePrompt && character && gameState.messages.length === 0) {
       // Send initial message to set up the game
       const initializeGame = async () => {
+        console.log('=== GAME INITIALIZATION STARTED ===');
+        console.log('GamePrompt:', gamePrompt);
+        console.log('Character:', character);
+        
         setIsLoading(true);
         handleAIThinking();
 
@@ -218,6 +222,9 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
             content: `Start the game "${gamePrompt.title}". I am ${character.name}, a ${character.background}. Please introduce the game and set the scene.`,
             timestamp: Date.now()
           };
+
+          console.log('Initial message:', initialMessage);
+          console.log('Making initialization API call...');
 
           const response = await fetch('/api/chat', {
             method: 'POST',
@@ -230,6 +237,9 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               character
             })
           });
+
+          console.log('Initialization API Response status:', response.status);
+          console.log('Initialization API Response ok:', response.ok);
 
           if (!response.ok) {
             throw new Error(`API error: ${response.status}`);
@@ -249,6 +259,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
             timestamp: Date.now(),
             audio: responseData.audio
           };
+
+          console.log('Initialization AI Message created:', aiMessage);
 
           setGameState(prev => ({
             ...prev,
@@ -291,10 +303,14 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
 
       initializeGame();
     }
-  }, [gamePrompt, character, isSpeaking, handleAIThinking]);
+  }, [gamePrompt, character, gameState.messages.length]); // Fixed dependency array
 
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;
+
+    console.log('=== HANDLE SUBMIT CALLED ===');
+    console.log('Input:', input);
+    console.log('GameState:', gameState);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -314,6 +330,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     handleAIThinking();
 
     try {
+      console.log('Making API call to /api/chat...');
       // Call the AI API
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -327,13 +344,16 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         })
       });
 
+      console.log('API Response status:', response.status);
+      console.log('API Response ok:', response.ok);
+
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
 
       // Handle the response
       const responseData = await response.json();
-      console.log('API Response:', responseData);
+      console.log('API Response Data:', responseData);
 
       if (!responseData.success) {
         throw new Error(responseData.error || 'API returned error');
@@ -346,6 +366,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         timestamp: Date.now(),
         audio: responseData.audio // Store the ElevenLabs audio data
       };
+
+      console.log('AI Message created:', aiMessage);
 
       // Add the AI message to the state
       setGameState(prev => ({
@@ -638,4 +660,4 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
       </div>
     </div>
   );
-} 
+}
