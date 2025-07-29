@@ -307,7 +307,7 @@ export class AethoriaAttachmentAdapter implements AttachmentAdapter {
     // Route to appropriate adapter
     if (attachment.type === "image") {
       return this.imageAdapter.send(attachment);
-    } else if (attachment.type === "character-sheet" || attachment.type === "game-file" || attachment.type === "game-image") {
+    } else if (attachment.type === "document" && (attachment.name.includes("character") || attachment.name.includes("game"))) {
       return this.gameAdapter.send(attachment);
     } else {
       return this.documentAdapter.send(attachment);
