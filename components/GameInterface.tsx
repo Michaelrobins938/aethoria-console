@@ -122,7 +122,7 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
         </div>
 
         {/* Floating Action Button for Mobile Menu */}
-        <div className="md:hidden fixed bottom-4 right-4 z-40">
+        <div className="md:hidden fixed bottom-4 left-4 z-40">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="mobile-button bg-console-accent hover:bg-console-accent-dark text-console-dark font-console rounded-full w-14 h-14 shadow-lg border-2 border-console-accent/30 flex items-center justify-center transition-all duration-200 hover:scale-110"
@@ -134,7 +134,7 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
 
         {/* Dice Roll Display */}
         {lastDiceRoll && (
-          <div className="md:hidden fixed bottom-20 right-4 z-40">
+          <div className="md:hidden fixed bottom-20 left-4 z-40">
             <div className="bg-console-accent/90 backdrop-blur-sm text-console-dark font-console rounded-lg px-3 py-2 shadow-lg border border-console-accent/30">
               <div className="text-xs">Last Roll:</div>
               <div className="text-lg font-bold">{lastDiceRoll}</div>

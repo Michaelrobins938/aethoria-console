@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings, Mic, MicOff, Volume2, VolumeX, X } from "lucide-react";
 import { Character, GamePrompt } from "@/lib/types";
 import { 
   DiceRollToolUI, 
@@ -465,6 +465,16 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     }
   };
 
+  const clearChat = () => {
+    setGameState(prev => ({
+      ...prev,
+      messages: []
+    }));
+    setInput('');
+    setIsSpeaking(false);
+    console.log('Chat cleared - starting fresh instance');
+  };
+
   return (
     <div className="h-full flex flex-col relative mobile-full-height">
       {/* NarratorOrb Background - Enhanced prominence */}
@@ -475,13 +485,22 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         className="absolute inset-0 pointer-events-none z-0"
       />
 
-      {/* Game Content - Reduced opacity to show orb better */}
-      <div className="relative z-10 flex flex-col h-full bg-console-darker/60 backdrop-blur-sm rounded-lg">
+      {/* Game Content - More transparent to show orb better */}
+      <div className="relative z-10 flex flex-col h-full bg-console-darker/40 backdrop-blur-sm rounded-lg">
         {/* Header with Voice Controls */}
         <div className="mobile-chat-header bg-console-darker/80 backdrop-blur-sm border-b border-console-border">
           <h2 className="text-console-accent font-console text-lg">AI Game Master</h2>
           
           <div className="flex items-center space-x-2">
+            {/* Clear Chat Button */}
+            <button
+              onClick={clearChat}
+              className="mobile-button bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
+              title="Clear chat and start fresh"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
             {/* Quick Dice Roll Button */}
             <button
               onClick={() => {
@@ -540,7 +559,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         {/* Messages */}
         <div className="mobile-chat-messages bg-transparent">
           {gameState.messages.length === 0 ? (
-            <div className="text-center text-console-text-dim py-8 bg-console-darker/40 backdrop-blur-sm rounded-lg m-2">
+            <div className="text-center text-console-text-dim py-8 bg-console-darker/30 backdrop-blur-sm rounded-lg m-2">
               <p className="font-console text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
             </div>
           ) : (
@@ -554,7 +573,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                     message.role === 'user'
                       ? 'mobile-message-user'
                       : 'mobile-message-ai'
-                  } bg-console-darker/70 backdrop-blur-sm`}
+                  } bg-console-darker/50 backdrop-blur-sm`}
                 >
                   <div className="text-sm font-console leading-relaxed">
                     {typeof message.content === 'string' 
@@ -576,7 +595,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="mobile-message-ai bg-console-darker/70 backdrop-blur-sm">
+              <div className="mobile-message-ai bg-console-darker/50 backdrop-blur-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-100"></div>
@@ -589,7 +608,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         </div>
 
         {/* Input */}
-        <div className="mobile-chat-input bg-console-darker/80 backdrop-blur-sm border-t border-console-border">
+        <div className="mobile-chat-input bg-console-darker/60 backdrop-blur-sm border-t border-console-border">
           <div className="flex space-x-2">
             <input
               type="text"
