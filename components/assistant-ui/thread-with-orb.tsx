@@ -218,63 +218,30 @@ export function ThreadWithOrb() {
         throw new Error(`API error: ${response.status}`);
       }
 
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body');
+      // Handle the response
+      const responseData = await response.json();
+      console.log('API Response:', responseData);
+
+      if (!responseData.success) {
+        throw new Error(responseData.error || 'API returned error');
       }
 
-      let aiResponse = '';
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '',
+        content: responseData.message.content,
         timestamp: Date.now()
       };
 
-      // Add the AI message to the state immediately
+      // Add the AI message to the state
       setGameState(prev => ({
         ...prev,
         messages: [...prev.messages, aiMessage]
       }));
 
-      // Read the streaming response
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') break;
-            
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.choices?.[0]?.delta?.content) {
-                aiResponse += parsed.choices[0].delta.content;
-                aiMessage.content = aiResponse;
-                
-                // Update the message in state
-                setGameState(prev => ({
-                  ...prev,
-                  messages: prev.messages.map(msg => 
-                    msg.id === aiMessage.id ? { ...msg, content: aiResponse } : msg
-                  )
-                }));
-              }
-            } catch (e) {
-              // Ignore parsing errors for incomplete chunks
-            }
-          }
-        }
-      }
-
       // Speak the response if enabled
       if (synthesis && isSpeaking) {
-        const utterance = new SpeechSynthesisUtterance(aiResponse);
+        const utterance = new SpeechSynthesisUtterance(responseData.message.content);
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = () => setIsSpeaking(false);
         synthesis.speak(utterance);
