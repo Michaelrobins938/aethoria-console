@@ -217,22 +217,22 @@ export const CombatToolUI = makeAssistantToolUI<
           </div>
 
           <div className="space-y-2">
-            {result.damage && (
+            {(result as any).damage && (
               <div className="flex items-center space-x-2">
                 <Target className="w-4 h-4 text-red-500" />
-                <span className="text-console-text">Damage: <span className="text-red-400 font-console">{result.damage}</span></span>
+                <span className="text-console-text">Damage: <span className="text-red-400 font-console">{(result as any).damage}</span></span>
               </div>
             )}
-            {result.hit && (
+            {(result as any).hit !== undefined && (
               <div className="flex items-center space-x-2">
                 <Zap className="w-4 h-4 text-yellow-500" />
-                <span className="text-console-text">Hit: <span className="text-yellow-400 font-console">{result.hit ? 'Yes' : 'No'}</span></span>
+                <span className="text-console-text">Hit: <span className="text-yellow-400 font-console">{(result as any).hit ? 'Yes' : 'No'}</span></span>
               </div>
             )}
-            {result.remainingHealth && (
+            {(result as any).remainingHealth && (
               <div className="flex items-center space-x-2">
                 <Heart className="w-4 h-4 text-green-500" />
-                <span className="text-console-text">Remaining Health: <span className="text-green-400 font-console">{result.remainingHealth}</span></span>
+                <span className="text-console-text">Remaining Health: <span className="text-green-400 font-console">{(result as any).remainingHealth}</span></span>
               </div>
             )}
           </div>
