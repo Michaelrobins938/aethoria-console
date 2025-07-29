@@ -5,82 +5,91 @@ import { makeAssistantToolUI } from "@assistant-ui/react";
 import { useState, useEffect } from "react";
 import { Dice1, Sword, Shield, Heart, Star, Package, BookOpen, Map, Target, Zap, User } from "lucide-react";
 
+// Dice Roll Component
+const DiceRollComponent = ({ args, result, status }: {
+  args: { dice: string; reason?: string };
+  result?: { result: number; rolls: number[]; total: number };
+  status: { type: string };
+}) => {
+  const [isRolling, setIsRolling] = useState(false);
+  const [rollAnimation, setRollAnimation] = useState(0);
+
+  useEffect(() => {
+    if (status.type === "running") {
+      setIsRolling(true);
+      const interval = setInterval(() => {
+        setRollAnimation(Math.floor(Math.random() * 20) + 1);
+      }, 100);
+      return () => clearInterval(interval);
+    } else {
+      setIsRolling(false);
+    }
+  }, [status.type]);
+
+  if (status.type === "running") {
+    return (
+      <div className="flex items-center space-x-3 p-4 bg-console-darker border border-console-border rounded-lg">
+        <div className="w-12 h-12 bg-console-accent rounded-lg flex items-center justify-center animate-spin">
+          <Dice1 className="w-6 h-6 text-console-dark" />
+        </div>
+        <div>
+          <div className="text-console-text font-console">Rolling {args.dice}...</div>
+          <div className="text-2xl font-bold text-console-accent">{rollAnimation}</div>
+          {args.reason && (
+            <div className="text-console-text-dim text-sm">Reason: {args.reason}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (result) {
+    return (
+      <div className="p-4 bg-console-darker border border-console-border rounded-lg">
+        <div className="flex items-center space-x-3 mb-3">
+          <div className="w-10 h-10 bg-console-accent rounded-lg flex items-center justify-center">
+            <Dice1 className="w-5 h-5 text-console-dark" />
+          </div>
+          <div>
+            <div className="text-console-text font-console">Dice Roll Result</div>
+            <div className="text-console-text-dim text-sm">{args.dice}</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-console-accent">{result.total}</div>
+            <div className="text-console-text-dim text-sm">Total</div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-console text-console-text">
+              {result.rolls.join(', ')}
+            </div>
+            <div className="text-console-text-dim text-sm">Rolls</div>
+          </div>
+        </div>
+        
+        {args.reason && (
+          <div className="mt-3 p-2 bg-console-dark rounded text-console-text-dim text-sm">
+            <strong>Reason:</strong> {args.reason}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+};
+
 // Dice Roll Tool UI
 export const DiceRollToolUI = makeAssistantToolUI<
   { dice: string; reason?: string },
   { result: number; rolls: number[]; total: number }
 >({
   toolName: "rollDice",
-  render: ({ args, result, status }) => {
-    const [isRolling, setIsRolling] = useState(false);
-    const [rollAnimation, setRollAnimation] = useState(0);
-
-    useEffect(() => {
-      if (status.type === "running") {
-        setIsRolling(true);
-        const interval = setInterval(() => {
-          setRollAnimation(Math.floor(Math.random() * 20) + 1);
-        }, 100);
-        return () => clearInterval(interval);
-      } else {
-        setIsRolling(false);
-      }
-    }, [status.type]);
-
-    if (status.type === "running") {
-      return (
-        <div className="flex items-center space-x-3 p-4 bg-console-darker border border-console-border rounded-lg">
-          <div className="w-12 h-12 bg-console-accent rounded-lg flex items-center justify-center animate-spin">
-            <Dice1 className="w-6 h-6 text-console-dark" />
-          </div>
-          <div>
-            <div className="text-console-text font-console">Rolling {args.dice}...</div>
-            <div className="text-2xl font-bold text-console-accent">{rollAnimation}</div>
-            {args.reason && (
-              <div className="text-console-text-dim text-sm">Reason: {args.reason}</div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    if (result) {
-      return (
-        <div className="p-4 bg-console-darker border border-console-border rounded-lg">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-console-accent rounded-lg flex items-center justify-center">
-              <Dice1 className="w-5 h-5 text-console-dark" />
-            </div>
-            <div>
-              <div className="text-console-text font-console">Dice Roll Result</div>
-              <div className="text-console-text-dim text-sm">{args.dice}</div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-console-accent">{result.total}</div>
-              <div className="text-console-text-dim text-sm">Total</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-console text-console-text">
-                {result.rolls.join(', ')}
-              </div>
-              <div className="text-console-text-dim text-sm">Rolls</div>
-            </div>
-          </div>
-          
-          {args.reason && (
-            <div className="mt-3 p-2 bg-console-dark rounded text-console-text-dim text-sm">
-              <strong>Reason:</strong> {args.reason}
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    return null;
-  },
+  render: ({ args, result, status }) => (
+    <DiceRollComponent args={args} result={result} status={status} />
+  ),
 });
 
 // Character Stats Tool UI
