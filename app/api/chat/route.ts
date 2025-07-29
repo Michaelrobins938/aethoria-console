@@ -283,7 +283,7 @@ Begin the adventure and respond to the player's actions accordingly.`
       }
     };
 
-    // Generate AI response using OpenRouter with tools
+    // Generate AI response using OpenRouter (simplified without tools for now)
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -295,15 +295,6 @@ Begin the adventure and respond to the player's actions accordingly.`
       body: JSON.stringify({
         model: selectedModel,
         messages: [systemMessage, ...processedMessages],
-        tools: Object.entries(gameTools).map(([name, tool]) => ({
-          type: "function",
-          function: {
-            name: name,
-            description: tool.description,
-            parameters: tool.parameters._def
-          }
-        })),
-        tool_choice: "auto",
         temperature: modelConfig.temperature,
         max_tokens: modelConfig.maxTokens,
         top_p: modelConfig.topP,
