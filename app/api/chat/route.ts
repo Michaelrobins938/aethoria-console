@@ -14,7 +14,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 // Voice synthesis function using ElevenLabs
-async function synthesizeSpeech(text: string, voiceId: string = 'M59d5WRbVEnIhYSp3kUE'): Promise<string> {
+async function synthesizeSpeech(text: string, voiceId: string = 'JoYo65swyP8hH6fVMeTO'): Promise<string> {
   try {
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY || 'sk_20c16a8e731826189e8dcb33a047c314fb4bfb5e67fbd075';
     
