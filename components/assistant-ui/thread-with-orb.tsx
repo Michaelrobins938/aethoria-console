@@ -150,6 +150,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(true); // Enable voice output by default
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true); // Track if voice is enabled/disabled
   const [recognition, setRecognition] = useState<any>(null);
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
 
@@ -256,11 +257,31 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           }));
 
           // Play the initial audio if available
-          if (responseData.audio && isSpeaking) {
+          if (responseData.audio && isSpeaking && isVoiceEnabled) {
             try {
               const audio = new Audio(responseData.audio);
               audio.onended = () => setIsSpeaking(false);
               audio.onerror = () => setIsSpeaking(false);
+              
+              // Make the orb audio-reactive during playback
+              const handleTimeUpdate = () => {
+                const audioLevel = audio.currentTime / audio.duration;
+                // Update orb intensity based on audio progress
+                if (orbState && orbState.setIntensity) {
+                  orbState.setIntensity(1.5 + (audioLevel * 0.5));
+                }
+              };
+              
+              audio.addEventListener('timeupdate', handleTimeUpdate);
+              audio.addEventListener('ended', () => {
+                audio.removeEventListener('timeupdate', handleTimeUpdate);
+                setIsSpeaking(false);
+                // Reset orb intensity
+                if (orbState && orbState.setIntensity) {
+                  orbState.setIntensity(1.0);
+                }
+              });
+              
               audio.play();
             } catch (error) {
               console.error('Failed to play initial audio:', error);
@@ -340,11 +361,31 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
       }));
 
       // Play ElevenLabs audio if available
-      if (responseData.audio && isSpeaking) {
+      if (responseData.audio && isSpeaking && isVoiceEnabled) {
         try {
           const audio = new Audio(responseData.audio);
           audio.onended = () => setIsSpeaking(false);
           audio.onerror = () => setIsSpeaking(false);
+          
+          // Make the orb audio-reactive during playback
+          const handleTimeUpdate = () => {
+            const audioLevel = audio.currentTime / audio.duration;
+            // Update orb intensity based on audio progress
+            if (orbState && orbState.setIntensity) {
+              orbState.setIntensity(1.5 + (audioLevel * 0.5));
+            }
+          };
+          
+          audio.addEventListener('timeupdate', handleTimeUpdate);
+          audio.addEventListener('ended', () => {
+            audio.removeEventListener('timeupdate', handleTimeUpdate);
+            setIsSpeaking(false);
+            // Reset orb intensity
+            if (orbState && orbState.setIntensity) {
+              orbState.setIntensity(1.0);
+            }
+          });
+          
           audio.play();
         } catch (error) {
           console.error('Failed to play audio:', error);
@@ -389,6 +430,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
   };
 
   const toggleVoiceOutput = () => {
+    if (!isVoiceEnabled) return; // Don't allow toggling if voice is disabled
+    
     if (isSpeaking) {
       setIsSpeaking(false);
     } else {
@@ -403,6 +446,26 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           const audio = new Audio(lastAIMessage.audio);
           audio.onended = () => setIsSpeaking(false);
           audio.onerror = () => setIsSpeaking(false);
+          
+          // Make the orb audio-reactive during playback
+          const handleTimeUpdate = () => {
+            const audioLevel = audio.currentTime / audio.duration;
+            // Update orb intensity based on audio progress
+            if (orbState && orbState.setIntensity) {
+              orbState.setIntensity(1.5 + (audioLevel * 0.5));
+            }
+          };
+          
+          audio.addEventListener('timeupdate', handleTimeUpdate);
+          audio.addEventListener('ended', () => {
+            audio.removeEventListener('timeupdate', handleTimeUpdate);
+            setIsSpeaking(false);
+            // Reset orb intensity
+            if (orbState && orbState.setIntensity) {
+              orbState.setIntensity(1.0);
+            }
+          });
+          
           audio.play();
         } catch (error) {
           console.error('Failed to play audio:', error);
@@ -414,20 +477,27 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     }
   };
 
+  const toggleVoiceEnabled = () => {
+    setIsVoiceEnabled(!isVoiceEnabled);
+    if (!isVoiceEnabled) {
+      setIsSpeaking(false); // Stop any current speech when disabling
+    }
+  };
+
   return (
     <div className="h-full flex flex-col relative mobile-full-height">
-      {/* NarratorOrb Background */}
+      {/* NarratorOrb Background - Enhanced prominence */}
       <NarratorOrbComponent 
         isVisible={true}
         intensity={orbState.intensity}
-        audioLevel={orbState.audioLevel}
-        className="absolute inset-0 pointer-events-none"
+        audioLevel={isSpeaking ? 0.8 : 0.3} // Higher audio level when speaking
+        className="absolute inset-0 pointer-events-none z-0"
       />
 
-      {/* Game Content */}
-      <div className="relative z-10 flex flex-col h-full">
+      {/* Game Content - Reduced opacity to show orb better */}
+      <div className="relative z-10 flex flex-col h-full bg-console-darker/60 backdrop-blur-sm rounded-lg">
         {/* Header with Voice Controls */}
-        <div className="mobile-chat-header">
+        <div className="mobile-chat-header bg-console-darker/80 backdrop-blur-sm border-b border-console-border">
           <h2 className="text-console-accent font-console text-lg">AI Game Master</h2>
           
           <div className="flex items-center space-x-2">
@@ -444,6 +514,19 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               <Dice1 className="w-4 h-4" />
             </button>
             
+            {/* Voice Enable/Disable Button */}
+            <button
+              onClick={toggleVoiceEnabled}
+              className={`mobile-button transition-colors ${
+                isVoiceEnabled 
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+              }`}
+              title={isVoiceEnabled ? 'Disable voice' : 'Enable voice'}
+            >
+              {isVoiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+            
             <button
               onClick={toggleVoiceInput}
               className={`mobile-button transition-colors ${
@@ -458,12 +541,15 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
             
             <button
               onClick={toggleVoiceOutput}
+              disabled={!isVoiceEnabled}
               className={`mobile-button transition-colors ${
-                isSpeaking 
-                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
-                  : 'bg-console-accent/20 text-console-accent border border-console-accent/30 hover:bg-console-accent/30'
+                !isVoiceEnabled 
+                  ? 'bg-gray-500/20 text-gray-400 border border-gray-500/30 cursor-not-allowed' 
+                  : isSpeaking 
+                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+                    : 'bg-console-accent/20 text-console-accent border border-console-accent/30 hover:bg-console-accent/30'
               }`}
-              title={isSpeaking ? 'Stop speaking' : 'Start voice output'}
+              title={!isVoiceEnabled ? 'Voice disabled' : isSpeaking ? 'Stop speaking' : 'Start voice output'}
             >
               {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
@@ -471,9 +557,9 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         </div>
 
         {/* Messages */}
-        <div className="mobile-chat-messages">
+        <div className="mobile-chat-messages bg-transparent">
           {gameState.messages.length === 0 ? (
-            <div className="text-center text-console-text-dim py-8">
+            <div className="text-center text-console-text-dim py-8 bg-console-darker/40 backdrop-blur-sm rounded-lg m-2">
               <p className="font-console text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
             </div>
           ) : (
@@ -487,7 +573,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                     message.role === 'user'
                       ? 'mobile-message-user'
                       : 'mobile-message-ai'
-                  }`}
+                  } bg-console-darker/70 backdrop-blur-sm`}
                 >
                   <div className="text-sm font-console leading-relaxed">
                     {typeof message.content === 'string' 
@@ -509,7 +595,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="mobile-message-ai">
+              <div className="mobile-message-ai bg-console-darker/70 backdrop-blur-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-100"></div>
@@ -522,7 +608,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         </div>
 
         {/* Input */}
-        <div className="mobile-chat-input">
+        <div className="mobile-chat-input bg-console-darker/80 backdrop-blur-sm border-t border-console-border">
           <div className="flex space-x-2">
             <input
               type="text"
