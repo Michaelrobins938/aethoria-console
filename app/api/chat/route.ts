@@ -32,8 +32,11 @@ export async function POST(req: NextRequest) {
 
     console.log('Environment check:')
     console.log('- OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY)
+    console.log('- OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length || 0)
+    console.log('- OPENROUTER_API_KEY prefix:', process.env.OPENROUTER_API_KEY?.substring(0, 10) || 'none')
     console.log('- NODE_ENV:', process.env.NODE_ENV)
     console.log('- VERCEL_ENV:', process.env.VERCEL_ENV)
+    console.log('- All env vars:', Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER')))
 
     // For now, just return a simple response to test the flow
     const testResponse = {
@@ -53,8 +56,11 @@ export async function POST(req: NextRequest) {
         hasCharacter: !!character,
         envCheck: {
           hasApiKey: !!process.env.OPENROUTER_API_KEY,
+          apiKeyLength: process.env.OPENROUTER_API_KEY?.length || 0,
+          apiKeyPrefix: process.env.OPENROUTER_API_KEY?.substring(0, 10) || 'none',
           nodeEnv: process.env.NODE_ENV,
-          vercelEnv: process.env.VERCEL_ENV
+          vercelEnv: process.env.VERCEL_ENV,
+          envVars: Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER'))
         }
       }
     }, { status: 200 })
