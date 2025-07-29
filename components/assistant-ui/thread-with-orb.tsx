@@ -201,24 +201,80 @@ export function ThreadWithOrb() {
     handleAIThinking();
 
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Call the AI API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [...gameState.messages, userMessage],
+          gamePrompt: gameState.gamePrompt,
+          character: gameState.character
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let aiResponse = '';
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I understand your action: "${userMessage.content}". This is a simulated AI response. In a real implementation, this would be processed by the AI system.`,
+        content: '',
         timestamp: Date.now()
       };
 
+      // Add the AI message to the state immediately
       setGameState(prev => ({
         ...prev,
         messages: [...prev.messages, aiMessage]
       }));
 
+      // Read the streaming response
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') break;
+            
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.choices?.[0]?.delta?.content) {
+                aiResponse += parsed.choices[0].delta.content;
+                aiMessage.content = aiResponse;
+                
+                // Update the message in state
+                setGameState(prev => ({
+                  ...prev,
+                  messages: prev.messages.map(msg => 
+                    msg.id === aiMessage.id ? { ...msg, content: aiResponse } : msg
+                  )
+                }));
+              }
+            } catch (e) {
+              // Ignore parsing errors for incomplete chunks
+            }
+          }
+        }
+      }
+
       // Speak the response if enabled
       if (synthesis && isSpeaking) {
-        const utterance = new SpeechSynthesisUtterance(aiMessage.content as string);
+        const utterance = new SpeechSynthesisUtterance(aiResponse);
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = () => setIsSpeaking(false);
         synthesis.speak(utterance);
@@ -231,6 +287,19 @@ export function ThreadWithOrb() {
 
     } catch (error) {
       console.error('Failed to process message:', error);
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Sorry, I encountered an error processing your request. Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: Date.now()
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        messages: [...prev.messages, errorMessage]
+      }));
     } finally {
       setIsLoading(false);
       handleAIResponse();
