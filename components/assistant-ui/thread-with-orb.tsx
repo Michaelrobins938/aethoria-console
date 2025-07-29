@@ -128,6 +128,7 @@ interface ThreadWithOrbProps {
 }
 
 export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
+  const { orbState, handleAIThinking, handleAIResponse, handleMessageActivity, handleVoiceActivity } = useNarratorOrb()
   const [gameState, setGameState] = useState<GameState>(() => {
     // Use provided props or default state
     const savedState = loadGameState();
@@ -146,15 +147,13 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     }
     return defaultState;
   });
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(true); // Enable voice output by default
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true); // Track if voice is enabled/disabled
-  const [recognition, setRecognition] = useState<any>(null);
-  const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
-
-  const { orbState, handleMessageActivity, handleAIThinking, handleAIResponse, handleVoiceActivity } = useNarratorOrb()
+  const [recognition, setRecognition] = useState<any>(null)
+  const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null)
 
   // Initialize speech recognition
   useEffect(() => {
@@ -266,20 +265,14 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               // Make the orb audio-reactive during playback
               const handleTimeUpdate = () => {
                 const audioLevel = audio.currentTime / audio.duration;
-                // Update orb intensity based on audio progress
-                if (orbState && orbState.setIntensity) {
-                  orbState.setIntensity(1.5 + (audioLevel * 0.5));
-                }
+                // The orb will automatically respond to the isSpeaking state
+                // No need to manually set intensity
               };
               
               audio.addEventListener('timeupdate', handleTimeUpdate);
               audio.addEventListener('ended', () => {
                 audio.removeEventListener('timeupdate', handleTimeUpdate);
                 setIsSpeaking(false);
-                // Reset orb intensity
-                if (orbState && orbState.setIntensity) {
-                  orbState.setIntensity(1.0);
-                }
               });
               
               audio.play();
@@ -370,20 +363,14 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           // Make the orb audio-reactive during playback
           const handleTimeUpdate = () => {
             const audioLevel = audio.currentTime / audio.duration;
-            // Update orb intensity based on audio progress
-            if (orbState && orbState.setIntensity) {
-              orbState.setIntensity(1.5 + (audioLevel * 0.5));
-            }
+            // The orb will automatically respond to the isSpeaking state
+            // No need to manually set intensity
           };
           
           audio.addEventListener('timeupdate', handleTimeUpdate);
           audio.addEventListener('ended', () => {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             setIsSpeaking(false);
-            // Reset orb intensity
-            if (orbState && orbState.setIntensity) {
-              orbState.setIntensity(1.0);
-            }
           });
           
           audio.play();
@@ -450,20 +437,14 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           // Make the orb audio-reactive during playback
           const handleTimeUpdate = () => {
             const audioLevel = audio.currentTime / audio.duration;
-            // Update orb intensity based on audio progress
-            if (orbState && orbState.setIntensity) {
-              orbState.setIntensity(1.5 + (audioLevel * 0.5));
-            }
+            // The orb will automatically respond to the isSpeaking state
+            // No need to manually set intensity
           };
           
           audio.addEventListener('timeupdate', handleTimeUpdate);
           audio.addEventListener('ended', () => {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             setIsSpeaking(false);
-            // Reset orb intensity
-            if (orbState && orbState.setIntensity) {
-              orbState.setIntensity(1.0);
-            }
           });
           
           audio.play();
