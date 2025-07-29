@@ -100,6 +100,9 @@ export async function POST(req: NextRequest) {
     if (openAIKey) {
       try {
         console.log('Attempting OpenAI API call...');
+        console.log('OpenAI Key length:', openAIKey.length);
+        console.log('OpenAI Key prefix:', openAIKey.substring(0, 10));
+        
         const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -117,6 +120,9 @@ export async function POST(req: NextRequest) {
           })
         });
 
+        console.log('OpenAI Response status:', openAIResponse.status);
+        console.log('OpenAI Response ok:', openAIResponse.ok);
+
         if (openAIResponse.ok) {
           const openAIData = await openAIResponse.json();
           console.log('OpenAI success:', openAIData);
@@ -132,10 +138,13 @@ export async function POST(req: NextRequest) {
             provider: 'openai'
           }, { status: 200 });
         } else {
-          console.log('OpenAI failed, using fallback...');
+          const errorText = await openAIResponse.text();
+          console.log('OpenAI failed with status:', openAIResponse.status);
+          console.log('OpenAI error response:', errorText);
         }
       } catch (error) {
-        console.log('OpenAI error, using fallback...', error);
+        console.log('OpenAI error:', error);
+        console.log('OpenAI error message:', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
