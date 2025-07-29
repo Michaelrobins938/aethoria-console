@@ -423,7 +423,7 @@ export function ThreadWithOrb() {
           
           {isListening && (
             <div className="mt-2 text-xs text-console-text-dim font-console">
-              Voice commands: "send", "clear", "help"
+              Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
             </div>
           )}
         </div>

@@ -265,7 +265,7 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
               
               {isListening && (
                 <div className="text-xs text-cyan-300/70 font-console">
-                  Voice commands: "send", "clear", "help"
+                  Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
                 </div>
               )}
             </div>
@@ -352,7 +352,7 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
           {/* Voice Command Hints - Mobile */}
           {isListening && (
             <div className="mt-2 text-xs text-cyan-300/70 font-console">
-              Voice commands: "send", "clear", "help"
+              Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
             </div>
           )}
         </div>
