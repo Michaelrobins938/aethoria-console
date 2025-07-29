@@ -1,11 +1,21 @@
-import { Gamepad2, Settings, Map, User, BookOpen, Package, Mic } from "lucide-react";
+import { Gamepad2, Settings, Map, User, BookOpen, Package, Mic, Dice1 } from "lucide-react";
 
 interface GameStateProps {
   character?: any;
   gamePrompt?: any;
+  onDiceRoll?: (result: number) => void;
 }
 
-export function ThreadList({ character, gamePrompt }: GameStateProps) {
+export function ThreadList({ character, gamePrompt, onDiceRoll }: GameStateProps) {
+  const rollD20 = () => {
+    const result = Math.floor(Math.random() * 20) + 1;
+    if (onDiceRoll) {
+      onDiceRoll(result);
+    }
+    // Also log to console for debugging
+    console.log(`Rolled d20: ${result}`);
+  };
+
   return (
     <div className="h-full flex flex-col bg-console-dark border border-console-border rounded-lg">
       {/* Header */}
@@ -18,6 +28,13 @@ export function ThreadList({ character, gamePrompt }: GameStateProps) {
 
       {/* Navigation Buttons */}
       <div className="p-4 space-y-2">
+        <button 
+          onClick={rollD20}
+          className="w-full flex items-center space-x-2 px-3 py-2 bg-console-accent/20 hover:bg-console-accent/30 border border-console-accent/30 rounded-lg transition-colors duration-200 text-console-accent font-console text-sm font-bold"
+        >
+          <Dice1 className="w-4 h-4" />
+          <span>Roll d20</span>
+        </button>
         <button className="w-full flex items-center space-x-2 px-3 py-2 bg-console-darker hover:bg-console-accent/20 border border-console-border rounded-lg transition-colors duration-200 text-console-text font-console text-sm">
           <Settings className="w-4 h-4" />
           <span>Settings</span>

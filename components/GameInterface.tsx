@@ -4,7 +4,7 @@ import { Character, GamePrompt } from "@/lib/types";
 import { NarratorOrbComponent } from './NarratorOrb'
 import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
 import { useState } from 'react'
-import { Menu, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Menu, X, ChevronLeft, ChevronRight, Dice1 } from 'lucide-react'
 
 interface GameInterfaceProps {
   character: Character;
@@ -15,6 +15,13 @@ interface GameInterfaceProps {
 export function GameInterface({ character, gamePrompt, onBack }: GameInterfaceProps) {
   const { orbState } = useNarratorOrb()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [lastDiceRoll, setLastDiceRoll] = useState<number | null>(null)
+
+  const handleDiceRoll = (result: number) => {
+    setLastDiceRoll(result);
+    // You can add additional logic here, like sending the dice roll to the AI
+    console.log(`Dice roll result: ${result}`);
+  };
 
   return (
     <div className="min-h-screen bg-console-dark p-2 md:p-4 relative mobile-full-height">
@@ -82,8 +89,8 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
               onClick={() => setSidebarOpen(false)}
             />
             
-            {/* Sidebar Content */}
-            <div className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-console-darker/95 backdrop-blur-sm border-r border-console-border">
+            {/* Sidebar Content - Slide from right */}
+            <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85vw] bg-console-darker/95 backdrop-blur-sm border-l border-console-border transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}">
               <div className="h-full flex flex-col">
                 <div className="p-4 border-b border-console-border">
                   <div className="flex items-center justify-between">
@@ -97,7 +104,7 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  <ThreadList character={character} gamePrompt={gamePrompt} />
+                  <ThreadList character={character} gamePrompt={gamePrompt} onDiceRoll={handleDiceRoll} />
                 </div>
               </div>
             </div>
@@ -105,7 +112,7 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
 
           {/* Desktop Sidebar */}
           <div className="hidden md:block w-80 bg-console-darker/80 backdrop-blur-sm border border-console-border rounded-lg overflow-hidden">
-            <ThreadList character={character} gamePrompt={gamePrompt} />
+            <ThreadList character={character} gamePrompt={gamePrompt} onDiceRoll={handleDiceRoll} />
           </div>
 
           {/* Main Chat Area */}
@@ -113,6 +120,27 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
             <ThreadWithOrb gamePrompt={gamePrompt} character={character} />
           </div>
         </div>
+
+        {/* Floating Action Button for Mobile Menu */}
+        <div className="md:hidden fixed bottom-4 right-4 z-40">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="mobile-button bg-console-accent hover:bg-console-accent-dark text-console-dark font-console rounded-full w-14 h-14 shadow-lg border-2 border-console-accent/30 flex items-center justify-center transition-all duration-200 hover:scale-110"
+            title={sidebarOpen ? "Close Menu" : "Open Game Menu"}
+          >
+            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Dice Roll Display */}
+        {lastDiceRoll && (
+          <div className="md:hidden fixed bottom-20 right-4 z-40">
+            <div className="bg-console-accent/90 backdrop-blur-sm text-console-dark font-console rounded-lg px-3 py-2 shadow-lg border border-console-accent/30">
+              <div className="text-xs">Last Roll:</div>
+              <div className="text-lg font-bold">{lastDiceRoll}</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -431,6 +431,19 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           <h2 className="text-console-accent font-console text-lg">AI Game Master</h2>
           
           <div className="flex items-center space-x-2">
+            {/* Quick Dice Roll Button */}
+            <button
+              onClick={() => {
+                const result = Math.floor(Math.random() * 20) + 1;
+                console.log(`Quick d20 roll: ${result}`);
+                // You can add logic to send this to the AI
+              }}
+              className="mobile-button bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30"
+              title="Roll d20"
+            >
+              <Dice1 className="w-4 h-4" />
+            </button>
+            
             <button
               onClick={toggleVoiceInput}
               className={`mobile-button transition-colors ${
