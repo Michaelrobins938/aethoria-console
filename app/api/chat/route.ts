@@ -39,10 +39,19 @@ export async function POST(req: NextRequest) {
 
     // Check if OpenRouter API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OpenRouter API key missing')
       return NextResponse.json(
         { 
           error: 'OpenRouter API key not configured',
-          message: 'Please set your OPENROUTER_API_KEY in the environment variables to use the AI chat feature.'
+          message: 'Please set your OPENROUTER_API_KEY in the environment variables to use the AI chat feature.',
+          debug: {
+            hasApiKey: false,
+            envVars: {
+              OPENROUTER_API_KEY: 'missing',
+              NODE_ENV: process.env.NODE_ENV,
+              VERCEL_ENV: process.env.VERCEL_ENV
+            }
+          }
         },
         { status: 500 }
       )
@@ -310,7 +319,17 @@ Begin the adventure and respond to the player's actions accordingly.`
       return NextResponse.json(
         { 
           error: 'Failed to generate AI response',
-          details: `OpenRouter API error: ${response.status}`
+          details: `OpenRouter API error: ${response.status}`,
+          debug: {
+            status: response.status,
+            statusText: response.statusText,
+            errorData: errorData.substring(0, 500), // Limit error data length
+            requestBody: {
+              model: selectedModel,
+              messageCount: processedMessages.length,
+              hasSystemMessage: !!systemMessage
+            }
+          }
         },
         { status: 500 }
       )
