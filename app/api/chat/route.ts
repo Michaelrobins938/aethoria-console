@@ -13,6 +13,42 @@ export async function OPTIONS(req: NextRequest) {
   })
 }
 
+// Voice synthesis function using ElevenLabs
+async function synthesizeSpeech(text: string, voiceId: string = 'M59d5WRbVEnIhYSp3kUE'): Promise<string> {
+  try {
+    const elevenLabsKey = process.env.ELEVENLABS_API_KEY || 'sk_20c16a8e731826189e8dcb33a047c314fb4bfb5e67fbd075';
+    
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': elevenLabsKey,
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.5,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      console.log('ElevenLabs API error:', response.status);
+      return '';
+    }
+
+    const audioBuffer = await response.arrayBuffer();
+    const base64Audio = Buffer.from(audioBuffer).toString('base64');
+    return `data:audio/mpeg;base64,${base64Audio}`;
+  } catch (error) {
+    console.log('Voice synthesis error:', error);
+    return '';
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     console.log('=== CHAT API CALLED ===')
@@ -83,10 +119,14 @@ export async function POST(req: NextRequest) {
             content: openRouterData.choices[0]?.message?.content || 'No response from AI'
           };
 
+          // Generate voice synthesis for the AI response
+          const audioData = await synthesizeSpeech(aiResponse.content);
+
           return NextResponse.json({
             success: true,
             message: aiResponse,
-            provider: 'openrouter'
+            provider: 'openrouter',
+            audio: audioData || null
           }, { status: 200 });
         } else {
           console.log('OpenRouter failed, trying OpenAI...');
@@ -132,10 +172,14 @@ export async function POST(req: NextRequest) {
             content: openAIData.choices[0]?.message?.content || 'No response from AI'
           };
 
+          // Generate voice synthesis for the AI response
+          const audioData = await synthesizeSpeech(aiResponse.content);
+
           return NextResponse.json({
             success: true,
             message: aiResponse,
-            provider: 'openai'
+            provider: 'openai',
+            audio: audioData || null
           }, { status: 200 });
         } else {
           const errorText = await openAIResponse.text();
