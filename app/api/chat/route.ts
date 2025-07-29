@@ -74,9 +74,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://aethoria-console.vercel.app',
-          'X-Title': 'Aethoria Console'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: 'openai/gpt-3.5-turbo',

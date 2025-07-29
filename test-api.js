@@ -6,7 +6,7 @@ const data = JSON.stringify({
 });
 
 const options = {
-  hostname: 'aethoria-console-el9897rqw-michaels-projects-19e37f0b.vercel.app',
+  hostname: 'aethoria-console-jh5ayue53-michaels-projects-19e37f0b.vercel.app',
   port: 443,
   path: '/api/chat',
   method: 'POST',
