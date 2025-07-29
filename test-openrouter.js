@@ -1,6 +1,6 @@
 const https = require('https');
 
-const apiKey = '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';
+const apiKey = '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';
 
 const data = JSON.stringify({
   model: 'openai/gpt-3.5-turbo',

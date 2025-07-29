@@ -38,31 +38,33 @@ export async function POST(req: NextRequest) {
     console.log('- VERCEL_ENV:', process.env.VERCEL_ENV)
     console.log('- All env vars:', Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER')))
 
-    // For now, use a test response since the API key seems invalid
-    console.log('Using test response - API key validation needed');
-    const apiKey = process.env.OPENROUTER_API_KEY || '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';
-    const testResponse = {
-      role: 'assistant',
-      content: `Hello! I'm your AI Game Master. I received your message: "${messages[messages.length - 1]?.content || 'No message'}"\n\nThis is a test response to make sure the API is working. The OpenRouter API key needs to be validated or replaced with a working one.`
-    };
+    // Try to use the actual OpenRouter API
+    const apiKey = process.env.OPENROUTER_API_KEY || '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';
+    if (!apiKey) {
+      console.log('No API key found, returning test response');
+      const testResponse = {
+        role: 'assistant',
+        content: `Hello! I'm your AI Game Master. I received your message: "${messages[messages.length - 1]?.content || 'No message'}"\n\nThis is a test response to make sure the API is working. Once we confirm this works, I'll connect to the real AI.`
+      };
 
-    return NextResponse.json({
-      success: true,
-      message: testResponse,
-      debug: {
-        messageCount: messages.length,
-        hasGamePrompt: !!gamePrompt,
-        hasCharacter: !!character,
-        envCheck: {
-          hasApiKey: true,
-          apiKeyLength: apiKey.length,
-          apiKeyPrefix: apiKey.substring(0, 10),
-          nodeEnv: process.env.NODE_ENV,
-          vercelEnv: process.env.VERCEL_ENV,
-          envVars: Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER'))
+      return NextResponse.json({
+        success: true,
+        message: testResponse,
+        debug: {
+          messageCount: messages.length,
+          hasGamePrompt: !!gamePrompt,
+          hasCharacter: !!character,
+          envCheck: {
+            hasApiKey: false,
+            apiKeyLength: 0,
+            apiKeyPrefix: 'none',
+            nodeEnv: process.env.NODE_ENV,
+            vercelEnv: process.env.VERCEL_ENV,
+            envVars: Object.keys(process.env).filter(key => key.includes('API') || key.includes('ROUTER'))
+          }
         }
-      }
-    }, { status: 200 });
+      }, { status: 200 });
+    }
 
     console.log('API key found, attempting OpenRouter call');
     
