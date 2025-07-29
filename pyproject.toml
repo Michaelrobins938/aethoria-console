@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "your-project-name"
+version = "0.1.0"
+description = "A brief description of your project."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+descript-audiotools = "0.7.2"
+protobuf = ">=3.19.6,<3.20.0"  # Ensure compatibility with other packages
+googleapis-common-protos = "^1.63.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+flake8 = "^3.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

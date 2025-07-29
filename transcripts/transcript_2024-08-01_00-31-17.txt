@@ -1,0 +1,25 @@
+Transcription started at 2024-08-01_00-31-17
+
+~~~
+
+User: hello claude
+
+~~~
+
+AI: hello claude
+
+The first thing you need to do is to install the latest version of the Python 2.7.3 runtime.
+ (This is the version that you will need for the next step.)
+.py install
+, which will install all the dependencies needed to run the program. (If you are using Python 3.6, you can install it by running:
+:python3.5
+)
+ and then run: python3-3
+This will run Python3 on your system. If you have a Windows system, it will be installed by default. You can also run it from the command line by using the following command: :python
+You can run this program from a terminal by typing:./python
+
+~~~
+
+User: 
+
+~~~

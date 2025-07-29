@@ -1,0 +1,14 @@
+2024-08-10 04:29:36,637 - ERROR - Error processing message: WorldStateManager.update_from_message() missing 1 required positional argument: 'entities'
+2024-08-10 04:29:36,637 - ERROR - Traceback (most recent call last):
+  File "C:\Users\Micha\Desktop\AethoriaWindows - Copy\ui.py", line 181, in process_message
+    self.world_state_manager.update_from_message(message)
+TypeError: WorldStateManager.update_from_message() missing 1 required positional argument: 'entities'
+
+2024-08-10 04:29:37,021 - ERROR - TTS Error: video system not initialized
+2024-08-10 04:29:39,827 - ERROR - Error updating world: 'WorldStateManager' object has no attribute 'set_state'
+2024-08-10 04:29:39,828 - ERROR - Traceback (most recent call last):
+  File "C:\Users\Micha\Desktop\AethoriaWindows - Copy\ui.py", line 226, in update_world
+    self.world_state_manager.set_state(updated_world_state)
+AttributeError: 'WorldStateManager' object has no attribute 'set_state'
+
+2024-08-10 04:29:40,146 - ERROR - TTS Error: video system not initialized

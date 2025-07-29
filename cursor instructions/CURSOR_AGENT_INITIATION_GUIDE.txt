@@ -1,0 +1,214 @@
+CURSOR AGENT INITIATION GUIDE
+============================
+
+🎯 PROJECT CONTEXT: AETHORIA AI-POWERED INTERACTIVE STORYTELLING GAME
+====================================================================
+
+You are working on Aethoria, a sophisticated AI-powered interactive storytelling game that combines modern web technologies with advanced AI integration. This is a production-ready application that is 90% complete and requires expert-level development to finish the remaining features.
+
+CRITICAL PROJECT INFORMATION:
+- Frontend: Next.js 14 with TypeScript, Tailwind CSS, Zustand state management
+- Backend: Python FastAPI with AI integration (OpenRouter API, Groq)
+- Current Status: 90% complete, production-ready foundation
+- Architecture: Full-stack with real-time AI interactions
+- Goal: Complete the remaining 10% with production-quality code
+
+🚫 ABSOLUTE PROHIBITIONS - NEVER DO THESE:
+============================================
+
+1. NO PLACEHOLDER CODE
+   - Never write "// TODO: implement this"
+   - Never write "// placeholder for future implementation"
+   - Never write "// mock data" or "// example code"
+   - Every line of code must be functional and production-ready
+
+2. NO SIMPLIFIED IMPLEMENTATIONS
+   - Never write simplified versions "to get it working"
+   - Never use basic implementations when advanced features exist
+   - Never skip error handling or edge cases
+   - Always implement full features with proper validation
+
+3. NO MOCK DATA
+   - Never create fake data for testing
+   - Never use hardcoded example values
+   - Never write "// sample data" or similar
+   - Use real data structures and proper data flow
+
+4. NO EXAMPLE CODE
+   - Never write "// example of how to use this"
+   - Never create demonstration code
+   - Never write "// this shows how it works"
+   - Write only functional, production code
+
+5. NO TEMPORARY SOLUTIONS
+   - Never write "// temporary fix" or "// quick solution"
+   - Never implement workarounds that need to be replaced later
+   - Never use "// hack" or "// kludge"
+   - Always implement proper, maintainable solutions
+
+🎯 EXPERT DEVELOPER RULES & GUIDELINES
+======================================
+
+RULE 1: PRODUCTION-READY CODE ONLY
+- Every function must be fully implemented
+- Every component must be complete and functional
+- Every API endpoint must be properly implemented
+- Every error case must be handled
+- Every edge case must be considered
+
+RULE 2: TYPE SAFETY FIRST
+- Use TypeScript strictly - no 'any' types
+- Define proper interfaces for all data structures
+- Use strict type checking and validation
+- Implement proper error types and handling
+
+RULE 3: PERFORMANCE OPTIMIZATION
+- Implement proper React hooks usage
+- Use memoization where appropriate
+- Optimize re-renders and state updates
+- Implement proper loading states and error boundaries
+
+RULE 4: SECURITY & VALIDATION
+- Validate all user inputs
+- Sanitize data before processing
+- Implement proper authentication checks
+- Handle sensitive data appropriately
+
+RULE 5: ERROR HANDLING
+- Implement comprehensive error handling
+- Provide meaningful error messages
+- Implement proper fallback mechanisms
+- Log errors appropriately for debugging
+
+RULE 6: CODE QUALITY
+- Follow established patterns in the codebase
+- Use consistent naming conventions
+- Implement proper separation of concerns
+- Write self-documenting code with clear comments
+
+RULE 7: TESTING READINESS
+- Write testable code
+- Implement proper dependency injection
+- Use pure functions where possible
+- Structure code for easy unit testing
+
+RULE 8: MAINTAINABILITY
+- Write clean, readable code
+- Use meaningful variable and function names
+- Implement proper abstraction layers
+- Follow DRY (Don't Repeat Yourself) principles
+
+🎮 CURRENT DEVELOPMENT FOCUS AREAS
+==================================
+
+PRIORITY 1: AI CHAT INTERFACE ENHANCEMENT
+- Location: components/AIChat.tsx
+- Goal: Implement real-time streaming AI responses
+- Requirements: Full error handling, context management, model switching
+
+PRIORITY 2: VOICE INTEGRATION REFINEMENT
+- Location: components/VoiceRecognition.tsx, components/VoiceSynthesis.tsx
+- Goal: Implement character-specific voice synthesis and command recognition
+- Requirements: Multi-language support, noise filtering, voice commands
+
+PRIORITY 3: COMBAT UI POLISH
+- Location: components/CombatSystem.tsx
+- Goal: Enhance visual combat interface with animations and feedback
+- Requirements: Action animations, status effects, real-time feedback
+
+PRIORITY 4: ERROR HANDLING SYSTEM
+- Location: Throughout the application
+- Goal: Implement comprehensive error handling and user feedback
+- Requirements: Graceful degradation, user-friendly messages, logging
+
+⚙️ TECHNICAL REQUIREMENTS
+=========================
+
+FRONTEND REQUIREMENTS:
+- Next.js 14 with App Router
+- TypeScript with strict typing
+- Tailwind CSS for styling
+- Zustand for state management
+- Lucide React for icons
+- Web Speech API for voice features
+
+BACKEND REQUIREMENTS:
+- Python FastAPI with WebSocket support
+- OpenRouter API for AI models
+- Groq for fast AI inference
+- ChromaDB for vector storage
+- Proper async/await patterns
+
+AI INTEGRATION REQUIREMENTS:
+- Dynamic model selection based on game genre
+- Real-time streaming responses
+- Context awareness and memory
+- Error handling for AI service failures
+- Cost-effective API usage
+
+🎯 DEVELOPMENT APPROACH
+=======================
+
+1. UNDERSTAND THE EXISTING CODEBASE
+   - Read the current implementation thoroughly
+   - Understand the established patterns
+   - Follow the existing architecture
+   - Maintain consistency with current code style
+
+2. IMPLEMENT FULL FEATURES
+   - Don't create partial implementations
+   - Don't leave TODO comments
+   - Don't use placeholder data
+   - Implement complete, working features
+
+3. TEST THOROUGHLY
+   - Test all edge cases
+   - Test error scenarios
+   - Test performance implications
+   - Test user experience flows
+
+4. DOCUMENT CHANGES
+   - Update relevant documentation
+   - Add inline comments for complex logic
+   - Update type definitions
+   - Document API changes
+
+5. MAINTAIN CODE QUALITY
+   - Follow established conventions
+   - Use proper error handling
+   - Implement proper validation
+   - Write clean, maintainable code
+
+🚀 EXPECTED DELIVERABLES
+=========================
+
+For every feature you work on:
+1. Complete, functional implementation
+2. Proper error handling
+3. TypeScript type definitions
+4. Component integration
+5. State management integration
+6. API integration (if applicable)
+7. User experience considerations
+8. Performance optimization
+9. Accessibility compliance
+10. Mobile responsiveness
+
+🎯 SUCCESS CRITERIA
+===================
+
+Your work is successful when:
+- Code runs without errors
+- Features work as intended
+- Error handling is comprehensive
+- Performance is optimized
+- Code is maintainable and readable
+- Types are properly defined
+- Components are properly integrated
+- User experience is smooth
+- No placeholder or mock code exists
+- All edge cases are handled
+
+Remember: You are working on a production application that is 90% complete. Every line of code you write must be production-ready, fully functional, and maintain the high quality standards already established in the codebase.
+
+The goal is to complete the remaining 10% with the same level of quality and polish as the existing 90% of the application. 

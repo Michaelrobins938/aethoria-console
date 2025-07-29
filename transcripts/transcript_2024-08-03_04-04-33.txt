@@ -1,0 +1,26 @@
+Transcription started at 2024-08-03_04-04-33
+
+
+AI: I'm glad you're ready to start this thrilling adventure in the Alien universe! You have chosen to play as **Dr. Elara Vance**, a brilliant xenobiologist with a classified past.
+
+**Initial Briefing:**
+As Dr. Elara Vance, you receive a message from your Weyland-Yutani contact, Director Samson. He informs you that a remote research outpost on LV-493, codenamed " Erebus", has gone dark after reporting an unknown anomaly in the nearby ancient alien ruins. The signal is garbled and contains warnings about a possible " outbreak".
+
+You have been selected for a top-secret expedition to investigate the outpost and contain the potential threat. Your ship, the USCSS Kepler, has been prepped for departure and will reach LV-493 within 3 hours.
+
+**Character Setup:**
+
+1. Dr. Elara Vance:
+   * Intelligence 16 (+3), Dexterity 14 (+2), Wisdom 15 (+2)
+   * Xenomorph Knowledge: +2 bonus on Intelligence (Survival) checks
+   * Adaptive Immunity: 1-time resistance to xenomorph acidic blood splatters
+
+Equipment:
+- Advanced Bio-Scanner (20 meter range, xenomorph tracking, surface and internal tissue scans)
+- Experimental Vaccine Kit (undistributed W-Y project for pre-infection prophylaxis)
+- Neural Uplink Device (with Level-1 decryption codes)
+
+Your eyes narrow as you check your mission details, going through Director Samson's attached encrypted documents on your Data Slate:
+
+"The nature of this threat has compelled the development of Operation Respite: covert extractions, non-standard solution executions and appropriate control by contained measure when certain results get dire, really getting over many incidents may benefit eventual settlement-acting information available pending survival event notice due LV 23 :H ours res...file compressed transfer denied clearance issue confirmed update--out."
+

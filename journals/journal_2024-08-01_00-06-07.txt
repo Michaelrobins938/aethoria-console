@@ -1,0 +1,12 @@
+Session started at 2024-08-01_00-06-07
+
+User:  Hello, Claude.
+
+Transcription:
+Transcription started at 2024-08-01_00-04-50
+
+~~~
+
+User: Hello, Claude.
+
+~~~

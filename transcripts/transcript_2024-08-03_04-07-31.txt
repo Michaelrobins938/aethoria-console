@@ -1,0 +1,14 @@
+Transcription started at 2024-08-03_04-07-31
+
+
+AI: Welcome to the world of Westeros, a realm where honor is rare, death is common, and the games of thrones never truly end. As the chosen protagonist, you embark on a perilous journey amidst the gathering darkness. Will you guide Aeron Blackfyre, the exiled prince and secret Targaryen descendant, to reclaim the Iron Throne? Or perhaps Lyanna Stark-Reed, the Crannogwoman skinchanger, to unite the North against the coming darkness? Choose your character, and together, let us weave a tale of ice and fire that will shape the fate of the Seven Kingdoms.
+
+Which character would you like to play as?
+
+Type '1' for Aeron Blackfyre or '2' for Lyanna Stark-Reed
+
+~~~
+
+User: 1
+
+~~~
