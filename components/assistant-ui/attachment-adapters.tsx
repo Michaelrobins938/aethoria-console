@@ -177,10 +177,11 @@ export class GameFileAdapter implements AttachmentAdapter {
         if (parsed.name && parsed.abilities) {
           return {
             id: crypto.randomUUID(),
-            type: "character-sheet",
+            type: "document",
             name: file.name,
             file,
-            status: { type: "running" },
+            contentType: file.type,
+            status: { type: "running", reason: "uploading", progress: 0 },
           };
         }
       } catch (error) {
@@ -190,10 +191,11 @@ export class GameFileAdapter implements AttachmentAdapter {
 
     return {
       id: crypto.randomUUID(),
-      type: "game-file",
+      type: "document",
       name: file.name,
       file,
-      status: { type: "running" },
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
     };
   }
 
