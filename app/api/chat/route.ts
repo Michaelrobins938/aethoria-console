@@ -141,6 +141,31 @@ export async function POST(req: NextRequest) {
           const errorText = await openAIResponse.text();
           console.log('OpenAI failed with status:', openAIResponse.status);
           console.log('OpenAI error response:', errorText);
+          
+          // Check for quota error specifically
+          if (errorText.includes('insufficient_quota') || errorText.includes('quota')) {
+            const quotaErrorResponse = {
+              role: 'assistant',
+              content: `🎮 Welcome to Aethoria! I'm your AI Game Master. I received your message: "${messages[messages.length - 1]?.content || 'Hello'}"\n\nI can see your OpenAI API key is working, but it appears to have no available quota/credits. To enable full AI functionality, please add credits to your OpenAI account at https://platform.openai.com/account/billing\n\nFor now, I can help guide you through the game interface and explain how the system works!`
+            };
+
+            return NextResponse.json({
+              success: true,
+              message: quotaErrorResponse,
+              provider: 'openai-quota-error',
+              debug: {
+                messageCount: messages.length,
+                hasGamePrompt: !!gamePrompt,
+                hasCharacter: !!character,
+                envCheck: {
+                  hasOpenRouterKey: !!openRouterKey,
+                  hasOpenAIKey: !!openAIKey,
+                  nodeEnv: process.env.NODE_ENV,
+                  vercelEnv: process.env.VERCEL_ENV
+                }
+              }
+            }, { status: 200 });
+          }
         }
       } catch (error) {
         console.log('OpenAI error:', error);
