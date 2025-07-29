@@ -147,11 +147,13 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
     }
     return defaultState;
   });
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isListening, setIsListening] = useState(false)
-  const [isSpeaking, setIsSpeaking] = useState(true); // Enable voice output by default
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true); // Track if voice is enabled/disabled
+  const [isSpeaking, setIsSpeaking] = useState(true);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [isListening, setIsListening] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [input, setInput] = useState('');
+  const [audioLevel, setAudioLevel] = useState(0.3); // Track actual audio level for orb reactivity
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [recognition, setRecognition] = useState<any>(null)
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null)
 
@@ -271,26 +273,41 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           if (responseData.audio && isSpeaking && isVoiceEnabled) {
             try {
               const audio = new Audio(responseData.audio);
-              audio.onended = () => setIsSpeaking(false);
-              audio.onerror = () => setIsSpeaking(false);
+              setCurrentAudio(audio);
+              
+              audio.onended = () => {
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
+              };
+              audio.onerror = () => {
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
+              };
               
               // Make the orb audio-reactive during playback
               const handleTimeUpdate = () => {
-                const audioLevel = audio.currentTime / audio.duration;
-                // The orb will automatically respond to the isSpeaking state
-                // No need to manually set intensity
+                if (audio.duration > 0) {
+                  const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+                  setAudioLevel(currentLevel);
+                }
               };
               
               audio.addEventListener('timeupdate', handleTimeUpdate);
               audio.addEventListener('ended', () => {
                 audio.removeEventListener('timeupdate', handleTimeUpdate);
                 setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
               });
               
+              setAudioLevel(0.8); // Initial level when starting
               audio.play();
             } catch (error) {
               console.error('Failed to play initial audio:', error);
               setIsSpeaking(false);
+              setAudioLevel(0.3);
             }
           }
 
@@ -375,32 +392,47 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         messages: [...prev.messages, aiMessage]
       }));
 
-      // Play ElevenLabs audio if available
-      if (responseData.audio && isSpeaking && isVoiceEnabled) {
-        try {
-          const audio = new Audio(responseData.audio);
-          audio.onended = () => setIsSpeaking(false);
-          audio.onerror = () => setIsSpeaking(false);
-          
-          // Make the orb audio-reactive during playback
-          const handleTimeUpdate = () => {
-            const audioLevel = audio.currentTime / audio.duration;
-            // The orb will automatically respond to the isSpeaking state
-            // No need to manually set intensity
-          };
-          
-          audio.addEventListener('timeupdate', handleTimeUpdate);
-          audio.addEventListener('ended', () => {
-            audio.removeEventListener('timeupdate', handleTimeUpdate);
-            setIsSpeaking(false);
-          });
-          
-          audio.play();
-        } catch (error) {
-          console.error('Failed to play audio:', error);
-          setIsSpeaking(false);
-        }
-      }
+          // Play ElevenLabs audio if available
+          if (responseData.audio && isSpeaking && isVoiceEnabled) {
+            try {
+              const audio = new Audio(responseData.audio);
+              setCurrentAudio(audio);
+              
+              audio.onended = () => {
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
+              };
+              audio.onerror = () => {
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
+              };
+              
+              // Make the orb audio-reactive during playback
+              const handleTimeUpdate = () => {
+                if (audio.duration > 0) {
+                  const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+                  setAudioLevel(currentLevel);
+                }
+              };
+              
+              audio.addEventListener('timeupdate', handleTimeUpdate);
+              audio.addEventListener('ended', () => {
+                audio.removeEventListener('timeupdate', handleTimeUpdate);
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+                setCurrentAudio(null);
+              });
+              
+              setAudioLevel(0.8); // Initial level when starting
+              audio.play();
+            } catch (error) {
+              console.error('Failed to play audio:', error);
+              setIsSpeaking(false);
+              setAudioLevel(0.3);
+            }
+          }
 
       saveGameState({
         ...gameState,
@@ -439,43 +471,61 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
   };
 
   const toggleVoiceOutput = () => {
-    if (!isVoiceEnabled) return; // Don't allow toggling if voice is disabled
-    
     if (isSpeaking) {
+      // Stop current audio
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null);
+      }
       setIsSpeaking(false);
+      setAudioLevel(0.3);
     } else {
-      setIsSpeaking(true);
-      // Play the last AI message audio if available
+      // Try to play the last AI message audio
       const lastAIMessage = gameState.messages
-        .filter(m => m.role === 'assistant')
+        .filter(msg => msg.role === 'assistant')
         .pop();
       
-      if (lastAIMessage && lastAIMessage.audio) {
+      if (lastAIMessage?.audio && isVoiceEnabled) {
         try {
           const audio = new Audio(lastAIMessage.audio);
-          audio.onended = () => setIsSpeaking(false);
-          audio.onerror = () => setIsSpeaking(false);
+          setCurrentAudio(audio);
+          
+          audio.onended = () => {
+            setIsSpeaking(false);
+            setAudioLevel(0.3);
+            setCurrentAudio(null);
+          };
+          audio.onerror = () => {
+            setIsSpeaking(false);
+            setAudioLevel(0.3);
+            setCurrentAudio(null);
+          };
           
           // Make the orb audio-reactive during playback
           const handleTimeUpdate = () => {
-            const audioLevel = audio.currentTime / audio.duration;
-            // The orb will automatically respond to the isSpeaking state
-            // No need to manually set intensity
+            if (audio.duration > 0) {
+              const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+              setAudioLevel(currentLevel);
+            }
           };
           
           audio.addEventListener('timeupdate', handleTimeUpdate);
           audio.addEventListener('ended', () => {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             setIsSpeaking(false);
+            setAudioLevel(0.3);
+            setCurrentAudio(null);
           });
           
+          setAudioLevel(0.8); // Initial level when starting
           audio.play();
+          setIsSpeaking(true);
         } catch (error) {
           console.error('Failed to play audio:', error);
           setIsSpeaking(false);
+          setAudioLevel(0.3);
         }
-      } else {
-        setIsSpeaking(false);
       }
     }
   };
@@ -503,7 +553,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
       <NarratorOrbComponent 
         isVisible={true}
         intensity={orbState.intensity}
-        audioLevel={isSpeaking ? 0.8 : 0.3} // Higher audio level when speaking
+        audioLevel={audioLevel} // Use dynamic audio level for reactivity
         className="absolute inset-0 pointer-events-none z-0"
       />
 
@@ -581,7 +631,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         {/* Messages */}
         <div className="mobile-chat-messages bg-transparent">
           {gameState.messages.length === 0 ? (
-            <div className="text-center text-console-text-dim py-8 bg-console-darker/20 backdrop-blur-sm rounded-lg m-2">
+            <div className="text-center text-console-text-dim py-8 bg-console-darker/10 backdrop-blur-sm rounded-lg m-2">
               <p className="font-console text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
             </div>
           ) : (
@@ -595,7 +645,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                     message.role === 'user'
                       ? 'mobile-message-user'
                       : 'mobile-message-ai'
-                  } bg-console-darker/30 backdrop-blur-sm`}
+                  } bg-console-darker/15 backdrop-blur-sm`}
                 >
                   <div className="text-sm font-console leading-relaxed">
                     {typeof message.content === 'string' 
@@ -617,7 +667,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="mobile-message-ai bg-console-darker/30 backdrop-blur-sm">
+              <div className="mobile-message-ai bg-console-darker/15 backdrop-blur-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-100"></div>
@@ -630,7 +680,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         </div>
 
         {/* Input */}
-        <div className="mobile-chat-input bg-console-darker/40 backdrop-blur-sm border-t border-console-border">
+        <div className="mobile-chat-input bg-console-darker/30 backdrop-blur-sm border-t border-console-border">
           <div className="flex space-x-2">
             <input
               type="text"
