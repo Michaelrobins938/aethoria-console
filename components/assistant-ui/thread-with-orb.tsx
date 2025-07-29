@@ -521,7 +521,13 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               });
               
               setAudioLevel(0.8); // Initial level when starting
-              audio.play();
+              
+              // Play audio immediately when text appears
+              audio.play().catch(error => {
+                console.error('Failed to play audio:', error);
+                setIsSpeaking(false);
+                setAudioLevel(0.3);
+              });
             } catch (error) {
               console.error('Failed to play audio:', error);
               setIsSpeaking(false);
@@ -737,8 +743,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         {/* Messages */}
         <div className="mobile-chat-messages bg-transparent">
           {gameState.messages.length === 0 ? (
-            <div className="text-center text-console-text-dim py-8 bg-console-darker/10 backdrop-blur-sm rounded-lg m-2">
-              <p className="font-console text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
+            <div className="text-center text-console-accent py-8 bg-console-darker/5 backdrop-blur-sm rounded-lg m-2 border border-console-accent/20">
+              <p className="font-bold text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
             </div>
           ) : (
             gameState.messages.map((message) => (
@@ -751,9 +757,9 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                     message.role === 'user'
                       ? 'mobile-message-user'
                       : 'mobile-message-ai'
-                  } bg-console-darker/15 backdrop-blur-sm`}
+                  } bg-console-darker/5 backdrop-blur-sm border border-console-accent/20`}
                 >
-                  <div className="text-sm font-console leading-relaxed">
+                  <div className="text-sm font-bold leading-relaxed text-console-accent">
                     {typeof message.content === 'string' 
                       ? message.content 
                       : message.content.map((item, index) => (
@@ -773,12 +779,12 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="mobile-message-ai bg-console-darker/15 backdrop-blur-sm">
+              <div className="mobile-message-ai bg-console-darker/5 backdrop-blur-sm border border-console-accent/20">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse"></div>
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-100"></div>
                   <div className="w-2 h-2 bg-console-accent rounded-full animate-pulse delay-200"></div>
-                  <span className="text-sm font-console">AI is thinking...</span>
+                  <span className="text-sm font-bold text-console-accent">AI is thinking...</span>
                 </div>
               </div>
             </div>
@@ -786,7 +792,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         </div>
 
         {/* Input */}
-        <div className="mobile-chat-input bg-console-darker/30 backdrop-blur-sm border-t border-console-border">
+        <div className="mobile-chat-input bg-console-darker/20 backdrop-blur-sm border-t border-console-border">
           <div className="flex space-x-2">
             <input
               type="text"
@@ -808,7 +814,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           </div>
           
           {isListening && (
-            <div className="mt-2 text-xs text-console-text-dim font-console">
+            <div className="mt-2 text-xs text-console-accent font-bold">
               Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
             </div>
           )}
