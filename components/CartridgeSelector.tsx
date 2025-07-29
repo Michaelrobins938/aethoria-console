@@ -93,15 +93,16 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
+    autoplay: false, // Disable autoplay for better UX
     pauseOnHover: true,
+    arrows: true, // Always show arrows
     responsive: [
       {
         breakpoint: 1024,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 1
+          slidesToScroll: 1,
+          arrows: true
         }
       },
       {
@@ -110,7 +111,8 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
           slidesToShow: 1,
           slidesToScroll: 1,
           dots: true,
-          arrows: false
+          arrows: true, // Show arrows on mobile too
+          autoplay: false
         }
       },
       {
@@ -119,7 +121,7 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
           slidesToShow: 1,
           slidesToScroll: 1,
           dots: true,
-          arrows: false,
+          arrows: true, // Show arrows on mobile too
           autoplay: false
         }
       }
@@ -183,6 +185,15 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
         {/* Carousel Container */}
         <div className="relative mb-8 md:mb-12">
+          {/* Navigation Indicator */}
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center space-x-2 bg-console-darker/50 px-4 py-2 rounded-lg border border-console-accent/30">
+              <ArrowLeft size={16} className="text-console-accent" />
+              <span className="text-console-accent font-console text-sm">Swipe or use arrows to browse games</span>
+              <ArrowRight size={16} className="text-console-accent" />
+            </div>
+          </div>
+          
           <Slider {...sliderSettings} className="game-carousel">
             {cartridges.map((cartridge, index) => (
               <div key={cartridge.id} className="px-2 md:px-4">
@@ -251,6 +262,19 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
               </div>
             ))}
           </Slider>
+          
+          {/* Game Counter */}
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center space-x-3 bg-console-darker/30 px-4 py-2 rounded-lg border border-console-accent/20">
+              <span className="text-console-text font-console text-sm">
+                Game <span className="text-console-accent">1</span> of <span className="text-console-accent">{cartridges.length}</span>
+              </span>
+              <div className="w-px h-4 bg-console-accent/30"></div>
+              <span className="text-console-text-dim font-console text-xs">
+                Use arrows or swipe to browse
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Selection Summary */}
@@ -298,30 +322,80 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
       {/* Custom Carousel Styles */}
       <style jsx global>{`
+        .game-carousel {
+          position: relative;
+          padding: 0 40px; /* Space for arrows */
+        }
+        
         .game-carousel .slick-dots {
-          bottom: -30px;
+          bottom: -40px;
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .game-carousel .slick-dots li {
+          margin: 0 4px;
+        }
+        
+        .game-carousel .slick-dots li button {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: rgba(0, 255, 65, 0.3);
+          border: 2px solid rgba(0, 255, 65, 0.5);
+          transition: all 0.3s ease;
         }
         
         .game-carousel .slick-dots li button:before {
-          color: #00ff41;
-          opacity: 0.5;
-          font-size: 12px;
+          display: none; /* Remove default dot */
         }
         
-        .game-carousel .slick-dots li.slick-active button:before {
-          color: #00ff41;
-          opacity: 1;
+        .game-carousel .slick-dots li.slick-active button {
+          background: #00ff41;
+          border-color: #00ff88;
+          transform: scale(1.2);
+          box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
         
+        .game-carousel .slick-dots li:hover button {
+          background: rgba(0, 255, 65, 0.6);
+          border-color: #00ff88;
+          transform: scale(1.1);
+        }
+        
+        /* Arrow Styles */
         .game-carousel .slick-prev,
         .game-carousel .slick-next {
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 255, 65, 0.1);
+          border: 2px solid rgba(0, 255, 65, 0.5);
+          border-radius: 50%;
           color: #00ff41;
           z-index: 10;
+          transition: all 0.3s ease;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
         }
         
         .game-carousel .slick-prev:hover,
         .game-carousel .slick-next:hover {
+          background: rgba(0, 255, 65, 0.2);
+          border-color: #00ff88;
           color: #00ff88;
+          transform: scale(1.1);
+          box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        
+        .game-carousel .slick-prev {
+          left: -50px;
+        }
+        
+        .game-carousel .slick-next {
+          right: -50px;
         }
         
         .game-carousel .slick-track {
@@ -337,13 +411,59 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
           height: 100%;
         }
 
+        /* Mobile Styles */
         @media (max-width: 768px) {
-          .game-carousel .slick-dots {
-            bottom: -25px;
+          .game-carousel {
+            padding: 0 30px;
           }
           
-          .game-carousel .slick-dots li button:before {
-            font-size: 10px;
+          .game-carousel .slick-dots {
+            bottom: -35px;
+          }
+          
+          .game-carousel .slick-dots li button {
+            width: 14px;
+            height: 14px;
+          }
+          
+          .game-carousel .slick-prev,
+          .game-carousel .slick-next {
+            width: 35px;
+            height: 35px;
+          }
+          
+          .game-carousel .slick-prev {
+            left: -40px;
+          }
+          
+          .game-carousel .slick-next {
+            right: -40px;
+          }
+        }
+        
+        /* Small Mobile Styles */
+        @media (max-width: 480px) {
+          .game-carousel {
+            padding: 0 25px;
+          }
+          
+          .game-carousel .slick-dots li button {
+            width: 12px;
+            height: 12px;
+          }
+          
+          .game-carousel .slick-prev,
+          .game-carousel .slick-next {
+            width: 30px;
+            height: 30px;
+          }
+          
+          .game-carousel .slick-prev {
+            left: -35px;
+          }
+          
+          .game-carousel .slick-next {
+            right: -35px;
           }
         }
       `}</style>
