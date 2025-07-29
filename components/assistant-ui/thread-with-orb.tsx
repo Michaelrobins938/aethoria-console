@@ -128,25 +128,31 @@ interface ThreadWithOrbProps {
 }
 
 export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
-  const { orbState, handleAIThinking, handleAIResponse, handleMessageActivity, handleVoiceActivity } = useNarratorOrb()
+  const { orbState, handleAIThinking, handleAIResponse, handleMessageActivity, handleVoiceActivity } = useNarratorOrb();
+
   const [gameState, setGameState] = useState<GameState>(() => {
     // Use provided props or default state
-    const savedState = loadGameState();
-    if (savedState) {
-      return savedState;
-    }
-    
-    const defaultState = getDefaultGameState();
     if (gamePrompt && character) {
       return {
-        ...defaultState,
-        gamePrompt,
         character,
-        messages: [] // Start with empty messages
+        gamePrompt,
+        messages: [],
+        currentLocation: 'Starting Area',
+        activeQuests: [],
+        inventory: [],
+        combatState: {
+          isActive: false,
+          enemies: [],
+          turn: 1
+        }
       };
     }
-    return defaultState;
+    
+    // Load from localStorage or use default
+    const savedState = loadGameState();
+    return savedState || getDefaultGameState();
   });
+
   const [isSpeaking, setIsSpeaking] = useState(true);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [isListening, setIsListening] = useState(false);
@@ -154,8 +160,77 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
   const [input, setInput] = useState('');
   const [audioLevel, setAudioLevel] = useState(0.3); // Track actual audio level for orb reactivity
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
+  const [audioSource, setAudioSource] = useState<MediaElementAudioSourceNode | null>(null);
   const [recognition, setRecognition] = useState<any>(null)
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null)
+
+  // Set up audio analyzer for real-time frequency analysis
+  const setupAudioAnalyzer = (audio: HTMLAudioElement) => {
+    try {
+      // Create audio context if it doesn't exist
+      if (!audioContext) {
+        const newAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setAudioContext(newAudioContext);
+      }
+
+      const ctx = audioContext || new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Create analyser node
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      setAnalyserNode(analyser);
+
+      // Create source from audio element
+      const source = ctx.createMediaElementSource(audio);
+      setAudioSource(source);
+
+      // Connect the audio graph
+      source.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      // Start audio context if suspended
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      return analyser;
+    } catch (error) {
+      console.error('Failed to setup audio analyzer:', error);
+      return null;
+    }
+  };
+
+  // Function to get real-time audio level from analyser
+  const getAudioLevel = () => {
+    if (!analyserNode) return 0.3;
+
+    const frequencyData = new Uint8Array(analyserNode.frequencyBinCount);
+    analyserNode.getByteFrequencyData(frequencyData);
+    
+    // Calculate average frequency level
+    const sum = frequencyData.reduce((a, b) => a + b, 0);
+    const average = sum / frequencyData.length / 255;
+    
+    // Apply some smoothing and scaling
+    return Math.max(average * 2, 0.1); // Scale up and ensure minimum level
+  };
+
+  // Update audio level in real-time
+  useEffect(() => {
+    if (!analyserNode || !isSpeaking) return;
+
+    const updateAudioLevel = () => {
+      const level = getAudioLevel();
+      setAudioLevel(level);
+    };
+
+    const interval = setInterval(updateAudioLevel, 50); // Update 20 times per second
+
+    return () => clearInterval(interval);
+  }, [analyserNode, isSpeaking]);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -275,21 +350,29 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               const audio = new Audio(responseData.audio);
               setCurrentAudio(audio);
               
+              // Set up audio analyzer for real-time frequency analysis
+              const analyser = setupAudioAnalyzer(audio);
+              
               audio.onended = () => {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               };
               audio.onerror = () => {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               };
               
               // Make the orb audio-reactive during playback
               const handleTimeUpdate = () => {
                 if (audio.duration > 0) {
-                  const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+                  // Use real-time audio analysis instead of playback progress
+                  const currentLevel = getAudioLevel();
                   setAudioLevel(currentLevel);
                 }
               };
@@ -300,6 +383,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               });
               
               setAudioLevel(0.8); // Initial level when starting
@@ -398,21 +483,29 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
               const audio = new Audio(responseData.audio);
               setCurrentAudio(audio);
               
+              // Set up audio analyzer for real-time frequency analysis
+              const analyser = setupAudioAnalyzer(audio);
+              
               audio.onended = () => {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               };
               audio.onerror = () => {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               };
               
               // Make the orb audio-reactive during playback
               const handleTimeUpdate = () => {
                 if (audio.duration > 0) {
-                  const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+                  // Use real-time audio analysis instead of playback progress
+                  const currentLevel = getAudioLevel();
                   setAudioLevel(currentLevel);
                 }
               };
@@ -423,6 +516,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
                 setIsSpeaking(false);
                 setAudioLevel(0.3);
                 setCurrentAudio(null);
+                setAnalyserNode(null);
+                setAudioSource(null);
               });
               
               setAudioLevel(0.8); // Initial level when starting
@@ -491,21 +586,29 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
           const audio = new Audio(lastAIMessage.audio);
           setCurrentAudio(audio);
           
+          // Set up audio analyzer for real-time frequency analysis
+          const analyser = setupAudioAnalyzer(audio);
+
           audio.onended = () => {
             setIsSpeaking(false);
             setAudioLevel(0.3);
             setCurrentAudio(null);
+            setAnalyserNode(null);
+            setAudioSource(null);
           };
           audio.onerror = () => {
             setIsSpeaking(false);
             setAudioLevel(0.3);
             setCurrentAudio(null);
+            setAnalyserNode(null);
+            setAudioSource(null);
           };
           
           // Make the orb audio-reactive during playback
           const handleTimeUpdate = () => {
             if (audio.duration > 0) {
-              const currentLevel = (audio.currentTime / audio.duration) * 0.8 + 0.2; // Range from 0.2 to 1.0
+              // Use real-time audio analysis instead of playback progress
+              const currentLevel = getAudioLevel();
               setAudioLevel(currentLevel);
             }
           };
@@ -516,6 +619,8 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
             setIsSpeaking(false);
             setAudioLevel(0.3);
             setCurrentAudio(null);
+            setAnalyserNode(null);
+            setAudioSource(null);
           });
           
           setAudioLevel(0.8); // Initial level when starting
@@ -554,6 +659,7 @@ export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
         isVisible={true}
         intensity={orbState.intensity}
         audioLevel={audioLevel} // Use dynamic audio level for reactivity
+        analyserNode={analyserNode} // Pass the analyser for real-time frequency analysis
         className="absolute inset-0 pointer-events-none z-0"
       />
 

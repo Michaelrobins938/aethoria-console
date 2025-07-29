@@ -603,6 +603,7 @@ interface NarratorOrbProps {
   isVisible?: boolean
   intensity?: number
   audioLevel?: number
+  analyserNode?: AnalyserNode | null
   className?: string
 }
 
@@ -610,6 +611,7 @@ export function NarratorOrbComponent({
   isVisible = true, 
   intensity = 1.0, 
   audioLevel = 0.2,
+  analyserNode,
   className = '' 
 }: NarratorOrbProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -653,12 +655,18 @@ export function NarratorOrbComponent({
     rendererRef.current = renderer
 
     // Create audio context for reactivity
-    let analyserNode: AnalyserNode | null = null
+    let localAnalyserNode: AnalyserNode | null = null
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      analyserNode = audioContext.createAnalyser()
-      analyserNode.fftSize = 256
-      analyserRef.current = analyserNode
+      // Use passed analyserNode if available, otherwise create a fallback
+      if (analyserNode) {
+        analyserRef.current = analyserNode
+        localAnalyserNode = analyserNode
+      } else {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+        localAnalyserNode = audioContext.createAnalyser()
+        localAnalyserNode.fftSize = 256
+        analyserRef.current = localAnalyserNode
+      }
     } catch (error) {
       console.log('Audio context not available, using fallback')
     }
@@ -673,7 +681,7 @@ export function NarratorOrbComponent({
     }
 
     // Create NarratorOrb with mobile-optimized settings
-    const orb = new NarratorOrb(scene, camera, renderer, analyserNode, mobileConfig)
+    const orb = new NarratorOrb(scene, camera, renderer, localAnalyserNode, mobileConfig)
     orbRef.current = orb
 
     // Animation loop
