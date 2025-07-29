@@ -122,8 +122,30 @@ const getDefaultGameState = (): GameState => ({
   }
 });
 
-export function ThreadWithOrb() {
-  const [gameState, setGameState] = useState<GameState>(getDefaultGameState);
+interface ThreadWithOrbProps {
+  gamePrompt?: GamePrompt;
+  character?: Character;
+}
+
+export function ThreadWithOrb({ gamePrompt, character }: ThreadWithOrbProps) {
+  const [gameState, setGameState] = useState<GameState>(() => {
+    // Use provided props or default state
+    const savedState = loadGameState();
+    if (savedState) {
+      return savedState;
+    }
+    
+    const defaultState = getDefaultGameState();
+    if (gamePrompt && character) {
+      return {
+        ...defaultState,
+        gamePrompt,
+        character,
+        messages: [] // Start with empty messages
+      };
+    }
+    return defaultState;
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -180,6 +202,82 @@ export function ThreadWithOrb() {
       setGameState(savedState);
     }
   }, [handleVoiceActivity]);
+
+  // Initialize AI with game context when game starts
+  useEffect(() => {
+    if (gamePrompt && character && gameState.messages.length === 0) {
+      // Send initial message to set up the game
+      const initializeGame = async () => {
+        setIsLoading(true);
+        handleAIThinking();
+
+        try {
+          const initialMessage: Message = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: `Start the game "${gamePrompt.title}". I am ${character.name}, a ${character.background}. Please introduce the game and set the scene.`,
+            timestamp: Date.now()
+          };
+
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: [initialMessage],
+              gamePrompt,
+              character
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+          }
+
+          const responseData = await response.json();
+          console.log('Game Initialization Response:', responseData);
+
+          if (!responseData.success) {
+            throw new Error(responseData.error || 'API returned error');
+          }
+
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: responseData.message.content,
+            timestamp: Date.now(),
+            audio: responseData.audio
+          };
+
+          setGameState(prev => ({
+            ...prev,
+            messages: [initialMessage, aiMessage]
+          }));
+
+          // Play the initial audio if available
+          if (responseData.audio && isSpeaking) {
+            try {
+              const audio = new Audio(responseData.audio);
+              audio.onended = () => setIsSpeaking(false);
+              audio.onerror = () => setIsSpeaking(false);
+              audio.play();
+            } catch (error) {
+              console.error('Failed to play initial audio:', error);
+              setIsSpeaking(false);
+            }
+          }
+
+        } catch (error) {
+          console.error('Failed to initialize game:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      initializeGame();
+    }
+  }, [gamePrompt, character, isSpeaking, handleAIThinking]);
 
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;

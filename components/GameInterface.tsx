@@ -110,7 +110,7 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
 
           {/* Main Chat Area */}
           <div className="flex-1 bg-console-darker/80 backdrop-blur-sm border border-console-border rounded-lg overflow-hidden">
-            <ThreadWithOrb />
+            <ThreadWithOrb gamePrompt={gamePrompt} character={character} />
           </div>
         </div>
       </div>
