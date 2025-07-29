@@ -202,7 +202,7 @@ export class GameFileAdapter implements AttachmentAdapter {
   async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
     let content = "";
 
-    if (attachment.type === "character-sheet") {
+    if (attachment.type === "document" && attachment.name.includes("character")) {
       const textContent = await this.readTextFile(attachment.file);
       const character = JSON.parse(textContent);
       
@@ -225,8 +225,9 @@ Background: ${character.background || 'Unknown'}`;
       const base64 = await this.fileToBase64DataURL(attachment.file);
       return {
         id: attachment.id,
-        type: "game-image",
+        type: "image",
         name: attachment.name,
+        contentType: attachment.file.type,
         content: [
           {
             type: "image",
@@ -243,6 +244,7 @@ Background: ${character.background || 'Unknown'}`;
       id: attachment.id,
       type: attachment.type,
       name: attachment.name,
+      contentType: attachment.file.type,
       content: [
         {
           type: "text",
