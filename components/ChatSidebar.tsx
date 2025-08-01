@@ -59,7 +59,10 @@ export function ChatSidebar({ isOpen, onToggle, onNewChat }: ChatSidebarProps) {
       case 'recent':
         const oneWeekAgo = new Date()
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-        filtered = filtered.filter(session => session.updatedAt > oneWeekAgo)
+        filtered = filtered.filter(session => {
+          const sessionTime = session.updatedAt instanceof Date ? session.updatedAt.getTime() : new Date(session.updatedAt).getTime()
+          return sessionTime > oneWeekAgo.getTime()
+        })
         break
       case 'favorites':
         // For now, consider sessions with "favorite" in title as favorites
@@ -69,7 +72,11 @@ export function ChatSidebar({ isOpen, onToggle, onNewChat }: ChatSidebarProps) {
         break
     }
 
-    return filtered.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    return filtered.sort((a, b) => {
+      const aTime = a.updatedAt instanceof Date ? a.updatedAt.getTime() : new Date(a.updatedAt).getTime()
+      const bTime = b.updatedAt instanceof Date ? b.updatedAt.getTime() : new Date(b.updatedAt).getTime()
+      return bTime - aTime
+    })
   }, [chatSessions, searchQuery, filterType])
 
   const handleSessionClick = (sessionId: string) => {
@@ -100,9 +107,10 @@ export function ChatSidebar({ isOpen, onToggle, onNewChat }: ChatSidebarProps) {
     setEditTitle('')
   }
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | string) => {
+    const dateObj = date instanceof Date ? date : new Date(date)
     const now = new Date()
-    const diff = now.getTime() - date.getTime()
+    const diff = now.getTime() - dateObj.getTime()
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
     
     if (days === 0) {
@@ -112,7 +120,7 @@ export function ChatSidebar({ isOpen, onToggle, onNewChat }: ChatSidebarProps) {
     } else if (days < 7) {
       return `${days} days ago`
     } else {
-      return date.toLocaleDateString()
+      return dateObj.toLocaleDateString()
     }
   }
 
