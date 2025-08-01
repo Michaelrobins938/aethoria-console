@@ -6,14 +6,6 @@ import { Character, GamePrompt } from "@/lib/types";
 
 import { AttachmentProvider } from "./attachment-provider";
 import {
-  DiceRollToolUI,
-  CharacterStatsToolUI,
-  CombatToolUI,
-  InventoryToolUI,
-  QuestToolUI,
-  MapToolUI
-} from "./game-tools";
-import {
   ComposerAttachments,
   ComposerAddAttachment,
   UserMessageAttachments,
@@ -254,13 +246,13 @@ export function ThreadWithOrb({
           </div>
         </div>
 
-        {/* Tool UIs */}
-        <DiceRollToolUI />
+        {/* Game Tools - Temporarily Disabled for Debugging */}
+        {/* <DiceRollToolUI />
         <CharacterStatsToolUI />
         <CombatToolUI />
         <InventoryToolUI />
         <QuestToolUI />
-        <MapToolUI />
+        <MapToolUI /> */}
       </div>
     </AttachmentProvider>
   );
