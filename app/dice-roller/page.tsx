@@ -18,7 +18,7 @@ export default function DiceRollerPage() {
             3D Dice Roller
           </h1>
           <p className="text-console-text-dim text-lg">
-            Experience the thrill of rolling dice in 3D, just like at [dm.tools/dice](https://dm.tools/dice)
+            Experience the thrill of rolling dice in 3D, just like at dm.tools/dice
           </p>
         </div>
 

@@ -123,7 +123,7 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
     }
 
     let geometry: THREE.BufferGeometry
-    let material: THREE.MeshStandardMaterial
+    const material: THREE.MeshStandardMaterial
 
     switch (diceType) {
       case 'd4':
