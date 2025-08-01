@@ -1,10 +1,6 @@
 import { ThreadList } from "@/components/assistant-ui/thread-list";
-import { ThreadWithOrb } from "@/components/assistant-ui/thread-with-orb";
 import { Character, GamePrompt } from "@/lib/types";
-import { NarratorOrbComponent } from './NarratorOrb'
-import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
 import { useGameStore } from '@/lib/store'
-import { ChatSidebar } from './ChatSidebar'
 import { Menu, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -15,7 +11,6 @@ interface GameInterfaceProps {
 }
 
 export function GameInterface({ character, gamePrompt, onBack }: GameInterfaceProps) {
-  const { orbState } = useNarratorOrb()
   const { 
     session, 
     currentPrompt, 
@@ -31,15 +26,14 @@ export function GameInterface({ character, gamePrompt, onBack }: GameInterfacePr
     chatSessions,
     initializeSession,
     updateCharacter,
-    updateWorldState,
     addMessage,
     sendMessage,
-    createNewChatSession,
-    loadChatSession
+    createNewChatSession
   } = useGameStore()
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showNewChatModal, setShowNewChatModal] = useState(false)
+  const [input, setInput] = useState('')
 
   // Initialize game session if not already done
   useEffect(() => {
@@ -103,8 +97,11 @@ You are about to embark on an epic adventure where every choice matters. The AI 
     }
   }, [messages.length, gamePrompt, character, addMessage])
 
-  const handleSendMessage = async (content: string) => {
-    if (!content.trim() || isTyping) return
+  const handleSendMessage = async () => {
+    if (!input.trim() || isTyping) return
+    
+    const content = input.trim()
+    setInput('')
     
     try {
       await sendMessage(content)
@@ -117,6 +114,13 @@ You are about to embark on an epic adventure where every choice matters. The AI 
         content: 'Sorry, there was an error processing your message. Please try again.',
         timestamp: new Date()
       })
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
     }
   }
 
@@ -143,21 +147,6 @@ You are about to embark on an epic adventure where every choice matters. The AI 
 
   return (
     <div className="min-h-screen bg-console-dark relative">
-      {/* Chat Sidebar */}
-      <ChatSidebar 
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-        onNewChat={handleNewChat}
-      />
-
-      {/* NarratorOrb Background */}
-      <NarratorOrbComponent 
-        isVisible={true}
-        intensity={orbState.intensity}
-        audioLevel={orbState.audioLevel}
-        className="absolute inset-0 pointer-events-none"
-      />
-
       {/* Game Content */}
       <div className={`relative z-10 transition-all duration-300 ${sidebarOpen ? 'ml-80' : 'ml-0'}`}>
         {/* Game Header */}
@@ -224,13 +213,82 @@ You are about to embark on an epic adventure where every choice matters. The AI 
               combatState={combatState}
             />
           </div>
-          <div className="bg-console-darker/80 backdrop-blur-sm border border-console-border rounded-lg overflow-hidden">
-            <ThreadWithOrb 
-              onSendMessage={handleSendMessage}
-              messages={messages}
-              isTyping={isTyping}
-              isLoading={isLoading}
-            />
+          <div className="bg-console-darker/80 backdrop-blur-sm border border-console-border rounded-lg overflow-hidden flex flex-col">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-console-text-dim">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-console-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-8 h-8 bg-console-accent rounded-full" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">How can I help you today?</h3>
+                    <p className="text-sm opacity-70">I'm ready to guide you through your adventure!</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                        message.type === 'user'
+                          ? 'bg-console-accent text-console-dark'
+                          : message.type === 'system'
+                          ? 'bg-red-900/20 text-red-400 border border-red-500/30'
+                          : 'bg-console-darker text-console-text border border-console-border'
+                      }`}>
+                        <div className="text-sm">{message.content}</div>
+                        <div className="text-xs opacity-60 mt-1">
+                          {message.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="bg-console-darker text-console-text border border-console-border rounded-lg px-4 py-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                          <span className="text-sm">AI is thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-console-border bg-console-darker p-4">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Message Aethoria..."
+                  className="flex-1 bg-console-dark border border-console-border rounded-lg px-4 py-2 text-console-text font-console placeholder-console-text-dim focus:outline-none focus:border-console-accent"
+                  disabled={isTyping}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={isTyping || !input.trim()}
+                  className="px-4 py-2 bg-console-accent hover:bg-console-accent-dark disabled:bg-console-border disabled:cursor-not-allowed text-console-dark font-console rounded-lg transition-colors duration-200"
+                >
+                  Send
+                </button>
+              </div>
+              <div className="text-xs text-console-text-dim text-center mt-2">
+                Press Enter to send, Shift+Enter for new line
+              </div>
+            </div>
           </div>
         </div>
       </div>

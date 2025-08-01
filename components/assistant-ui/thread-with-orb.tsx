@@ -11,8 +11,8 @@ import {
   UserMessageAttachments,
 } from "@/components/attachment";
 import { ComposerPrimitive, MessagePrimitive } from "@assistant-ui/react";
-import { NarratorOrbComponent } from '../NarratorOrb'
-import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
+// import { NarratorOrbComponent } from '../NarratorOrb'
+// import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ChatContainer } from '@/components/ChatContainer'
 import { VoiceRecognition } from '@/components/VoiceRecognition'
@@ -44,7 +44,7 @@ export function ThreadWithOrb({
   isTyping = false, 
   isLoading = false 
 }: ThreadWithOrbProps) {
-  const { orbState } = useNarratorOrb()
+  // const { orbState } = useNarratorOrb()
   const [input, setInput] = useState('')
   const [voiceEnabled, setVoiceEnabled] = useState(false)
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(true)
