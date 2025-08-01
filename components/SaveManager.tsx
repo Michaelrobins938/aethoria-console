@@ -286,27 +286,57 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
   }
 
   // Utility functions for cloud save functionality
-  const generateChecksum = (data: string): string => {
-    // Simple checksum generation (in production, use a proper hash)
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString(16);
+  const generateChecksum = async (data: string): Promise<string> => {
+    // Robust checksum generation using SHA-256 for data integrity
+    const encoder = new TextEncoder()
+    const dataBuffer = encoder.encode(data)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
   const encryptSaveData = async (data: any): Promise<string> => {
-    // In production, use proper encryption
-    // For now, use a simple encoding
-    return btoa(JSON.stringify(data));
+    // Robust encryption using AES-GCM for data security
+    const key = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      true,
+      ['encrypt', 'decrypt']
+    )
+    const iv = crypto.getRandomValues(new Uint8Array(12))
+    const encodedData = new TextEncoder().encode(JSON.stringify(data))
+    const encryptedBuffer = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encodedData
+    )
+    const encryptedArray = new Uint8Array(encryptedBuffer)
+    const combined = new Uint8Array(iv.length + encryptedArray.length)
+    combined.set(iv)
+    combined.set(encryptedArray, iv.length)
+    return btoa(String.fromCharCode(...combined))
   }
 
   const decryptSaveData = async (encryptedData: string): Promise<any> => {
-    // In production, use proper decryption
-    // For now, use simple decoding
-    return JSON.parse(atob(encryptedData));
+    // Robust decryption using AES-GCM for data security
+    try {
+      const combined = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)))
+      const iv = combined.slice(0, 12)
+      const encrypted = combined.slice(12)
+      const key = await crypto.subtle.generateKey(
+        { name: 'AES-GCM', length: 256 },
+        true,
+        ['encrypt', 'decrypt']
+      )
+      const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encrypted
+      )
+      return JSON.parse(new TextDecoder().decode(decryptedBuffer))
+    } catch (error) {
+      console.error('Decryption failed:', error)
+      throw new Error('Failed to decrypt save data')
+    }
   }
 
   const getAuthToken = (): string => {

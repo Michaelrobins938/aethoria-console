@@ -4,7 +4,6 @@ const nextConfig = {
     domains: ['localhost'],
   },
   experimental: {
-    appDir: true,
     serverComponentsExternalPackages: [],
   },
   typescript: {

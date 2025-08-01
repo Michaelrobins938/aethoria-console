@@ -287,12 +287,40 @@ async def websocket_endpoint(websocket: WebSocket):
                 'timestamp': asyncio.get_event_loop().time()
             })
             
-            # Update game state (simple example)
-            if 'move' in user_input.lower() or 'go' in user_input.lower():
-                game_sessions[session_id]['game_state']['location'] = 'New Location'
+            # Update game state with comprehensive tracking and dynamic responses
+            current_time = asyncio.get_event_loop().time()
+            game_state = game_sessions[session_id]['game_state']
             
-            if 'health' in user_input.lower() or 'damage' in user_input.lower():
-                game_sessions[session_id]['game_state']['health'] = max(0, game_sessions[session_id]['game_state']['health'] - 10)
+            # Track session metrics
+            game_state['last_updated'] = datetime.now().isoformat()
+            game_state['message_count'] = game_state.get('message_count', 0) + 1
+            game_state['session_duration'] = current_time - game_state.get('session_start', current_time)
+            game_state['ai_response_time'] = response_time
+            game_state['total_tokens_used'] = game_state.get('total_tokens_used', 0) + estimated_tokens
+            game_state['average_response_time'] = (
+                (game_state.get('average_response_time', 0) * game_state.get('message_count', 0) + response_time) / 
+                (game_state.get('message_count', 0) + 1)
+            )
+            
+            # Dynamic game state updates based on AI response content
+            if any(keyword in user_input.lower() for keyword in ['move', 'go', 'travel', 'walk', 'run']):
+                game_state['location'] = game_state.get('location', 'Unknown') + ' → New Area'
+                game_state['moves_made'] = game_state.get('moves_made', 0) + 1
+            
+            if any(keyword in user_input.lower() for keyword in ['health', 'damage', 'hurt', 'wound', 'heal']):
+                current_health = game_state.get('health', 100)
+                if 'damage' in user_input.lower() or 'hurt' in user_input.lower():
+                    game_state['health'] = max(0, current_health - 10)
+                    game_state['damage_taken'] = game_state.get('damage_taken', 0) + 10
+                elif 'heal' in user_input.lower():
+                    game_state['health'] = min(100, current_health + 20)
+                    game_state['healing_received'] = game_state.get('healing_received', 0) + 20
+            
+            if any(keyword in user_input.lower() for keyword in ['inventory', 'item', 'pick', 'drop', 'use']):
+                game_state['inventory_accessed'] = game_state.get('inventory_accessed', 0) + 1
+            
+            if any(keyword in user_input.lower() for keyword in ['quest', 'mission', 'objective']):
+                game_state['quests_mentioned'] = game_state.get('quests_mentioned', 0) + 1
             
             # Send response back to client
             response = {

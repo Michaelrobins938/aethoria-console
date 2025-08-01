@@ -116,16 +116,14 @@ export async function POST(req: NextRequest) {
 }
 
 // Utility functions
-function generateFileChecksum(file: File): string {
-  // Simple checksum generation for file validation
-  let hash = 0
-  const fileName = file.name + file.size + file.type
-  for (let i = 0; i < fileName.length; i++) {
-    const char = fileName.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
-  }
-  return hash.toString(16)
+async function generateFileChecksum(file: File): Promise<string> {
+  // Robust checksum generation using SHA-256 for file validation
+  const encoder = new TextEncoder()
+  const fileData = file.name + file.size + file.type + file.lastModified
+  const dataBuffer = encoder.encode(fileData)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 async function getImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
