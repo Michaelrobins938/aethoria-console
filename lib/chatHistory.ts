@@ -94,7 +94,11 @@ export const loadChatHistory = (): { sessions: ChatSession[], activeSessionId: s
     const sessions: ChatSession[] = JSON.parse(sessionsData).map((session: any) => ({
       ...session,
       createdAt: new Date(session.createdAt),
-      updatedAt: new Date(session.updatedAt)
+      updatedAt: new Date(session.updatedAt),
+      messages: session.messages?.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      })) || []
     }))
     
     const activeSessionId = activeSessionData || null
@@ -113,6 +117,10 @@ export const cleanupOldSessions = (sessions: ChatSession[]): ChatSession[] => {
   
   // Sort by updatedAt and keep the most recent
   return sessions
-    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .sort((a, b) => {
+      const aTime = a.updatedAt instanceof Date ? a.updatedAt.getTime() : new Date(a.updatedAt).getTime()
+      const bTime = b.updatedAt instanceof Date ? b.updatedAt.getTime() : new Date(b.updatedAt).getTime()
+      return bTime - aTime
+    })
     .slice(0, MAX_SESSIONS)
 } 
