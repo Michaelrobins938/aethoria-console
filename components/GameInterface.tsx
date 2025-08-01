@@ -218,7 +218,7 @@ You are about to embark on an epic adventure where every choice matters. The AI 
             <ThreadList 
               character={storeCharacter || character} 
               gamePrompt={gamePrompt}
-              worldState={worldState || undefined}
+              worldState={worldState ?? undefined}
               quests={quests}
               inventory={inventory}
               combatState={combatState}
