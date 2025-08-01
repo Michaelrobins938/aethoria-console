@@ -417,7 +417,7 @@ export const useGameStore = create<GameState>()(
           const aiMessage = {
             id: `ai_${Date.now()}`,
             type: 'ai' as const,
-            content: data.response,
+            content: data.text || data.response || 'No response from AI',
             timestamp: new Date(),
             diceRolls: data.diceRolls || []
           }
