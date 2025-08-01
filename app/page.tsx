@@ -17,6 +17,7 @@ import { Character, GamePrompt } from '@/lib/types'
 import { ArrowUp, Gamepad2, Users, BookOpen, Mail } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
 import { AssistantModal } from '@/components/assistant-ui/assistant-modal'
+import { ErrorLogger } from '@/components/ErrorLogger'
 
 export default function Home() {
   const [selectedCartridge, setSelectedCartridge] = useState<string | null>(null)
@@ -438,6 +439,9 @@ export default function Home() {
         placeholder="Ask about your adventure..."
         apiEndpoint="/api/chat"
       />
+
+      {/* Error Logger */}
+      <ErrorLogger />
     </main>
   )
 } 

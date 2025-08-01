@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { ThreadWithOrb } from '@/components/assistant-ui/thread-with-orb'
+import { ErrorLogger } from '@/components/ErrorLogger'
 
 interface Message {
   id: string;
@@ -63,6 +64,9 @@ export default function TestChatPage() {
           />
         </div>
       </div>
+
+      {/* Error Logger */}
+      <ErrorLogger />
     </div>
   )
 } 
