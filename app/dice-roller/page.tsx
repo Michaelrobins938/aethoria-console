@@ -56,7 +56,7 @@ export default function DiceRollerPage() {
           <h2 className="text-console-accent font-console text-xl mb-4">Integration with Your Combat System</h2>
           <div className="space-y-2 text-console-text-dim text-sm">
             <p>✅ Connects to your existing <code className="bg-console-dark px-1 rounded">rollDice()</code> function</p>
-            <p>✅ Supports complex dice notation like "2d6+3" and "d20+5adv"</p>
+            <p>✅ Supports complex dice notation like &quot;2d6+3&quot; and &quot;d20+5adv&quot;</p>
             <p>✅ Integrates with your voice command system</p>
             <p>✅ Works with your combat engine and initiative system</p>
             <p>✅ Matches your console/gaming theme</p>
