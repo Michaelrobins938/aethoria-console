@@ -35,17 +35,47 @@ export default function Home() {
     setInput('')
     setIsTyping(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Call the real AI API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          sessionId: 'default-session'
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `You said: "${userMessage.content}". This is a basic response while we rebuild the full system.`,
+        content: data.response || 'I apologize, but I encountered an error processing your request.',
         type: 'ai',
         timestamp: new Date()
       }
+      
       setMessages(prev => [...prev, aiMessage])
+    } catch (error) {
+      console.error('AI request failed:', error)
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'I apologize, but I encountered an error. Please try again.',
+        type: 'ai',
+        timestamp: new Date()
+      }
+      
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1000)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -119,7 +149,7 @@ export default function Home() {
         </div>
 
         <div className="mt-4 text-center text-console-text-dim text-sm">
-          <p>Basic chat interface - Full features coming back soon!</p>
+          <p>Real AI integration - Connected to OpenRouter API!</p>
         </div>
       </div>
     </div>
