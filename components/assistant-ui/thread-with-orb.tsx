@@ -3,15 +3,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings, Mic, MicOff, Volume2, VolumeX, MoreVertical, Copy, Check } from "lucide-react";
 import { Character, GamePrompt } from "@/lib/types";
-import { 
-  DiceRollToolUI, 
-  CharacterStatsToolUI, 
-  CombatToolUI, 
-  InventoryToolUI, 
-  QuestToolUI, 
-  MapToolUI 
-} from "./game-tools";
+
 import { AttachmentProvider } from "./attachment-provider";
+import {
+  DiceRollToolUI,
+  CharacterStatsToolUI,
+  CombatToolUI,
+  InventoryToolUI,
+  QuestToolUI,
+  MapToolUI
+} from "./game-tools";
 import {
   ComposerAttachments,
   ComposerAddAttachment,
