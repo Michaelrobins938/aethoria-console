@@ -4,6 +4,7 @@ const nextConfig = {
     domains: ['localhost'],
   },
   experimental: {
+    appDir: true,
     serverComponentsExternalPackages: [],
   },
   typescript: {
@@ -11,6 +12,10 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: false,
+  },
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
   },
 }
 

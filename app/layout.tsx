@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -28,10 +29,12 @@ export default async function RootLayout({
   await getTimestamp()
   
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <TooltipProvider delayDuration={300}>
-          {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
+        <TooltipProvider delayDuration={300} skipDelayDuration={500}>
+          <Suspense fallback={<div>Loading...</div>}>
+            {children}
+          </Suspense>
         </TooltipProvider>
       </body>
     </html>
