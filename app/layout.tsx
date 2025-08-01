@@ -30,7 +30,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={300}>
           {children}
         </TooltipProvider>
       </body>
