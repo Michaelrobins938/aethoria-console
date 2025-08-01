@@ -3,14 +3,15 @@
 import { useState, useEffect } from "react";
 import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings } from "lucide-react";
 import { Character, GamePrompt } from "@/lib/types";
-import { 
-  DiceRollToolUI, 
-  CharacterStatsToolUI, 
-  CombatToolUI, 
-  InventoryToolUI, 
-  QuestToolUI, 
-  MapToolUI 
-} from "./game-tools";
+// Game tools temporarily disabled for debugging
+// import { 
+//   DiceRollToolUI, 
+//   CharacterStatsToolUI, 
+//   CombatToolUI, 
+//   InventoryToolUI, 
+//   QuestToolUI, 
+//   MapToolUI 
+// } from "./game-tools";
 import { AttachmentProvider } from "./attachment-provider";
 import {
   ComposerAttachments,
@@ -367,13 +368,13 @@ export function Thread() {
         </ComposerPrimitive.Root>
       </div>
 
-      {/* Tool UIs */}
-      <DiceRollToolUI />
+      {/* Game Tools - Temporarily Disabled for Debugging */}
+      {/* <DiceRollToolUI />
       <CharacterStatsToolUI />
       <CombatToolUI />
       <InventoryToolUI />
       <QuestToolUI />
-      <MapToolUI />
+      <MapToolUI /> */}
       </div>
     </AttachmentProvider>
   );
