@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { Menu, X, Settings, HelpCircle, Github, ExternalLink, Gamepad2 } from 'lucide-react'
 
 interface HeaderProps {
-  onNavigate?: (section: string) => void
+  onNavigation?: (section: string) => void
+  currentSection?: string
 }
 
-export function Header({ onNavigate }: HeaderProps) {
+export function Header({ onNavigation, currentSection }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -21,9 +22,13 @@ export function Header({ onNavigate }: HeaderProps) {
 
   const handleNavigation = (section: string) => {
     setIsMenuOpen(false)
-    if (onNavigate) {
-      onNavigate(section)
+    if (onNavigation) {
+      onNavigation(section)
     }
+  }
+
+  const isActiveSection = (section: string) => {
+    return currentSection === section
   }
 
   return (
@@ -69,25 +74,25 @@ export function Header({ onNavigate }: HeaderProps) {
           <nav className="hidden lg:flex items-center space-x-8">
             <button
               onClick={() => handleNavigation('features')}
-              className="nav-link"
+              className={`nav-link ${isActiveSection('features') ? 'text-console-accent border-console-accent' : ''}`}
             >
               FEATURES
             </button>
             <button
               onClick={() => handleNavigation('games')}
-              className="nav-link"
+              className={`nav-link ${isActiveSection('games') ? 'text-console-accent border-console-accent' : ''}`}
             >
               GAMES
             </button>
             <button
               onClick={() => handleNavigation('about')}
-              className="nav-link"
+              className={`nav-link ${isActiveSection('about') ? 'text-console-accent border-console-accent' : ''}`}
             >
               ABOUT
             </button>
             <button
               onClick={() => handleNavigation('contact')}
-              className="nav-link"
+              className={`nav-link ${isActiveSection('contact') ? 'text-console-accent border-console-accent' : ''}`}
             >
               CONTACT
             </button>
@@ -121,7 +126,7 @@ export function Header({ onNavigate }: HeaderProps) {
 
             {/* GitHub Link */}
             <a
-              href="https://github.com/your-username/aethoria"
+              href="https://github.com/Michaelrobins938/aethoria-console"
               target="_blank"
               rel="noopener noreferrer"
               className="console-button p-2 rounded-lg hover:scale-110 transition-transform duration-300 group"
@@ -152,25 +157,33 @@ export function Header({ onNavigate }: HeaderProps) {
               <nav className="flex flex-col space-y-4">
                 <button
                   onClick={() => handleNavigation('features')}
-                  className="text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group"
+                  className={`text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group ${
+                    isActiveSection('features') ? 'text-console-accent border-console-accent' : ''
+                  }`}
                 >
                   <span className="group-hover:animate-glitch">FEATURES</span>
                 </button>
                 <button
                   onClick={() => handleNavigation('games')}
-                  className="text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group"
+                  className={`text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group ${
+                    isActiveSection('games') ? 'text-console-accent border-console-accent' : ''
+                  }`}
                 >
                   <span className="group-hover:animate-glitch">GAMES</span>
                 </button>
                 <button
                   onClick={() => handleNavigation('about')}
-                  className="text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group"
+                  className={`text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 border-b border-console-border hover:border-console-accent group ${
+                    isActiveSection('about') ? 'text-console-accent border-console-accent' : ''
+                  }`}
                 >
                   <span className="group-hover:animate-glitch">ABOUT</span>
                 </button>
                 <button
                   onClick={() => handleNavigation('contact')}
-                  className="text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 group"
+                  className={`text-left text-console-text hover:text-console-accent transition-colors duration-300 font-gaming text-sm uppercase tracking-wider py-3 group ${
+                    isActiveSection('contact') ? 'text-console-accent border-console-accent' : ''
+                  }`}
                 >
                   <span className="group-hover:animate-glitch">CONTACT</span>
                 </button>
