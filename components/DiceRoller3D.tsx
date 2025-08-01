@@ -180,7 +180,7 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
   }, [selectedDice])
 
   // Roll the dice
-  const rollDice = async () => {
+  const handleRollDice = async () => {
     if (isRolling) return
 
     setIsRolling(true)
@@ -244,7 +244,7 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
       {/* Controls */}
       <div className="dice-controls flex gap-2 justify-center">
         <button
-          onClick={rollDice}
+          onClick={handleRollDice}
           disabled={isRolling}
           className="px-6 py-3 bg-console-accent hover:bg-console-accent-dark disabled:bg-console-border disabled:cursor-not-allowed text-console-dark font-console rounded-lg transition-colors duration-200 flex items-center space-x-2"
         >
