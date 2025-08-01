@@ -3,11 +3,24 @@
 import React from 'react'
 import { ThreadWithOrb } from '@/components/assistant-ui/thread-with-orb'
 
+interface Message {
+  id: string;
+  type: 'user' | 'system' | 'ai';
+  content: string;
+  timestamp: Date;
+  attachments?: any[];
+  diceRolls?: Array<{
+    type: string;
+    result: number;
+    success: boolean;
+  }>;
+}
+
 export default function TestChatPage() {
-  const [messages, setMessages] = React.useState([
+  const [messages, setMessages] = React.useState<Message[]>([
     {
       id: '1',
-      type: 'ai' as const,
+      type: 'ai',
       content: 'Hello! This is a test message.',
       timestamp: new Date()
     }
@@ -17,9 +30,9 @@ export default function TestChatPage() {
     console.log('Sending message:', content)
     
     // Add user message
-    const userMessage = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user' as const,
+      type: 'user',
       content,
       timestamp: new Date()
     }
@@ -27,9 +40,9 @@ export default function TestChatPage() {
     
     // Simulate AI response
     setTimeout(() => {
-      const aiMessage = {
+      const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai' as const,
+        type: 'ai',
         content: `You said: "${content}". This is a test response.`,
         timestamp: new Date()
       }
