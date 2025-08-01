@@ -2,7 +2,7 @@
 
 import { PropsWithChildren } from "react";
 import { AssistantRuntimeProvider, useLocalRuntime } from "@assistant-ui/react";
-import { AethoriaAttachmentAdapter } from "./attachment-adapters.jsx";
+import { AethoriaAttachmentAdapter } from "./attachment-adapters";
 
 interface AttachmentProviderProps extends PropsWithChildren {
   onMessage?: (message: any) => void;
