@@ -316,7 +316,7 @@ export function useVoiceCommands(options: VoiceCommandsOptions = {}) {
   // Initialize default commands
   useEffect(() => {
     setCommands(defaultCommands)
-  }, [])
+  }, [defaultCommands])
 
   // Process transcript for commands
   const processTranscript = useCallback((transcript: string, confidence: number = 1) => {

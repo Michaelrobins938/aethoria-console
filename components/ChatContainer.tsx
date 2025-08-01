@@ -86,7 +86,7 @@ export function ChatContainer({
     if (messages.length > 0) {
       scrollToBottom(false)
     }
-  }, [scrollToBottom])
+  }, [scrollToBottom, messages.length])
 
   const handleScrollButtonClick = () => {
     scrollToBottom(true)

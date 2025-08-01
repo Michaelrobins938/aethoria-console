@@ -177,7 +177,7 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
     if (sceneRef.current) {
       createDice(sceneRef.current, selectedDice)
     }
-  }, [selectedDice])
+  }, [selectedDice, isRolling])
 
   // Roll the dice
   const handleRollDice = async () => {

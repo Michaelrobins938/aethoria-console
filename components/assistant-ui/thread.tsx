@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Send, Dice1, Sword, Shield, Map, Package, BookOpen, User, Settings } from "lucide-react";
+import Image from "next/image";
 import { Character, GamePrompt } from "@/lib/types";
 // Game tools temporarily disabled for debugging
 // import { 
@@ -309,9 +310,11 @@ export function Thread() {
                             } else if (part.type === 'image') {
                               return (
                                 <div key={index} className="mt-2">
-                                  <img 
+                                  <Image 
                                     src={part.image} 
                                     alt="Uploaded content" 
+                                    width={400}
+                                    height={200}
                                     className="max-w-full h-auto rounded-lg border border-console-border"
                                     style={{ maxHeight: '200px' }}
                                   />

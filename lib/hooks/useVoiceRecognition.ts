@@ -161,7 +161,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
         }))
       }
     }
-  }, [options.continuous, options.interimResults, options.lang, options.maxAlternatives])
+  }, [options.continuous, options.interimResults, options.lang, options.maxAlternatives, options])
 
   // Start listening
   const startListening = useCallback(() => {

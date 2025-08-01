@@ -718,7 +718,7 @@ export function NarratorOrbComponent({
       }
       renderer.dispose()
     }
-  }, [isVisible])
+  }, [isVisible, frameInterval])
 
   // Performance optimization: Update orb properties efficiently
   useEffect(() => {
