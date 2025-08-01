@@ -9,11 +9,11 @@ interface Message {
   timestamp: Date
 }
 
-export default function Home() {
+export default function SimpleChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: '🎮 Welcome to Aethoria Console! 🎮\n\nI am your AI Dungeon Master. How can I help you today?',
+      content: 'Hello! I am a simple AI assistant. How can I help you today?',
       type: 'ai',
       timestamp: new Date()
     }
@@ -39,7 +39,7 @@ export default function Home() {
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `You said: "${userMessage.content}". This is a basic response while we rebuild the full system.`,
+        content: `You said: "${userMessage.content}". This is a simple response.`,
         type: 'ai',
         timestamp: new Date()
       }
@@ -56,14 +56,12 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-console-dark text-console-text">
-      <div className="max-w-6xl mx-auto p-4">
-        <h1 className="text-3xl font-gaming text-console-accent mb-6 text-center">
-          🎮 AETHORIA CONSOLE 🎮
-        </h1>
+    <div className="min-h-screen bg-gray-900 text-white p-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Simple Chat Interface</h1>
         
         {/* Messages */}
-        <div className="bg-console-darker border border-console-border rounded-lg h-[600px] overflow-y-auto p-4 mb-4">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg h-[500px] overflow-y-auto p-4 mb-4">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -72,28 +70,21 @@ export default function Home() {
               }`}
             >
               <div
-                className={`inline-block p-3 rounded-lg max-w-[80%] ${
+                className={`inline-block p-3 rounded-lg ${
                   message.type === 'user'
-                    ? 'bg-console-accent text-console-dark'
-                    : 'bg-console-dark border border-console-border'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-white'
                 }`}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                {message.content}
               </div>
             </div>
           ))}
           
           {isTyping && (
             <div className="text-left">
-              <div className="inline-block p-3 rounded-lg bg-console-dark border border-console-border">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-console-accent rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                  <span className="text-sm text-console-text-dim">AI is thinking...</span>
-                </div>
+              <div className="inline-block p-3 rounded-lg bg-gray-700">
+                AI is typing...
               </div>
             </div>
           )}
@@ -107,19 +98,15 @@ export default function Home() {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
-            className="flex-1 bg-console-dark border border-console-border rounded-lg px-4 py-3 text-console-text font-console focus:outline-none focus:border-console-accent"
+            className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
           />
           <button
             onClick={handleSendMessage}
             disabled={!input.trim() || isTyping}
-            className="px-6 py-3 bg-console-accent hover:bg-console-accent-dark disabled:bg-console-border text-console-dark font-console rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg transition-colors"
           >
             Send
           </button>
-        </div>
-
-        <div className="mt-4 text-center text-console-text-dim text-sm">
-          <p>Basic chat interface - Full features coming back soon!</p>
         </div>
       </div>
     </div>
