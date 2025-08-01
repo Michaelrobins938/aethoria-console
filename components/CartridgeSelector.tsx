@@ -96,19 +96,22 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
     autoplay: true,
     autoplaySpeed: 4000,
     pauseOnHover: true,
+    arrows: true,
     responsive: [
       {
         breakpoint: 1024,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 1
+          slidesToScroll: 1,
+          arrows: true
         }
       },
       {
         breakpoint: 768,
         settings: {
           slidesToShow: 1,
-          slidesToScroll: 1
+          slidesToScroll: 1,
+          arrows: true
         }
       }
     ]
@@ -302,6 +305,19 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
         .game-carousel .slick-next {
           color: #00ff41;
           z-index: 10;
+          bottom: -60px;
+          top: auto;
+          transform: translateY(0);
+        }
+        
+        .game-carousel .slick-prev {
+          left: 50%;
+          transform: translateX(-50px);
+        }
+        
+        .game-carousel .slick-next {
+          right: 50%;
+          transform: translateX(50px);
         }
         
         .game-carousel .slick-prev:hover,
