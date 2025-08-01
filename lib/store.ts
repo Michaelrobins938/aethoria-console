@@ -1,261 +1,382 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { 
-  Character, 
-  WorldState, 
-  Quest, 
-  Item, 
-  CombatState, 
-  AIResponse, 
-  GameSession,
-  VoiceState,
-  AudioSettings,
-  GamePrompt
-} from './types'
+import { Character, GamePrompt, WorldState, Quest, Item, CombatState, Message, CombatParticipant, CombatAction } from './types'
+import { ChatSession, createNewSession, generateSessionTitle, cleanupOldSessions } from './chatHistory'
+import { initializeCombat, performAttack, performSpellCast, performUseItem, advanceTurn, getCurrentActor, getAvailableActions, getValidTargets, isCombatOver, getCombatResult } from './combatEngine'
 
-interface GameStore {
-  // Core game state
-  session: GameSession | null
+interface GameState {
+  // Game state
+  session: string | null
   currentPrompt: GamePrompt | null
   character: Character | null
-  worldState: WorldState
+  worldState: WorldState | null
   quests: Quest[]
   inventory: Item[]
   combatState: CombatState | null
   
-  // UI state
-  messages: Array<{
-    id: string
-    type: 'user' | 'ai' | 'system'
-    content: string
-    timestamp: Date
-    diceRolls?: Array<{
-      type: string
-      result: number
-      success: boolean
-    }>
-  }>
+  // Chat state
+  messages: Message[]
   isTyping: boolean
   isLoading: boolean
   
-  // Voice and audio
-  voiceState: VoiceState
-  audioSettings: AudioSettings
+  // Chat history
+  chatSessions: ChatSession[]
+  activeSessionId: string | null
+  
+  // Voice state
+  voiceState: {
+    enabled: boolean
+    autoSpeak: boolean
+    voice: string
+    rate: number
+    pitch: number
+    volume: number
+    isListening: boolean
+  }
+  
+  // Audio settings
+  audioSettings: {
+    enabled: boolean
+    volume: number
+    effects: boolean
+    music: boolean
+    voiceOutputEnabled: boolean
+  }
   
   // Actions
-  initializeSession: (promptId: string) => Promise<void>
-  sendMessage: (content: string) => Promise<void>
-  updateCharacter: (updates: Partial<Character>) => void
-  updateWorldState: (updates: Partial<WorldState>) => void
+  initializeSession: (cartridgeId: string) => Promise<void>
+  updateCharacter: (character: Character) => void
+  updateWorldState: (worldState: WorldState) => void
   addQuest: (quest: Quest) => void
   updateQuest: (questId: string, updates: Partial<Quest>) => void
   addItem: (item: Item) => void
   removeItem: (itemId: string) => void
-  updateInventory: (inventory: Item[]) => void
-  startCombat: (enemies: Character[]) => void
-  endCombat: () => void
-  updateCombatState: (combatState: CombatState | null) => void
-  performCombatAction: (action: {
-    type: 'attack' | 'defend' | 'special' | 'flee' | 'item' | 'skill'
-    target?: string
-    itemId?: string
-    skillName?: string
-  }) => void
-  rollDice: (dice: string, modifier?: number, difficultyClass?: number) => {
-    result: number
-    total: number
-    success: boolean
-  }
-  setVoiceState: (state: Partial<VoiceState>) => void
-  setAudioSettings: (settings: Partial<AudioSettings>) => void
-  addMessage: (message: {
-    id: string
-    type: 'user' | 'ai' | 'system'
-    content: string
-    timestamp: Date
-    diceRolls?: Array<{
-      type: string
-      result: number
-      success: boolean
-    }>
-  }) => void
-  saveGame: () => void
-  loadGame: (sessionId: string) => Promise<void>
-  resetGame: () => void
+  setCombatState: (combatState: CombatState | null) => void
+  addMessage: (message: Message) => void
+  sendMessage: (content: string) => Promise<void>
+  
+  // Combat actions
+  updateCombatState: (updates: Partial<CombatState>) => void
+  performCombatAction: (action: string, target?: string) => void
+  rollDice: (diceType: string, count?: number) => { total: number }
+  
+  // Advanced combat actions
+  initializeCombat: (participants: CombatParticipant[]) => void
+  performAttack: (actorId: string, targetId: string, weaponName: string) => CombatAction
+  performSpellCast: (actorId: string, targetId: string, spellName: string) => CombatAction
+  performUseItem: (actorId: string, targetId: string, itemName: string) => CombatAction
+  advanceCombatTurn: () => void
+  getCurrentCombatActor: () => CombatParticipant | null
+  getAvailableCombatActions: () => string[]
+  getValidCombatTargets: (actionType: string) => CombatParticipant[]
+  isCombatOver: () => boolean
+  getCombatResult: () => 'victory' | 'defeat' | 'ongoing'
+  
+  // Voice actions
+  updateVoiceState: (updates: Partial<GameState['voiceState']>) => void
+  updateAudioSettings: (updates: Partial<GameState['audioSettings']>) => void
+  setAudioSettings: (settings: Partial<GameState['audioSettings']>) => void
+  setVoiceState: (settings: Partial<GameState['voiceState']>) => void
+  
+  // Inventory actions
+  updateInventory: (updates: Partial<{ items: Item[] }> | Item[]) => void
+  
+  // Chat history actions
+  createNewChatSession: (gamePrompt: GamePrompt, character: Character) => void
+  loadChatSession: (sessionId: string) => void
+  deleteChatSession: (sessionId: string) => void
+  updateSessionTitle: (sessionId: string, title: string) => void
+  clearAllSessions: () => void
 }
 
-const initialWorldState: WorldState = {
-  location: 'Unknown',
-  timeOfDay: 'day',
-  weather: 'clear',
-  activeEvents: [],
-  npcStates: {},
-  discoveredLocations: [],
-  factionRelations: {},
-  worldEvents: []
-}
-
-const initialVoiceState: VoiceState = {
-  isListening: false,
-  isSpeaking: false,
-  transcript: '',
-  confidence: 0
-}
-
-const initialAudioSettings: AudioSettings = {
-  voiceEnabled: false,
-  voiceOutputEnabled: true,
-  volume: 0.7,
-  voiceSpeed: 1.0,
-  voicePitch: 1.0
-}
-
-export const useGameStore = create<GameStore>()(
+export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       // Initial state
       session: null,
       currentPrompt: null,
       character: null,
-      worldState: initialWorldState,
+      worldState: null,
       quests: [],
       inventory: [],
       combatState: null,
       messages: [],
       isTyping: false,
       isLoading: false,
-      voiceState: initialVoiceState,
-      audioSettings: initialAudioSettings,
+      chatSessions: [],
+      activeSessionId: null,
+      
+      // Voice state
+      voiceState: {
+        enabled: false,
+        autoSpeak: true,
+        voice: 'default',
+        rate: 1,
+        pitch: 1,
+        volume: 1,
+        isListening: false
+      },
+      
+      // Audio settings
+      audioSettings: {
+        enabled: true,
+        volume: 0.8,
+        effects: true,
+        music: true,
+        voiceOutputEnabled: true
+      },
 
-      // Initialize a new game session
-      initializeSession: async (promptId: string) => {
+      // Initialize session
+      initializeSession: async (cartridgeId: string) => {
         set({ isLoading: true })
         
         try {
-          // Load game prompt
-          const response = await fetch(`/api/game-prompts/${promptId}`)
-          const prompt: GamePrompt = await response.json()
+          // Fetch game prompt
+          const response = await fetch(`/api/game-prompts/${cartridgeId}`)
+          if (!response.ok) {
+            throw new Error(`Failed to fetch game prompt: ${response.status}`)
+          }
+          const gamePrompt: GamePrompt = await response.json()
           
-          // Create new character
-          const character: Character = {
-            name: 'Adventurer',
-            health: 100,
-            maxHealth: 100,
-            attack: 10,
-            defense: 5,
-            speed: 10,
-            level: 1,
-            experience: 0,
-            inventory: [],
-            skills: [],
-            statusEffects: {},
-            background: 'A mysterious traveler with a hidden past',
-            abilities: {
-              strength: 10,
-              dexterity: 10,
-              constitution: 10,
-              intelligence: 10,
-              wisdom: 10,
-              charisma: 10
-            }
-          }
-
-          const session: GameSession = {
-            id: `session_${Date.now()}`,
-            gamePromptId: promptId,
-            character,
-            worldState: initialWorldState,
-            quests: [],
-            inventory: [],
-            sessionStart: new Date(),
-            lastSave: new Date(),
-            playTime: 0
-          }
-
-          // Create comprehensive welcome message with game context
-          const welcomeMessage = {
-            id: 'welcome',
-            type: 'ai' as const,
-            content: `🎮 **Welcome to ${prompt.title}!** 🎮
-
-${prompt.description}
-
-**Game Genre:** ${prompt.genre}
-**Difficulty:** ${prompt.difficulty}
-**Themes:** ${prompt.themes.join(', ')}
-
-You are about to embark on an epic adventure where every choice matters. The AI Dungeon Master is ready to guide you through this immersive world.
-
-**What you can do:**
-• Speak or type your actions naturally
-• Explore the world and discover secrets
-• Engage in tactical combat
-• Build relationships with NPCs
-• Complete quests and advance your character
-
-**Ready to begin?** Create your character and let the adventure start!`,
-            timestamp: new Date()
-          }
-
-          // Create system message with game mechanics
-          const systemMessage = {
-            id: 'system-setup',
-            type: 'system' as const,
-            content: `Game Session Initialized:
-- Game: ${prompt.title}
-- Mechanics: ${prompt.mechanics.diceSystem} dice system
-- Combat: ${prompt.mechanics.combatSystem}
-- Skills: ${prompt.mechanics.skillSystem}
-- Special Rules: ${prompt.mechanics.specialRules.join(', ')}`,
-            timestamp: new Date()
-          }
-
           set({
-            session,
-            currentPrompt: prompt,
-            character,
-            worldState: initialWorldState,
-            quests: [],
-            inventory: [],
-            combatState: null,
-            messages: [welcomeMessage, systemMessage]
+            session: cartridgeId,
+            currentPrompt: gamePrompt,
+            isLoading: false
           })
-
-          console.log('AI session initialized successfully with prompt:', prompt.title)
         } catch (error) {
           console.error('Failed to initialize session:', error)
-          // Fallback welcome message if prompt loading fails
-          const fallbackMessage = {
-            id: 'welcome-fallback',
-            type: 'ai' as const,
-            content: `🎮 **Welcome to Aethoria!** 🎮
-
-You are about to embark on an epic AI-powered adventure. The Dungeon Master is ready to guide you through an immersive world where every choice shapes your story.
-
-**Ready to begin?** Create your character and let the adventure start!`,
-            timestamp: new Date()
-          }
-
-          set({
-            session: null,
-            currentPrompt: null,
-            character: null,
-            worldState: initialWorldState,
-            quests: [],
-            inventory: [],
-            combatState: null,
-            messages: [fallbackMessage]
-          })
-        } finally {
           set({ isLoading: false })
+          throw error
         }
       },
 
-      // Send message to AI and get response
-      sendMessage: async (content: string) => {
-        const { session, character, worldState, quests, inventory, combatState } = get()
+      // Update character
+      updateCharacter: (character: Character) => {
+        set({ character })
+      },
+
+      // Update world state
+      updateWorldState: (worldState: WorldState) => {
+        set({ worldState })
+      },
+
+      // Quest management
+      addQuest: (quest: Quest) => {
+        set(state => ({
+          quests: [...state.quests.filter(q => q.id !== quest.id), quest]
+        }))
+      },
+
+      updateQuest: (questId: string, updates: Partial<Quest>) => {
+        set(state => ({
+          quests: state.quests.map(quest => 
+            quest.id === questId ? { ...quest, ...updates } : quest
+          )
+        }))
+      },
+
+      // Inventory management
+      addItem: (item: Item) => {
+        set(state => ({
+          inventory: [...state.inventory.filter(i => i.id !== item.id), item]
+        }))
+      },
+
+      removeItem: (itemId: string) => {
+        set(state => ({
+          inventory: state.inventory.filter(item => item.id !== itemId)
+        }))
+      },
+
+      // Combat state
+      setCombatState: (combatState: CombatState | null) => {
+        set({ combatState })
+      },
+
+      // Combat actions
+      updateCombatState: (updates: Partial<CombatState>) => {
+        set(state => ({
+          combatState: state.combatState ? { ...state.combatState, ...updates } : null
+        }))
+      },
+
+      performCombatAction: (action: string, target?: string) => {
+        const { combatState } = get()
+        if (!combatState) return
         
-        if (!session || !character) return
+        // Implement combat action logic here
+        console.log(`Performing combat action: ${action}${target ? ` on ${target}` : ''}`)
+      },
+
+      rollDice: (diceType: string, count: number = 1) => {
+        const sides = parseInt(diceType.replace('d', ''))
+        let total = 0
+        for (let i = 0; i < count; i++) {
+          total += Math.floor(Math.random() * sides) + 1
+        }
+        return { total }
+      },
+
+      // Advanced combat actions
+      initializeCombat: (participants: CombatParticipant[]) => {
+        const combatState = initializeCombat(participants)
+        set({ combatState })
+      },
+
+      performAttack: (actorId: string, targetId: string, weaponName: string) => {
+        const { combatState } = get()
+        if (!combatState) throw new Error('No active combat')
+        
+        const action = performAttack(combatState, actorId, targetId, weaponName)
+        
+        set(state => ({
+          combatState: state.combatState ? {
+            ...state.combatState,
+            actions: [...state.combatState.actions, action]
+          } : null
+        }))
+        
+        return action
+      },
+
+      performSpellCast: (actorId: string, targetId: string, spellName: string) => {
+        const { combatState } = get()
+        if (!combatState) throw new Error('No active combat')
+        
+        const action = performSpellCast(combatState, actorId, targetId, spellName)
+        
+        set(state => ({
+          combatState: state.combatState ? {
+            ...state.combatState,
+            actions: [...state.combatState.actions, action]
+          } : null
+        }))
+        
+        return action
+      },
+
+      performUseItem: (actorId: string, targetId: string, itemName: string) => {
+        const { combatState } = get()
+        if (!combatState) throw new Error('No active combat')
+        
+        const action = performUseItem(combatState, actorId, targetId, itemName)
+        
+        set(state => ({
+          combatState: state.combatState ? {
+            ...state.combatState,
+            actions: [...state.combatState.actions, action]
+          } : null
+        }))
+        
+        return action
+      },
+
+      advanceCombatTurn: () => {
+        const { combatState } = get()
+        if (!combatState) return
+        
+        const newCombatState = advanceTurn(combatState)
+        set({ combatState: newCombatState })
+      },
+
+      getCurrentCombatActor: () => {
+        const { combatState } = get()
+        if (!combatState) return null
+        return getCurrentActor(combatState)
+      },
+
+      getAvailableCombatActions: () => {
+        const { combatState } = get()
+        if (!combatState) return []
+        return getAvailableActions(combatState)
+      },
+
+      getValidCombatTargets: (actionType: string) => {
+        const { combatState } = get()
+        if (!combatState) return []
+        return getValidTargets(combatState, actionType)
+      },
+
+      isCombatOver: () => {
+        const { combatState } = get()
+        if (!combatState) return false
+        return isCombatOver(combatState)
+      },
+
+      getCombatResult: () => {
+        const { combatState } = get()
+        if (!combatState) return 'ongoing'
+        return getCombatResult(combatState)
+      },
+
+      // Voice actions
+      updateVoiceState: (updates: Partial<GameState['voiceState']>) => {
+        set(state => ({
+          voiceState: { ...state.voiceState, ...updates }
+        }))
+      },
+
+      updateAudioSettings: (updates: Partial<GameState['audioSettings']>) => {
+        set(state => ({
+          audioSettings: { ...state.audioSettings, ...updates }
+        }))
+      },
+
+      setAudioSettings: (settings: Partial<GameState['audioSettings']>) => {
+        set(state => ({
+          audioSettings: { ...state.audioSettings, ...settings }
+        }))
+      },
+
+      setVoiceState: (settings: Partial<GameState['voiceState']>) => {
+        set(state => ({
+          voiceState: { ...state.voiceState, ...settings }
+        }))
+      },
+
+      // Inventory actions
+      updateInventory: (updates: Partial<{ items: Item[] }> | Item[]) => {
+        set(state => ({
+          inventory: Array.isArray(updates) ? updates : (updates.items || state.inventory)
+        }))
+      },
+
+      // Message management
+      addMessage: (message: Message) => {
+        set(state => ({
+          messages: [...state.messages, message]
+        }))
+        
+        // Update active session with new message
+        const { activeSessionId, chatSessions } = get()
+        if (activeSessionId) {
+          const session = chatSessions.find(s => s.id === activeSessionId)
+          if (session) {
+            const updatedSession = {
+              ...session,
+              messages: [...session.messages, message],
+              updatedAt: new Date()
+            }
+            
+            // Auto-generate title from first user message
+            if (message.type === 'user' && session.messages.length === 0) {
+              updatedSession.title = generateSessionTitle([message])
+            }
+            
+            set(state => ({
+              chatSessions: state.chatSessions.map(s => 
+                s.id === activeSessionId ? updatedSession : s
+              )
+            }))
+          }
+        }
+      },
+
+      // Send message to AI
+      sendMessage: async (content: string) => {
+        const { session, character, worldState, quests, inventory, combatState, currentPrompt } = get()
+        
+        if (!session || !character || !currentPrompt) return
 
         const userMessage = {
           id: `msg_${Date.now()}`,
@@ -274,8 +395,8 @@ You are about to embark on an epic AI-powered adventure. The Dungeon Master is r
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              sessionId: session.id,
-              userInput: content,
+              messages: [...get().messages, userMessage],
+              cartridgeId: session,
               gameState: {
                 character,
                 worldState,
@@ -286,44 +407,19 @@ You are about to embark on an epic AI-powered adventure. The Dungeon Master is r
             })
           })
 
-          const aiResponse: AIResponse = await response.json()
-
-          // Update game state based on AI response
-          if (aiResponse.gameState) {
-            set({ 
-              worldState: { ...get().worldState, ...aiResponse.gameState }
-            })
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`)
           }
 
-          // Update combat state
-          if (aiResponse.combatState) {
-            set({ 
-              combatState: { 
-                ...get().combatState, 
-                ...aiResponse.combatState,
-                isActive: aiResponse.combatState.isActive ?? get().combatState?.isActive ?? false,
-                participants: aiResponse.combatState.participants ?? get().combatState?.participants ?? [],
-                turn: aiResponse.combatState.turn ?? get().combatState?.turn ?? 1,
-                currentActor: aiResponse.combatState.currentActor ?? get().combatState?.currentActor ?? '',
-                log: aiResponse.combatState.log ?? get().combatState?.log ?? [],
-                environment: aiResponse.combatState.environment ?? get().combatState?.environment ?? ''
-              } 
-            })
-          }
-
-          // Save game state
-          get().saveGame()
-
+          const data = await response.json()
+          
+          // Add AI response
           const aiMessage = {
             id: `ai_${Date.now()}`,
             type: 'ai' as const,
-            content: aiResponse.text,
+            content: data.response,
             timestamp: new Date(),
-            diceRolls: aiResponse.diceRolls?.map(roll => ({
-              type: roll.type,
-              result: roll.result,
-              success: roll.success
-            }))
+            diceRolls: data.diceRolls || []
           }
 
           set(state => ({
@@ -331,225 +427,125 @@ You are about to embark on an epic AI-powered adventure. The Dungeon Master is r
             isTyping: false
           }))
 
+          // Update game state from AI response
+          if (data.gameState) {
+            if (data.gameState.character) {
+              get().updateCharacter(data.gameState.character)
+            }
+            if (data.gameState.worldState) {
+              get().updateWorldState(data.gameState.worldState)
+            }
+            if (data.gameState.quests) {
+              data.gameState.quests.forEach((quest: Quest) => {
+                get().addQuest(quest)
+              })
+            }
+            if (data.gameState.inventory) {
+              data.gameState.inventory.forEach((item: Item) => {
+                get().addItem(item)
+              })
+            }
+            if (data.gameState.combatState !== undefined) {
+              get().setCombatState(data.gameState.combatState)
+            }
+          }
         } catch (error) {
-          console.error('Failed to process message:', error)
+          console.error('Failed to send message:', error)
           set({ isTyping: false })
+          
+          // Add error message
+          const errorMessage = {
+            id: `error_${Date.now()}`,
+            type: 'system' as const,
+            content: 'Sorry, there was an error processing your message. Please try again.',
+            timestamp: new Date()
+          }
+          
+          set(state => ({
+            messages: [...state.messages, errorMessage]
+          }))
         }
       },
 
-      // Character management
-      updateCharacter: (updates: Partial<Character>) => {
+      // Chat history management
+      createNewChatSession: (gamePrompt: GamePrompt, character: Character) => {
+        const session = createNewSession(gamePrompt, character)
+        
         set(state => ({
-          character: state.character ? { ...state.character, ...updates } : null
+          chatSessions: cleanupOldSessions([session, ...state.chatSessions]),
+          activeSessionId: session.id,
+          currentPrompt: gamePrompt,
+          character,
+          messages: session.messages,
+          quests: [],
+          inventory: [],
+          combatState: null,
+          worldState: null
         }))
       },
 
-      // World state management
-      updateWorldState: (updates: Partial<WorldState>) => {
-        set(state => ({
-          worldState: { ...state.worldState, ...updates }
-        }))
+      loadChatSession: (sessionId: string) => {
+        const { chatSessions } = get()
+        const session = chatSessions.find(s => s.id === sessionId)
+        
+        if (session) {
+          set({
+            activeSessionId: sessionId,
+            currentPrompt: session.gamePrompt,
+            character: session.character,
+            messages: session.messages,
+            quests: session.quests || [],
+            inventory: session.inventory || [],
+            combatState: session.combatState || null,
+            worldState: session.worldState || null
+          })
+        }
       },
 
-      // Quest management
-      addQuest: (quest: Quest) => {
-        set(state => ({
-          quests: [...state.quests, quest]
-        }))
+      deleteChatSession: (sessionId: string) => {
+        set(state => {
+          const newSessions = state.chatSessions.filter(s => s.id !== sessionId)
+          let newActiveSessionId = state.activeSessionId
+          
+          // If deleting active session, switch to first available
+          if (state.activeSessionId === sessionId) {
+            newActiveSessionId = newSessions.length > 0 ? newSessions[0].id : null
+          }
+          
+          return {
+            chatSessions: newSessions,
+            activeSessionId: newActiveSessionId
+          }
+        })
       },
 
-      updateQuest: (questId: string, updates: Partial<Quest>) => {
+      updateSessionTitle: (sessionId: string, title: string) => {
         set(state => ({
-          quests: state.quests.map(quest => 
-            quest.id === questId ? { ...quest, ...updates } : quest
+          chatSessions: state.chatSessions.map(s => 
+            s.id === sessionId ? { ...s, title } : s
           )
         }))
       },
 
-      // Inventory management
-      addItem: (item: Item) => {
-        set(state => ({
-          inventory: [...state.inventory, item]
-        }))
-      },
-
-      removeItem: (itemId: string) => {
-        set(state => ({
-          inventory: state.inventory.filter(item => item.id !== itemId)
-        }))
-      },
-
-      updateInventory: (inventory: Item[]) => {
-        set({ inventory })
-      },
-
-      // Combat system
-      startCombat: (enemies: Character[]) => {
-        const { character } = get()
-        if (!character) return
-
-        const combatState: CombatState = {
-          isActive: true,
-          participants: [character, ...enemies],
-          turn: 1,
-          currentActor: character.name,
-          log: [`Combat started! ${enemies.length} enemies appear.`],
-          environment: get().worldState.location
-        }
-
-        set({ combatState })
-      },
-
-      endCombat: () => {
-        set({ combatState: null })
-      },
-
-      updateCombatState: (combatState: CombatState | null) => {
-        set({ combatState })
-      },
-
-      performCombatAction: (action) => {
-        const { combatState, character } = get()
-        if (!combatState || !character) return
-
-        // Simple combat resolution
-        const log = [...combatState.log]
-        
-        switch (action.type) {
-          case 'attack':
-            const target = combatState.participants.find(p => p.name === action.target)
-            if (target) {
-              const damage = Math.max(0, character.attack - target.defense + Math.floor(Math.random() * 6))
-              target.health -= damage
-              log.push(`${character.name} attacks ${target.name} for ${damage} damage!`)
-            }
-            break
-          case 'defend':
-            log.push(`${character.name} takes a defensive stance!`)
-            break
-          case 'flee':
-            const fleeChance = 0.3 + (character.speed * 0.05)
-            if (Math.random() < fleeChance) {
-              log.push(`${character.name} successfully flees from combat!`)
-              set({ combatState: null })
-              return
-            } else {
-              log.push(`${character.name} tried to flee but failed!`)
-            }
-            break
-        }
-
-        set(state => ({
-          combatState: state.combatState ? {
-            ...state.combatState,
-            log,
-            turn: state.combatState.turn + 1
-          } : null
-        }))
-      },
-
-      // Dice rolling system
-      rollDice: (dice: string, modifier = 0, difficultyClass?: number) => {
-        const [count, sides] = dice.split('d').map(Number)
-        let result = 0
-        
-        for (let i = 0; i < count; i++) {
-          result += Math.floor(Math.random() * sides) + 1
-        }
-        
-        const total = result + modifier
-        const success = difficultyClass ? total >= difficultyClass : true
-
-        return { result, total, success }
-      },
-
-      // Voice and audio
-      setVoiceState: (state: Partial<VoiceState>) => {
-        set(prev => ({
-          voiceState: { ...prev.voiceState, ...state }
-        }))
-      },
-
-      setAudioSettings: (settings: Partial<AudioSettings>) => {
-        set(prev => ({
-          audioSettings: { ...prev.audioSettings, ...settings }
-        }))
-      },
-
-      // Add message to chat
-      addMessage: (message) => {
-        set(state => ({
-          messages: [...state.messages, message]
-        }))
-      },
-
-      // Save/load system
-      saveGame: () => {
-        const { session, character, worldState, quests, inventory, combatState } = get()
-        if (!session || !character) return
-
-        const saveData = {
-          sessionId: session.id,
-          data: {
-            ...session,
-            character,
-            worldState,
-            quests,
-            inventory,
-            combatState,
-            lastSave: new Date()
-          },
-          timestamp: new Date(),
-          version: '1.0.0'
-        }
-
-        localStorage.setItem(`aethoria_save_${session.id}`, JSON.stringify(saveData))
-      },
-
-      loadGame: async (sessionId: string) => {
-        const saveData = localStorage.getItem(`aethoria_save_${sessionId}`)
-        if (!saveData) return
-
-        try {
-          const parsed = JSON.parse(saveData)
-          set({
-            session: parsed.data,
-            character: parsed.data.character,
-            worldState: parsed.data.worldState,
-            quests: parsed.data.quests,
-            inventory: parsed.data.inventory,
-            combatState: parsed.data.combatState
-          })
-        } catch (error) {
-          console.error('Failed to load game:', error)
-        }
-      },
-
-      resetGame: () => {
+      clearAllSessions: () => {
         set({
-          session: null,
+          chatSessions: [],
+          activeSessionId: null,
+          messages: [],
           currentPrompt: null,
           character: null,
-          worldState: initialWorldState,
           quests: [],
           inventory: [],
           combatState: null,
-          messages: [],
-          isTyping: false,
-          isLoading: false
+          worldState: null
         })
       }
     }),
     {
       name: 'aethoria-game-store',
       partialize: (state) => ({
-        session: state.session,
-        character: state.character,
-        worldState: state.worldState,
-        quests: state.quests,
-        inventory: state.inventory,
-        combatState: state.combatState,
-        audioSettings: state.audioSettings
+        chatSessions: state.chatSessions,
+        activeSessionId: state.activeSessionId
       })
     }
   )

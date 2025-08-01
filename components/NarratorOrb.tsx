@@ -17,11 +17,11 @@ const NarratorOrb = (() => {
     private time: number;
     private breathingPhase: number;
     private lastAudioLevel: number;
-    private nebulaMaterial: THREE.ShaderMaterial;
-    private tendrilMaterial: THREE.ShaderMaterial;
-    private nebulaCore: THREE.Points;
-    private nebulaTendrils: THREE.Points;
-    private orbGroup: THREE.Group;
+    private nebulaMaterial!: THREE.ShaderMaterial;
+    private tendrilMaterial!: THREE.ShaderMaterial;
+    private nebulaCore!: THREE.Points;
+    private nebulaTendrils!: THREE.Points;
+    private orbGroup!: THREE.Group;
     constructor(scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, analyserNode: AnalyserNode | null = null, config: any = {}) {
       this.scene = scene;
       this.camera = camera;
@@ -89,8 +89,8 @@ const NarratorOrb = (() => {
 
     createCoreNebula() {
       const geometry = new THREE.BufferGeometry();
-      const positions = [];
-      const colors = [];
+      const positions: number[] = [];
+      const colors: number[] = [];
 
       for (let i = 0; i < this.config.coreParticleCount; i++) {
         const theta = Math.random() * 2 * Math.PI;
@@ -124,8 +124,8 @@ const NarratorOrb = (() => {
 
     createTendrils() {
       const geometry = new THREE.BufferGeometry();
-      const positions = [];
-      const colors = [];
+      const positions: number[] = [];
+      const colors: number[] = [];
 
       for (let i = 0; i < this.config.tendrilParticleCount; i++) {
         const theta = Math.random() * 2 * Math.PI;
@@ -610,126 +610,149 @@ export function NarratorOrbComponent({
   className = '' 
 }: NarratorOrbProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const sceneRef = useRef<THREE.Scene | null>(null)
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
   const orbRef = useRef<any>(null)
-  const animationRef = useRef<number | null>(null)
-  const analyserRef = useRef<AnalyserNode | null>(null)
+  const animationFrameRef = useRef<number>()
+  const lastFrameTimeRef = useRef<number>(0)
+  const frameCountRef = useRef<number>(0)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Performance optimization: Adaptive frame rate
+  const targetFPS = 60
+  const frameInterval = 1000 / targetFPS
 
   useEffect(() => {
     if (!containerRef.current || !isVisible) return
 
-    // Initialize Three.js scene
+    const container = containerRef.current
     const scene = new THREE.Scene()
-    sceneRef.current = scene
-
-    // Create camera
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000
-    )
-    camera.position.z = 5
-    cameraRef.current = camera
-
-    // Create renderer
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000)
+    
+    // Performance optimization: Use WebGL2 renderer with better settings
     const renderer = new THREE.WebGLRenderer({ 
-      alpha: true, 
-      antialias: true,
-      powerPreference: "high-performance"
+      antialias: true, 
+      alpha: true,
+      powerPreference: "high-performance",
+      stencil: false,
+      depth: true
     })
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight)
+    
+    renderer.setSize(container.clientWidth, container.clientHeight)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) // Limit pixel ratio for performance
     renderer.setClearColor(0x000000, 0)
-    containerRef.current.appendChild(renderer.domElement)
-    rendererRef.current = renderer
+    container.appendChild(renderer.domElement)
 
-    // Create audio context for reactivity
-    let analyserNode: AnalyserNode | null = null
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      analyserNode = audioContext.createAnalyser()
-      analyserNode.fftSize = 256
-      analyserRef.current = analyserNode
-    } catch (error) {
-      console.log('Audio context not available, using fallback')
-    }
+    // Performance optimization: Adaptive quality based on device performance
+    const isHighPerformanceDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency > 4
+    const particleMultiplier = isHighPerformanceDevice ? 1.0 : 0.6
 
-    // Create NarratorOrb
-    const orb = new NarratorOrb(scene, camera, renderer, analyserNode, {
-      coreParticleCount: 3000,
-      tendrilParticleCount: 2000,
-      coreRadius: 1.0,
-      tendrilRadius: 2.5
+    const orb = new NarratorOrb(scene, camera, renderer, null, {
+      coreParticleCount: Math.floor(4000 * particleMultiplier),
+      tendrilParticleCount: Math.floor(3000 * particleMultiplier),
+      coreRadius: 1.2,
+      tendrilRadius: 3.5,
+      baseHue: 200
     })
+
     orbRef.current = orb
+    camera.position.z = 5
 
-    // Animation loop
-    let lastTime = 0
+    // Performance optimization: Throttled animation loop
     const animate = (currentTime: number) => {
-      const deltaTime = (currentTime - lastTime) / 1000
-      lastTime = currentTime
-
-      if (orbRef.current) {
-        orbRef.current.update(deltaTime)
-        orbRef.current.setIntensity(intensity)
+      if (!isVisible) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+        return
       }
 
-      renderer.render(scene, camera)
-      animationRef.current = requestAnimationFrame(animate)
-    }
-    animate(0)
+      const deltaTime = currentTime - lastFrameTimeRef.current
+      
+      // Frame rate limiting for performance
+      if (deltaTime >= frameInterval) {
+        frameCountRef.current++
+        lastFrameTimeRef.current = currentTime
+        
+        orb.update(deltaTime / 1000)
+        renderer.render(scene, camera)
+      }
 
-    // Handle resize
+      // Adaptive quality: Reduce quality on slower devices
+      if (frameCountRef.current % 30 === 0) {
+        const actualFPS = 1000 / deltaTime
+        if (actualFPS < 30 && renderer.getPixelRatio() > 1) {
+          renderer.setPixelRatio(Math.max(1, renderer.getPixelRatio() - 0.5))
+        }
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate)
+    }
+
+    // Performance optimization: Debounced resize handler
+    let resizeTimeout: NodeJS.Timeout
     const handleResize = () => {
-      if (!containerRef.current || !camera || !renderer) return
-      
-      const width = containerRef.current.clientWidth
-      const height = containerRef.current.clientHeight
-      
-      camera.aspect = width / height
-      camera.updateProjectionMatrix()
-      renderer.setSize(width, height)
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        if (!container) return
+        
+        const width = container.clientWidth
+        const height = container.clientHeight
+        
+        camera.aspect = width / height
+        camera.updateProjectionMatrix()
+        renderer.setSize(width, height)
+      }, 100)
     }
 
     window.addEventListener('resize', handleResize)
+    animationFrameRef.current = requestAnimationFrame(animate)
+    setIsInitialized(true)
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
       }
       if (orbRef.current) {
         orbRef.current.destroy()
       }
-      if (renderer) {
-        renderer.dispose()
-        containerRef.current?.removeChild(renderer.domElement)
+      if (container && renderer.domElement) {
+        container.removeChild(renderer.domElement)
       }
+      renderer.dispose()
     }
   }, [isVisible])
 
+  // Performance optimization: Update orb properties efficiently
   useEffect(() => {
-    if (orbRef.current) {
+    if (orbRef.current && isInitialized) {
       orbRef.current.setIntensity(intensity)
     }
-  }, [intensity])
+  }, [intensity, isInitialized])
 
-  if (!isVisible) return null
+  useEffect(() => {
+    if (orbRef.current && isInitialized) {
+      // Update audio level smoothly to avoid jarring changes
+      const currentAudioLevel = orbRef.current.getAudioLevel?.() || 0
+      const targetAudioLevel = audioLevel
+      const smoothingFactor = 0.1
+      
+      const smoothAudioLevel = currentAudioLevel + (targetAudioLevel - currentAudioLevel) * smoothingFactor
+      orbRef.current.setAudioLevel?.(smoothAudioLevel)
+    }
+  }, [audioLevel, isInitialized])
+
+  if (!isVisible) {
+    return <div className={className} />
+  }
 
   return (
     <div 
       ref={containerRef} 
-      className={`narrator-orb-container ${className}`}
-      style={{
+      className={`w-full h-full ${className}`}
+      style={{ 
         position: 'absolute',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100%',
         pointerEvents: 'none',
-        zIndex: 10
+        zIndex: 0
       }}
     />
   )

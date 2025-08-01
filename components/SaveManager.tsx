@@ -76,7 +76,7 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
 
   const saveGame = async () => {
     if (!session || !character) {
-      setError('No active game session to save')
+      setError('No active game to save')
       return
     }
 
@@ -85,9 +85,9 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
 
     try {
       const saveData = {
-        sessionId: session.id,
+        sessionId: session,
         data: {
-          ...session,
+          sessionId: session,
           character,
           worldState,
           quests,
@@ -99,7 +99,7 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
         version: '1.0.0'
       }
 
-      const saveKey = `aethoria_save_${session.id}`
+      const saveKey = `aethoria_save_${session}`
       localStorage.setItem(saveKey, JSON.stringify(saveData))
 
       // Try to save to cloud storage if available

@@ -9,7 +9,7 @@ export const revalidate = 0
 import { CartridgeSelector } from '@/components/CartridgeSelector'
 import { Header } from '@/components/Header'
 import { HeroSection } from '@/components/HeroSection'
-import { LoadingOverlay } from '@/components/LoadingSpinner'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { FeaturesSection } from '@/components/FeaturesSection'
 import { CharacterCreator } from '@/components/CharacterCreator'
 import { GameInterface } from '@/components/GameInterface'
@@ -53,7 +53,7 @@ export default function Home() {
       // Fetch the game prompt
       const response = await fetch(`/api/game-prompts/${cartridgeId}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch game prompt')
+        throw new Error(`Failed to fetch game prompt: ${response.status}`)
       }
       const prompt: GamePrompt = await response.json()
       setGamePrompt(prompt)
@@ -62,7 +62,10 @@ export default function Home() {
       setShowCharacterCreator(true)
     } catch (error) {
       console.error('Failed to initialize AI session:', error)
-      setError('Failed to initialize game session. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize game session'
+      setError(`Failed to initialize game session: ${errorMessage}. Please try again.`)
+      setSelectedCartridge(null)
+      setGamePrompt(null)
     } finally {
       setIsInitializing(false)
     }
@@ -80,6 +83,12 @@ export default function Home() {
     setCharacter(newCharacter)
     setShowCharacterCreator(false)
     setIsGameActive(true)
+    
+    // Create new chat session when character is created
+    if (gamePrompt) {
+      const { createNewChatSession } = useGameStore.getState()
+      createNewChatSession(gamePrompt, newCharacter)
+    }
   }
 
   const handleCharacterBack = () => {
@@ -177,10 +186,12 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-console-dark">
         {isInitializing && (
-          <LoadingOverlay 
-            message="Initializing AI - Loading game world and preparing your adventure..." 
-            variant="gaming" 
-          />
+          <div className="fixed inset-0 bg-console-dark/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <LoadingSpinner 
+              text="Initializing AI - Loading game world and preparing your adventure..."
+              size="lg"
+            />
+          </div>
         )}
                     {gamePrompt && (
               <CharacterCreator

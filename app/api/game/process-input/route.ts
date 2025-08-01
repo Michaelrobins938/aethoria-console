@@ -66,6 +66,47 @@ Current Game State:
 
 Model: ${selectedModel} - ${modelDescription}
 
+IMPORTANT: After your response, include a JSON section with game state updates in this format:
+{
+  "gameState": {
+    "location": "new location",
+    "timeOfDay": "day/night",
+    "weather": "clear/rainy/etc"
+  },
+  "characterUpdates": {
+    "health": 95,
+    "experience": 150
+  },
+  "questUpdates": [
+    {
+      "id": "quest_id",
+      "progress": 2,
+      "status": "in_progress"
+    }
+  ],
+  "inventoryUpdates": [
+    {
+      "action": "add",
+      "item": {
+        "id": "sword",
+        "name": "Iron Sword",
+        "type": "weapon"
+      }
+    }
+  ],
+  "combatState": {
+    "isActive": true,
+    "enemies": []
+  },
+  "diceRolls": [
+    {
+      "type": "attack",
+      "result": 15,
+      "success": true
+    }
+  ]
+}
+
 Respond as the Game Master, creating an immersive and engaging experience. Keep responses concise but atmospheric.`
     }
 
@@ -86,7 +127,7 @@ Respond as the Game Master, creating an immersive and engaging experience. Keep 
         top_p: modelConfig.topP,
         frequency_penalty: modelConfig.frequencyPenalty,
         presence_penalty: modelConfig.presencePenalty,
-        stream: true
+        stream: false // Changed to false for structured response
       })
     })
 
@@ -102,63 +143,39 @@ Respond as the Game Master, creating an immersive and engaging experience. Keep 
       )
     }
 
-    // Create a readable stream from the OpenRouter response
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          const reader = response.body?.getReader()
-          if (!reader) {
-            throw new Error('No response body')
-          }
+    const responseData = await response.json()
+    const aiResponse = responseData.choices?.[0]?.message?.content || 'No response from AI'
 
-          const decoder = new TextDecoder()
-          
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
+    // Parse the AI response for game state updates
+    let gameStateUpdates = {}
+    let diceRolls = []
+    let aiText = aiResponse
 
-            const chunk = decoder.decode(value)
-            const lines = chunk.split('\n')
+    // Try to extract JSON from the response
+    try {
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const jsonStr = jsonMatch[0]
+        const parsed = JSON.parse(jsonStr)
+        
+        if (parsed.gameState) gameStateUpdates = parsed.gameState
+        if (parsed.diceRolls) diceRolls = parsed.diceRolls
+        
+        // Remove the JSON from the text response
+        aiText = aiResponse.replace(jsonStr, '').trim()
+      }
+    } catch (error) {
+      console.warn('Failed to parse game state updates from AI response:', error)
+    }
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6)
-                if (data === '[DONE]') {
-                  controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
-                  break
-                }
-
-                try {
-                  const parsed = JSON.parse(data)
-                  if (parsed.choices?.[0]?.delta?.content) {
-                    const text = parsed.choices[0].delta.content
-                    // Format for AI SDK streaming
-                    const streamData = `data: ${JSON.stringify({ content: text })}\n\n`
-                    controller.enqueue(new TextEncoder().encode(streamData))
-                  }
-                } catch (e) {
-                  // Skip invalid JSON lines
-                  continue
-                }
-              }
-            }
-          }
-          
-          controller.close()
-        } catch (error) {
-          console.error('Stream error:', error)
-          controller.error(error)
-        }
-      },
+    // Return structured response
+    return NextResponse.json({
+      text: aiText,
+      gameState: gameStateUpdates,
+      diceRolls: diceRolls,
+      timestamp: new Date().toISOString()
     })
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    })
   } catch (error) {
     console.error('Error processing game input:', error)
     return NextResponse.json(

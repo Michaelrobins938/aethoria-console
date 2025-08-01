@@ -2,281 +2,207 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono:wght@400&display=swap');
-
-@layer base {
-  html {
-    font-family: 'Orbitron', system-ui, sans-serif;
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    @apply bg-console-dark text-console-text;
-    background: #0a0a0a;
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #0a0a0a;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #00ff41, #00cc6a);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #00ff88, #00ff41);
-  }
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+/* Custom scrollbar styles */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--console-border) var(--console-dark);
 }
 
-@layer components {
-  /* Enhanced Button Components */
-  .console-button {
-    @apply bg-console-darker border border-console-border text-console-text 
-           hover:bg-gray-800 hover:border-console-accent 
-           transition-all duration-300 px-6 py-3 rounded-lg
-           font-gaming font-medium relative overflow-hidden
-           shadow-lg hover:shadow-xl cursor-pointer
-           active:scale-95 transform;
-  }
-
-  .console-button:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
-  
-  .console-button-primary {
-    @apply console-button bg-gradient-to-r from-console-accent to-console-accent-dark 
-           text-console-dark font-bold text-lg px-8 py-4
-           hover:from-green-500 hover:to-green-600
-           shadow-[0_0_20px_rgba(0,255,136,0.3)]
-           hover:shadow-[0_0_30px_rgba(0,255,136,0.5)];
-  }
-
-  .console-button-secondary {
-    @apply console-button bg-gradient-to-r from-blue-600 to-purple-600
-           text-white font-bold
-           hover:from-blue-500 hover:to-purple-500
-           shadow-[0_0_20px_rgba(59,130,246,0.3)]
-           hover:shadow-[0_0_30px_rgba(59,130,246,0.5)];
-  }
-  
-  .console-input {
-    @apply bg-console-darker border border-console-border text-console-text
-           focus:border-console-accent focus:outline-none
-           px-4 py-3 rounded-lg font-gaming
-           transition-all duration-300
-           placeholder:text-console-text-dim;
-  }
-  
-  .console-card {
-    @apply bg-gradient-to-br from-console-darker to-gray-900 
-           border border-console-border rounded-xl
-           p-6 shadow-2xl backdrop-blur-sm
-           transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,136,0.1)]
-           relative overflow-hidden;
-  }
-
-  .console-card-hover {
-    @apply console-card hover:border-console-accent hover:scale-105
-           cursor-pointer hover:shadow-[0_0_40px_rgba(0,255,136,0.2)];
-  }
-
-  .console-panel {
-    @apply bg-gradient-to-br from-console-darker via-gray-900 to-console-darker
-           border border-console-border rounded-2xl
-           p-8 shadow-2xl backdrop-blur-md
-           relative overflow-hidden;
-  }
-  
-  .console-glow {
-    @apply shadow-[0_0_20px_rgba(0,255,136,0.3)] 
-           hover:shadow-[0_0_40px_rgba(0,255,136,0.6)]
-           transition-all duration-500;
-  }
-  
-  .chat-message {
-    @apply p-4 rounded-xl mb-3 max-w-[80%] backdrop-blur-sm
-           border border-console-border;
-  }
-  
-  .chat-message-user {
-    @apply chat-message bg-gradient-to-r from-console-accent to-green-500 
-           text-console-dark ml-auto font-medium
-           shadow-[0_0_15px_rgba(0,255,136,0.2)];
-  }
-  
-  .chat-message-ai {
-    @apply chat-message bg-gradient-to-r from-console-darker to-gray-800 
-           border border-console-border
-           shadow-[0_0_15px_rgba(0,0,0,0.3)];
-  }
-  
-  .cartridge-slot {
-    @apply bg-gradient-to-br from-console-darker to-gray-900 
-           border-2 border-console-border rounded-xl
-           p-6 text-center hover:border-console-accent 
-           transition-all duration-300 cursor-pointer
-           hover:scale-105 hover:shadow-[0_0_30px_rgba(0,255,136,0.2)]
-           relative overflow-hidden;
-  }
-  
-  .cartridge-active {
-    @apply border-console-accent console-glow;
-  }
-
-  .modal-overlay {
-    @apply fixed inset-0 bg-black/80 backdrop-blur-sm z-50
-           flex items-center justify-center p-4;
-  }
-
-  .modal-content {
-    @apply console-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto;
-  }
-
-  .nav-link {
-    @apply text-console-text hover:text-console-accent transition-colors duration-300 
-           font-gaming text-sm uppercase tracking-wider hover:scale-105
-           relative;
-  }
-
-  .status-indicator {
-    @apply inline-block w-3 h-3 rounded-full;
-  }
-
-  .status-online {
-    @apply status-indicator bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)];
-  }
-
-  .status-offline {
-    @apply status-indicator bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)];
-  }
-
-  .status-loading {
-    @apply status-indicator bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] animate-pulse;
-  }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
 }
 
-@layer utilities {
-  .text-glow {
-    text-shadow: 
-      0 0 10px rgba(0, 255, 136, 0.5),
-      0 0 20px rgba(0, 255, 136, 0.3),
-      0 0 30px rgba(0, 255, 136, 0.1);
-  }
-
-  .glass-effect {
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-  }
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--console-dark);
+  border-radius: 3px;
 }
 
-/* Simple Animations */
-@keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--console-border);
+  border-radius: 3px;
 }
 
-@keyframes slide-up {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--console-accent);
 }
 
-@keyframes pulse-glow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-  }
-  50% { 
-    box-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
-  }
+/* CSS Variables for console theme */
+:root {
+  --console-dark: #0a0a0a;
+  --console-darker: #050505;
+  --console-accent: #00ff41;
+  --console-accent-dark: #00cc33;
+  --console-text: #ffffff;
+  --console-text-dim: #888888;
+  --console-border: #333333;
 }
 
+/* Console theme classes */
+.bg-console-dark {
+  background-color: var(--console-dark);
+}
+
+.bg-console-darker {
+  background-color: var(--console-darker);
+}
+
+.bg-console-accent {
+  background-color: var(--console-accent);
+}
+
+.bg-console-accent-dark {
+  background-color: var(--console-accent-dark);
+}
+
+.text-console-text {
+  color: var(--console-text);
+}
+
+.text-console-text-dim {
+  color: var(--console-text-dim);
+}
+
+.text-console-accent {
+  color: var(--console-accent);
+}
+
+.border-console-border {
+  border-color: var(--console-border);
+}
+
+/* Font classes */
+.font-console {
+  font-family: 'Courier New', monospace;
+}
+
+.font-gaming {
+  font-family: 'Orbitron', 'Courier New', monospace;
+}
+
+/* Animation classes */
 .animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.5s ease-out;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulseGlow 2s ease-in-out infinite;
 }
 
-
-
-@layer base {
-  * {
-    @apply border-border;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  body {
-    @apply bg-background text-foreground;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--console-accent);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--console-accent), 0 0 30px var(--console-accent);
+  }
+}
+
+/* Console panel styles */
+.console-panel {
+  background: var(--console-darker);
+  border: 1px solid var(--console-border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.console-button-primary {
+  background: var(--console-accent);
+  color: var(--console-dark);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.console-button-primary:hover {
+  background: var(--console-accent-dark);
+  transform: translateY(-1px);
+}
+
+.console-button-secondary {
+  background: transparent;
+  color: var(--console-text);
+  border: 1px solid var(--console-border);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.console-button-secondary:hover {
+  background: var(--console-border);
+  border-color: var(--console-accent);
+}
+
+/* Cartridge styles */
+.cartridge-slot {
+  background: var(--console-darker);
+  border: 2px solid var(--console-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cartridge-slot:hover {
+  border-color: var(--console-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 65, 0.2);
+}
+
+.cartridge-active {
+  border-color: var(--console-accent);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+
+/* Chat bubble animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-bubble-enter {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* Typing indicator */
+.typing-dot {
+  animation: typingBounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
   }
 } 

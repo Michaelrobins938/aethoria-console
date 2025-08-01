@@ -118,8 +118,7 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
     return (
       <div className="min-h-screen bg-console-dark flex items-center justify-center">
         <LoadingSpinner 
-          message="Loading Game Cartridges..." 
-          variant="gaming"
+          text="Loading Game Cartridges..."
           size="lg"
         />
       </div>

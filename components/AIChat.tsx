@@ -64,8 +64,8 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
 
       recognitionRef.current.onresult = (event) => {
         const transcript = Array.from(event.results)
-          .map(result => result[0])
-          .map(result => result.transcript)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
           .join('')
         
         setInput(transcript)
