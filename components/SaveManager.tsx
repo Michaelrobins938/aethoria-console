@@ -27,7 +27,6 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; content: string } | null>(null)
 
   const { session, character, worldState, quests, inventory, combatState } = useGameStore()
 
@@ -77,7 +76,7 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
 
   const saveGame = async () => {
     if (!session || !character) {
-      setError('No active game to save')
+      setError('No active game session to save')
       return
     }
 
@@ -86,9 +85,9 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
 
     try {
       const saveData = {
-        sessionId: session,
+        sessionId: session.id,
         data: {
-          sessionId: session,
+          ...session,
           character,
           worldState,
           quests,
@@ -100,7 +99,7 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
         version: '1.0.0'
       }
 
-      const saveKey = `aethoria_save_${session}`
+      const saveKey = `aethoria_save_${session.id}`
       localStorage.setItem(saveKey, JSON.stringify(saveData))
 
       // Try to save to cloud storage if available
@@ -151,188 +150,9 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
   }
 
   const saveToCloud = async (saveData: { sessionId: string; data: unknown; timestamp: Date; version: string }) => {
-    try {
-      // Validate save data
-      if (!saveData.sessionId || !saveData.data) {
-        throw new Error('Invalid save data');
-      }
-
-      // Prepare save data with metadata
-      const cloudSaveData = {
-        id: saveData.sessionId,
-        data: saveData.data,
-        timestamp: saveData.timestamp.toISOString(),
-        version: saveData.version,
-        checksum: generateChecksum(JSON.stringify(saveData.data)),
-        metadata: {
-          character: saveData.data.character?.name || 'Unknown',
-          cartridgeId: saveData.data.cartridgeId || 'unknown',
-          playTime: saveData.data.playTime || 0,
-          lastSave: new Date().toISOString()
-        }
-      };
-
-      // Encrypt sensitive data before cloud storage
-      const encryptedData = await encryptSaveData(cloudSaveData);
-
-      // Upload to cloud storage
-      const response = await fetch('/api/save/cloud', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
-        body: JSON.stringify({
-          saveId: saveData.sessionId,
-          encryptedData: encryptedData,
-          metadata: cloudSaveData.metadata
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Cloud save failed: ${errorData.message || response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Update local save slots with cloud info
-      const updatedSlots = saveSlots.map(slot => 
-        slot.id === saveData.sessionId 
-          ? { ...slot, cloudSync: true, cloudId: result.cloudId }
-          : slot
-      );
-      setSaveSlots(updatedSlots);
-
-      // Show success message
-      setMessage({
-        type: 'success',
-        content: 'Game saved to cloud successfully!'
-      });
-
-      return result.cloudId;
-
-    } catch (error) {
-      console.error('Cloud save error:', error);
-      
-      setError(`Cloud save failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
-      // Fallback to local save
-      await saveGameLocally(saveData);
-      
-      return null;
-    }
-  }
-
-  const loadFromCloud = async (cloudId: string) => {
-    try {
-      const response = await fetch(`/api/save/cloud/${cloudId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load cloud save: ${response.statusText}`);
-      }
-
-      const cloudData = await response.json();
-      
-      // Decrypt the save data
-      const decryptedData = await decryptSaveData(cloudData.encryptedData);
-      
-      // Validate checksum
-      const expectedChecksum = generateChecksum(JSON.stringify(decryptedData.data));
-      if (decryptedData.checksum !== expectedChecksum) {
-        throw new Error('Save data corruption detected');
-      }
-
-      // Load the game
-      onLoadGame(decryptedData.data.sessionId);
-      
-      setMessage({
-        type: 'success',
-        content: 'Game loaded from cloud successfully!'
-      });
-
-    } catch (error) {
-      console.error('Cloud load error:', error);
-      setError(`Failed to load from cloud: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  const syncToCloud = async (slotId: string) => {
-    try {
-      const slot = saveSlots.find(s => s.id === slotId);
-      if (!slot) {
-        throw new Error('Save slot not found');
-      }
-
-      // Prepare save data
-      const saveData = {
-        sessionId: slot.sessionId,
-        data: slot,
-        timestamp: slot.lastSave,
-        version: slot.version
-      };
-
-      await saveToCloud(saveData);
-
-    } catch (error) {
-      console.error('Cloud sync error:', error);
-      setError(`Cloud sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  }
-
-  // Utility functions for cloud save functionality
-  const generateChecksum = (data: string): string => {
-    // Simple checksum generation (in production, use a proper hash)
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString(16);
-  }
-
-  const encryptSaveData = async (data: any): Promise<string> => {
-    // In production, use proper encryption
-    // For now, use a simple encoding
-    return btoa(JSON.stringify(data));
-  }
-
-  const decryptSaveData = async (encryptedData: string): Promise<any> => {
-    // In production, use proper decryption
-    // For now, use simple decoding
-    return JSON.parse(atob(encryptedData));
-  }
-
-  const getAuthToken = (): string => {
-    // Get auth token from localStorage or session
-    return localStorage.getItem('authToken') || '';
-  }
-
-  const saveGameLocally = async (saveData: any) => {
-    try {
-      const localSave = {
-        ...saveData,
-        localSave: true,
-        timestamp: new Date().toISOString()
-      };
-
-      localStorage.setItem(`save_${saveData.sessionId}`, JSON.stringify(localSave));
-      
-      setMessage({
-        type: 'info',
-        content: 'Game saved locally (cloud sync unavailable)'
-      });
-
-    } catch (error) {
-      console.error('Local save error:', error);
-      setError('Failed to save locally');
-    }
+    // TODO: Implement cloud save functionality
+    // This would typically involve an API call to your backend
+    // Cloud save not implemented yet
   }
 
   const formatPlayTime = (minutes: number) => {
@@ -362,19 +182,6 @@ export function SaveManager({ isOpen, onClose, onLoadGame }: SaveManagerProps) {
         {error && (
           <div className="mb-4 p-3 bg-red-900 text-red-100 border border-red-500 rounded">
             {error}
-          </div>
-        )}
-
-        {/* Success/Info Message Display */}
-        {message && (
-          <div className={`mb-4 p-3 border rounded ${
-            message.type === 'success' 
-              ? 'bg-green-900 text-green-100 border-green-500' 
-              : message.type === 'error'
-                ? 'bg-red-900 text-red-100 border-red-500'
-                : 'bg-blue-900 text-blue-100 border-blue-500'
-          }`}>
-            {message.content}
           </div>
         )}
 

@@ -1,22 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ['localhost'],
-  },
   experimental: {
-    appDir: true,
-    serverComponentsExternalPackages: [],
+    instrumentationHook: true,
   },
-  typescript: {
-    ignoreBuildErrors: false,
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('node-gyp');
+    }
+    return config;
   },
-  eslint: {
-    ignoreDuringBuilds: false,
+  env: {
+    NODE_OPTIONS: '--max-old-space-size=8192',
   },
-  swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-}
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig;

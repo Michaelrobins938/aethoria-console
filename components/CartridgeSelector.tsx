@@ -76,7 +76,7 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
   const handleStartGame = () => {
     if (selectedCartridge) {
-      onCartridgeSelect(selectedCartridge.id)
+      onCartridgeSelect(selectedCartridge.id, selectedCartridge.characters)
     }
   }
 
@@ -93,10 +93,9 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 4000,
+    autoplay: false, // Disable autoplay for better UX
     pauseOnHover: true,
-    arrows: true,
+    arrows: true, // Always show arrows
     responsive: [
       {
         breakpoint: 1024,
@@ -111,7 +110,19 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          arrows: true
+          dots: true,
+          arrows: true, // Show arrows on mobile too
+          autoplay: false
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          dots: true,
+          arrows: true, // Show arrows on mobile too
+          autoplay: false
         }
       }
     ]
@@ -119,9 +130,10 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-console-dark flex items-center justify-center">
+      <div className="min-h-screen bg-console-dark flex items-center justify-center mobile-full-height">
         <LoadingSpinner 
-          text="Loading Game Cartridges..."
+          message="Loading Game Cartridges..." 
+          variant="gaming"
           size="lg"
         />
       </div>
@@ -130,13 +142,13 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
   if (error) {
     return (
-      <div className="min-h-screen bg-console-dark flex items-center justify-center">
+      <div className="min-h-screen bg-console-dark flex items-center justify-center mobile-full-height">
         <div className="console-panel text-center">
-          <h2 className="text-2xl font-gaming text-red-400 mb-4">Error Loading Games</h2>
-          <p className="text-console-text mb-6">{error}</p>
+          <h2 className="text-xl md:text-2xl font-gaming text-red-400 mb-4">Error Loading Games</h2>
+          <p className="text-console-text mb-6 text-sm md:text-base">{error}</p>
           <button 
             onClick={fetchCartridges}
-            className="console-button-primary"
+            className="console-button-primary mobile-button"
           >
             Try Again
           </button>
@@ -146,58 +158,67 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
   }
 
   return (
-    <div className={`min-h-screen bg-console-dark transition-all duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-console-dark transition-all duration-1000 mobile-full-height ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 space-y-4 md:space-y-0">
           <div className="flex items-center space-x-4">
             {onBack && (
               <button
                 onClick={handleBack}
-                className="console-button-secondary flex items-center space-x-2"
+                className="console-button-secondary flex items-center space-x-2 mobile-button"
               >
-                <ArrowLeft size={20} />
-                <span>Back</span>
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline">Back</span>
               </button>
             )}
             <div className="flex items-center space-x-3">
-              <Gamepad2 className="text-console-accent" size={32} />
-              <h1 className="text-4xl font-gaming text-console-accent">Game Cartridges</h1>
+              <Gamepad2 className="text-console-accent" size={24} />
+              <h1 className="text-2xl md:text-4xl font-gaming text-console-accent">Game Cartridges</h1>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-console-text font-console">Available Games: {cartridges.length}</p>
-            <p className="text-console-text-dim text-sm">Select your adventure</p>
+          <div className="text-center md:text-right">
+            <p className="text-console-text font-console text-sm md:text-base">Available Games: {cartridges.length}</p>
+            <p className="text-console-text-dim text-xs md:text-sm">Select your adventure</p>
           </div>
         </div>
 
         {/* Carousel Container */}
-        <div className="relative mb-12">
+        <div className="relative mb-8 md:mb-12">
+          {/* Navigation Indicator */}
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center space-x-2 bg-console-darker/50 px-4 py-2 rounded-lg border border-console-accent/30">
+              <ArrowLeft size={16} className="text-console-accent" />
+              <span className="text-console-accent font-console text-sm">Swipe or use arrows to browse games</span>
+              <ArrowRight size={16} className="text-console-accent" />
+            </div>
+          </div>
+          
           <Slider {...sliderSettings} className="game-carousel">
             {cartridges.map((cartridge, index) => (
-              <div key={cartridge.id} className="px-4">
+              <div key={cartridge.id} className="px-2 md:px-4">
                 <div 
                   className={`cartridge-slot ${getColorForGenre(cartridge.genre)} ${
                     selectedCartridge?.id === cartridge.id ? 'cartridge-active' : ''
-                  } transition-all duration-300 transform hover:scale-105`}
+                  } transition-all duration-300 transform hover:scale-105 mobile-button`}
                   onClick={() => handleCartridgeClick(cartridge)}
                 >
                   {/* Selection Indicator */}
                   {selectedCartridge?.id === cartridge.id && (
-                    <div className="absolute top-4 right-4 z-10">
-                      <CheckCircle className="text-console-accent" size={24} />
+                    <div className="absolute top-2 md:top-4 right-2 md:right-4 z-10">
+                      <CheckCircle className="text-console-accent" size={20} />
                     </div>
                   )}
 
                   {/* Cartridge Content */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {/* Icon */}
                     <div className="flex justify-center">
-                      <Gamepad2 className="text-console-accent" size={48} />
+                      <Gamepad2 className="text-console-accent" size={32} />
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-gaming font-bold text-console-accent">
+                    <h3 className="text-lg md:text-xl font-gaming font-bold text-console-accent text-center">
                       {cartridge.title}
                     </h3>
 
@@ -212,22 +233,22 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
                     </div>
 
                     {/* Description */}
-                    <p className="text-console-text text-sm font-console leading-relaxed">
-                      {cartridge.description.length > 120 
-                        ? `${cartridge.description.substring(0, 120)}...` 
+                    <p className="text-console-text text-xs md:text-sm font-console leading-relaxed text-center">
+                      {cartridge.description.length > 100 
+                        ? `${cartridge.description.substring(0, 100)}...` 
                         : cartridge.description
                       }
                     </p>
 
                     {/* AI Model Info */}
                     <div className="flex items-center justify-center space-x-2 text-xs text-console-text-dim">
-                      <Cpu size={14} />
+                      <Cpu size={12} />
                       <span className="font-console">AI: {cartridge.aiModel}</span>
                     </div>
 
                     {/* Themes */}
                     <div className="flex flex-wrap justify-center gap-1">
-                      {cartridge.themes.slice(0, 3).map((theme, idx) => (
+                      {cartridge.themes.slice(0, 2).map((theme, idx) => (
                         <span 
                           key={idx} 
                           className="bg-console-accent/20 text-console-accent text-xs px-2 py-1 rounded"
@@ -241,36 +262,50 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
               </div>
             ))}
           </Slider>
+          
+          {/* Game Counter */}
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center space-x-3 bg-console-darker/30 px-4 py-2 rounded-lg border border-console-accent/20">
+              <span className="text-console-text font-console text-sm">
+                Game <span className="text-console-accent">1</span> of <span className="text-console-accent">{cartridges.length}</span>
+              </span>
+              <div className="w-px h-4 bg-console-accent/30"></div>
+              <span className="text-console-text-dim font-console text-xs">
+                Use arrows or swipe to browse
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Selection Summary */}
         {selectedCartridge && (
-          <div className="console-panel mb-8 animate-fade-in">
-            <div className="flex items-center justify-between">
+          <div className="console-panel mb-6 md:mb-8 animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <Star className="text-console-accent" size={24} />
-                  <h3 className="text-2xl font-gaming text-console-accent">
+                  <Star className="text-console-accent" size={20} />
+                  <h3 className="text-lg md:text-2xl font-gaming text-console-accent">
                     Selected: {selectedCartridge.title}
                   </h3>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <p className="text-console-text font-console">
+              <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                <div className="text-center md:text-right">
+                  <p className="text-console-text font-console text-sm">
                     Genre: <span className="text-console-accent">{selectedCartridge.genre}</span>
                   </p>
-                  <p className="text-console-text font-console">
+                  <p className="text-console-text font-console text-sm">
                     Difficulty: <span className={getDifficultyColor(selectedCartridge.difficulty)}>{selectedCartridge.difficulty}</span>
                   </p>
                 </div>
                 <button
                   onClick={handleStartGame}
-                  className="console-button-primary flex items-center space-x-2 animate-pulse-glow"
+                  className="console-button-primary flex items-center space-x-2 animate-pulse-glow mobile-button"
                 >
-                  <Play size={20} />
-                  <span>START GAME</span>
-                  <Zap size={20} />
+                  <Play size={18} />
+                  <span className="hidden sm:inline">START GAME</span>
+                  <span className="sm:hidden">START</span>
+                  <Zap size={18} />
                 </button>
               </div>
             </div>
@@ -279,7 +314,7 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
         {/* Instructions */}
         <div className="text-center">
-          <p className="text-console-text-dim font-console">
+          <p className="text-console-text-dim font-console text-xs md:text-sm">
             Click on a cartridge to select it, then press START GAME to begin your adventure
           </p>
         </div>
@@ -287,42 +322,80 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
 
       {/* Custom Carousel Styles */}
       <style jsx global>{`
+        .game-carousel {
+          position: relative;
+          padding: 0 40px; /* Space for arrows */
+        }
+        
         .game-carousel .slick-dots {
           bottom: -40px;
+          display: flex !important;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .game-carousel .slick-dots li {
+          margin: 0 4px;
+        }
+        
+        .game-carousel .slick-dots li button {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: rgba(0, 255, 65, 0.3);
+          border: 2px solid rgba(0, 255, 65, 0.5);
+          transition: all 0.3s ease;
         }
         
         .game-carousel .slick-dots li button:before {
-          color: #00ff41;
-          opacity: 0.5;
+          display: none; /* Remove default dot */
         }
         
-        .game-carousel .slick-dots li.slick-active button:before {
-          color: #00ff41;
-          opacity: 1;
+        .game-carousel .slick-dots li.slick-active button {
+          background: #00ff41;
+          border-color: #00ff88;
+          transform: scale(1.2);
+          box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
         
+        .game-carousel .slick-dots li:hover button {
+          background: rgba(0, 255, 65, 0.6);
+          border-color: #00ff88;
+          transform: scale(1.1);
+        }
+        
+        /* Arrow Styles */
         .game-carousel .slick-prev,
         .game-carousel .slick-next {
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 255, 65, 0.1);
+          border: 2px solid rgba(0, 255, 65, 0.5);
+          border-radius: 50%;
           color: #00ff41;
           z-index: 10;
-          bottom: -60px;
-          top: auto;
-          transform: translateY(0);
-        }
-        
-        .game-carousel .slick-prev {
-          left: 50%;
-          transform: translateX(-50px);
-        }
-        
-        .game-carousel .slick-next {
-          right: 50%;
-          transform: translateX(50px);
+          transition: all 0.3s ease;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
         }
         
         .game-carousel .slick-prev:hover,
         .game-carousel .slick-next:hover {
+          background: rgba(0, 255, 65, 0.2);
+          border-color: #00ff88;
           color: #00ff88;
+          transform: scale(1.1);
+          box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        
+        .game-carousel .slick-prev {
+          left: -50px;
+        }
+        
+        .game-carousel .slick-next {
+          right: -50px;
         }
         
         .game-carousel .slick-track {
@@ -336,6 +409,62 @@ export function CartridgeSelector({ onCartridgeSelect, onBack }: CartridgeSelect
         
         .game-carousel .slick-slide > div {
           height: 100%;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+          .game-carousel {
+            padding: 0 30px;
+          }
+          
+          .game-carousel .slick-dots {
+            bottom: -35px;
+          }
+          
+          .game-carousel .slick-dots li button {
+            width: 14px;
+            height: 14px;
+          }
+          
+          .game-carousel .slick-prev,
+          .game-carousel .slick-next {
+            width: 35px;
+            height: 35px;
+          }
+          
+          .game-carousel .slick-prev {
+            left: -40px;
+          }
+          
+          .game-carousel .slick-next {
+            right: -40px;
+          }
+        }
+        
+        /* Small Mobile Styles */
+        @media (max-width: 480px) {
+          .game-carousel {
+            padding: 0 25px;
+          }
+          
+          .game-carousel .slick-dots li button {
+            width: 12px;
+            height: 12px;
+          }
+          
+          .game-carousel .slick-prev,
+          .game-carousel .slick-next {
+            width: 30px;
+            height: 30px;
+          }
+          
+          .game-carousel .slick-prev {
+            left: -35px;
+          }
+          
+          .game-carousel .slick-next {
+            right: -35px;
+          }
         }
       `}</style>
     </div>

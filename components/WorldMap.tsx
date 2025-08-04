@@ -71,45 +71,19 @@ export function WorldMap({ isOpen, onClose, onNavigate }: WorldMapProps) {
   }) || []
 
   const getDistance = (location: Location) => {
-    // Robust distance calculation using Haversine formula for geographic coordinates
+    // Simple distance calculation based on location coordinates
     const currentLocation = worldState?.discoveredLocations.find(l => l.isCurrent)
     if (!currentLocation || !location.coordinates || !currentLocation.coordinates) return 'Unknown'
     
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (location.coordinates.y - currentLocation.coordinates.y) * Math.PI / 180;
-    const dLon = (location.coordinates.x - currentLocation.coordinates.x) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(currentLocation.coordinates.y * Math.PI / 180) * Math.cos(location.coordinates.y * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
+    const dx = location.coordinates.x - currentLocation.coordinates.x
+    const dy = location.coordinates.y - currentLocation.coordinates.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
     
-    // Add terrain modifiers for more realistic travel
-    const terrainModifier = getTerrainModifier(currentLocation, location);
-    const adjustedDistance = distance * terrainModifier;
-    
-    if (adjustedDistance < 0.1) return 'Here'
-    if (adjustedDistance < 1) return 'Nearby'
-    if (adjustedDistance < 5) return 'Close'
-    if (adjustedDistance < 15) return 'Far'
+    if (distance < 1) return 'Here'
+    if (distance < 5) return 'Nearby'
+    if (distance < 10) return 'Close'
+    if (distance < 20) return 'Far'
     return 'Very Far'
-  }
-
-  const getTerrainModifier = (location1: Location, location2: Location): number => {
-    // Calculate terrain difficulty between locations
-    const terrainTypes = {
-      'road': 1.0,
-      'forest': 1.5,
-      'mountain': 2.0,
-      'swamp': 1.8,
-      'desert': 1.3,
-      'water': 2.5,
-      'urban': 0.8
-    };
-    
-    const avgTerrain = location1.terrain || location2.terrain || 'road';
-    return terrainTypes[avgTerrain as keyof typeof terrainTypes] || 1.0;
   }
 
   const getTravelTime = (location: Location) => {
@@ -204,124 +178,27 @@ export function WorldMap({ isOpen, onClose, onNavigate }: WorldMapProps) {
               <p className="text-sm">Click on locations to navigate</p>
             </div>
             
-            {/* Robust Interactive Map Visualization */}
-            <div className="relative w-full h-[400px] bg-gradient-to-br from-console-dark to-console-darker rounded-lg border border-console-border overflow-hidden">
-              {/* Map Background with Terrain */}
-              <div className="absolute inset-0 opacity-20">
-                <div className="w-full h-full bg-gradient-to-br from-green-900/20 via-blue-900/20 to-gray-900/20" />
-                <div className="absolute inset-0" style={{
-                  backgroundImage: `radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-                                  radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                                  radial-gradient(circle at 50% 50%, rgba(107, 114, 128, 0.1) 0%, transparent 50%)`
-                }} />
-              </div>
-              
-              {/* Location Markers */}
-              {filteredLocations.map((location, index) => {
-                const currentLocation = worldState?.discoveredLocations.find(l => l.isCurrent);
-                const isCurrent = location.isCurrent;
-                const isDiscovered = location.isDiscovered !== false;
-                
-                // Calculate position based on coordinates or generate grid position
-                const x = location.coordinates?.x || (index % 8) * 12.5;
-                const y = location.coordinates?.y || Math.floor(index / 8) * 12.5;
+            {/* Placeholder for actual map visualization */}
+            <div className="grid grid-cols-8 gap-2">
+              {Array.from({ length: 64 }, (_, i) => {
+                const location = filteredLocations[i % filteredLocations.length]
+                if (!location) return <div key={i} className="w-8 h-8 bg-console-border rounded" />
                 
                 return (
                   <button
-                    key={location.id}
+                    key={i}
                     onClick={() => setSelectedLocation(location)}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-125 ${
-                      isCurrent ? 'z-20' : 'z-10'
+                    className={`w-8 h-8 rounded flex items-center justify-center transition-all hover:scale-110 ${
+                      location.isCurrent ? 'bg-console-accent' : 'bg-console-border hover:bg-console-accent'
                     }`}
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`
-                    }}
-                    title={`${location.name} - ${getDistance(location)} - ${getTravelTime(location)}`}
+                    title={location.name}
                   >
-                    <div className={`relative ${isCurrent ? 'animate-pulse' : ''}`}>
-                      {/* Location Icon */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
-                        isCurrent 
-                          ? 'bg-console-accent border-console-accent shadow-lg shadow-console-accent/50' 
-                          : isDiscovered
-                            ? 'bg-console-dark border-console-border hover:border-console-accent'
-                            : 'bg-console-darker border-console-border opacity-50'
-                      }`}>
-                        <div className={getLocationColor(location.type)}>
-                          {getLocationIcon(location.type)}
-                        </div>
-                      </div>
-                      
-                      {/* Location Label */}
-                      {isCurrent && (
-                        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                          <span className="text-xs bg-console-accent text-console-dark px-2 py-1 rounded font-gaming">
-                            HERE
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Connection Lines */}
-                      {isCurrent && isDiscovered && (
-                        <div className="absolute inset-0">
-                          {filteredLocations.filter(l => l.id !== location.id && l.isDiscovered !== false).map((otherLocation, otherIndex) => {
-                            const otherX = otherLocation.coordinates?.x || (otherIndex % 8) * 12.5;
-                            const otherY = otherLocation.coordinates?.y || Math.floor(otherIndex / 8) * 12.5;
-                            const distance = Math.sqrt(Math.pow(x - otherX, 2) + Math.pow(y - otherY, 2));
-                            
-                            if (distance < 30) { // Only show connections to nearby locations
-                              return (
-                                <svg
-                                  key={otherLocation.id}
-                                  className="absolute inset-0 w-full h-full pointer-events-none"
-                                  style={{ zIndex: 5 }}
-                                >
-                                  <line
-                                    x1="50%"
-                                    y1="50%"
-                                    x2={`${((otherX - x) / 100) * 100 + 50}%`}
-                                    y2={`${((otherY - y) / 100) * 100 + 50}%`}
-                                    stroke="rgba(34, 197, 94, 0.3)"
-                                    strokeWidth="1"
-                                    strokeDasharray="3,3"
-                                  />
-                                </svg>
-                              );
-                            }
-                            return null;
-                          })}
-                        </div>
-                      )}
+                    <div className={getLocationColor(location.type)}>
+                      {getLocationIcon(location.type)}
                     </div>
                   </button>
-                );
+                )
               })}
-              
-              {/* Map Legend */}
-              <div className="absolute bottom-4 left-4 bg-console-dark/90 border border-console-border rounded-lg p-3 text-xs">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Users className="w-3 h-3 text-blue-400" />
-                  <span className="text-console-text">Towns</span>
-                </div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Sword className="w-3 h-3 text-red-400" />
-                  <span className="text-console-text">Dungeons</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Compass className="w-3 h-3 text-green-400" />
-                  <span className="text-console-text">Wilderness</span>
-                </div>
-              </div>
-              
-              {/* Current Location Info */}
-              {currentLocation && (
-                <div className="absolute top-4 right-4 bg-console-dark/90 border border-console-border rounded-lg p-3 text-xs">
-                  <div className="font-gaming text-console-accent mb-1">Current Location</div>
-                  <div className="text-console-text">{currentLocation.name}</div>
-                  <div className="text-console-text-dim">{currentLocation.description}</div>
-                </div>
-              )}
             </div>
           </div>
         )}

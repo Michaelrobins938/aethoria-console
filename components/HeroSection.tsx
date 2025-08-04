@@ -54,22 +54,7 @@ export function HeroSection({ onStartAdventure, onScrollToFeatures }: HeroSectio
         }} />
       </div>
 
-      {/* Matrix Rain Effect */}
-      <div className="absolute inset-0 opacity-5">
-        {Array.from({ length: 20 }, (_, i) => (
-          <div
-            key={i}
-            className="absolute text-console-accent font-console text-xs animate-matrix-rain"
-            style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`
-            }}
-          >
-            {Array.from({ length: 20 }, () => String.fromCharCode(0x30A0 + Math.random() * 96)).join('')}
-          </div>
-        ))}
-      </div>
+      
 
       {/* Main Content */}
       <div className="relative z-10 text-center space-y-12 max-w-6xl mx-auto px-4 pt-20">

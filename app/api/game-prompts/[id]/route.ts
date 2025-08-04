@@ -2,36 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
-// Cache for game prompts to avoid repeated file reads
-const promptCache = new Map<string, any>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+// Load individual game prompt
+function loadGamePrompt(id: string) {
+  try {
+    const dataDir = path.join(process.cwd(), 'app', 'api', 'game-prompts', 'data')
+    const promptFile = path.join(dataDir, `${id}.json`)
+    
+    if (fs.existsSync(promptFile)) {
+      const data = fs.readFileSync(promptFile, 'utf8')
+      return JSON.parse(data)
+    }
+  } catch (error) {
+    console.error(`Error loading game prompt ${id}:`, error)
+  }
+  
+  return null
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const prompt = loadGamePrompt(params.id)
     
-    // Check cache first
-    const cached = promptCache.get(id)
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return NextResponse.json(cached.data)
-    }
-
-    // Load game prompts data
-    const promptsPath = path.join(process.cwd(), 'app/api/game-prompts/data/index.json')
-    
-    if (!fs.existsSync(promptsPath)) {
-      return NextResponse.json(
-        { error: 'Game prompts data not found' },
-        { status: 404 }
-      )
-    }
-
-    const promptsData = JSON.parse(fs.readFileSync(promptsPath, 'utf8'))
-    const prompt = promptsData.find((p: any) => p.id === id)
-
     if (!prompt) {
       return NextResponse.json(
         { error: 'Game prompt not found' },
@@ -39,17 +33,11 @@ export async function GET(
       )
     }
 
-    // Cache the result
-    promptCache.set(id, {
-      data: prompt,
-      timestamp: Date.now()
-    })
-
     return NextResponse.json(prompt)
   } catch (error) {
-    console.error('Error loading game prompt:', error)
+    console.error('Error fetching game prompt:', error)
     return NextResponse.json(
-      { error: 'Failed to load game prompt' },
+      { error: 'Failed to fetch game prompt' },
       { status: 500 }
     )
   }

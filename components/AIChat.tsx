@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles, MessageSquare } from 'lucide-react'
+import { Send, Mic, MicOff, Volume2, VolumeX, Loader2, Sparkles, MessageSquare, Menu, X } from 'lucide-react'
 import { useGameStore } from '@/lib/store'
 import { NarratorOrbComponent } from './NarratorOrb'
 import { useNarratorOrb } from '@/lib/hooks/useNarratorOrb'
@@ -16,6 +16,7 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
   const [isTyping, setIsTyping] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   
   const { orbState, handleMessageActivity, handleAIThinking, handleAIResponse } = useNarratorOrb()
   
@@ -64,8 +65,8 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
 
       recognitionRef.current.onresult = (event) => {
         const transcript = Array.from(event.results)
-          .map((result: any) => result[0])
-          .map((result: any) => result.transcript)
+          .map(result => result[0])
+          .map(result => result.transcript)
           .join('')
         
         setInput(transcript)
@@ -176,28 +177,38 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
   }
 
   return (
-    <div className={`ai-chat-container relative ${className}`}>
-             {/* NarratorOrb Background */}
-       <NarratorOrbComponent 
-         isVisible={true}
-         intensity={orbState.intensity}
-         audioLevel={orbState.audioLevel}
-         className="absolute inset-0"
-       />
+    <div className={`ai-chat-container relative mobile-full-height ${className}`}>
+      {/* NarratorOrb Background */}
+      <NarratorOrbComponent 
+        isVisible={true}
+        intensity={orbState.intensity}
+        audioLevel={orbState.audioLevel}
+        className="absolute inset-0"
+      />
 
-      {/* Chat Interface */}
-      <div className="relative z-20 flex flex-col h-full bg-black/20 backdrop-blur-sm rounded-lg border border-cyan-500/30">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-cyan-500/30">
-          <div className="flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-lg font-semibold text-cyan-400">AI Dungeon Master</h3>
+      {/* Mobile-optimized Chat Interface */}
+      <div className="relative z-20 flex flex-col h-full bg-black/20 backdrop-blur-sm rounded-lg border border-cyan-500/30 mobile-safe-area">
+        {/* Mobile Header */}
+        <div className="mobile-chat-header">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="mobile-button md:hidden bg-console-accent/20 text-console-accent border border-console-accent/30 hover:bg-console-accent/30"
+            >
+              {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            
+            <div className="flex items-center space-x-2">
+              <Sparkles className="w-5 h-5 text-cyan-400" />
+              <h3 className="text-lg font-semibold text-cyan-400 font-gaming">AI Dungeon Master</h3>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          {/* Desktop Voice Controls */}
+          <div className="hidden md:flex items-center space-x-2">
             <button
               onClick={toggleVoiceInput}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`mobile-button transition-colors ${
                 isListening 
                   ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
                   : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30'
@@ -209,7 +220,7 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
             
             <button
               onClick={toggleVoiceOutput}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`mobile-button transition-colors ${
                 isSpeaking 
                   ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
                   : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30'
@@ -221,12 +232,52 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
           </div>
         </div>
 
+        {/* Mobile Menu Overlay */}
+        {showMobileMenu && (
+          <div className="md:hidden absolute top-full left-0 right-0 z-20 bg-console-darker/95 backdrop-blur-sm border-b border-console-border">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-console-text font-console">Voice Controls</span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={toggleVoiceInput}
+                    className={`mobile-button transition-colors ${
+                      isListening 
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                        : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    }`}
+                  >
+                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </button>
+                  
+                  <button
+                    onClick={toggleVoiceOutput}
+                    className={`mobile-button transition-colors ${
+                      isSpeaking 
+                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+                        : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                    }`}
+                  >
+                    {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              
+              {isListening && (
+                <div className="text-xs text-cyan-300/70 font-console">
+                  Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="mobile-chat-messages">
           {messages.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
               <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Start your adventure by typing a message or using voice commands</p>
+              <p className="font-console text-sm md:text-base">Start your adventure by typing a message or using voice commands</p>
             </div>
           ) : (
             messages.map((message) => (
@@ -235,20 +286,22 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
                 className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`${
                     message.type === 'user'
-                      ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/30'
+                      ? 'mobile-message-user'
                       : message.type === 'ai'
-                      ? 'bg-purple-500/20 text-purple-100 border border-purple-500/30'
-                      : 'bg-gray-500/20 text-gray-100 border border-gray-500/30'
+                      ? 'mobile-message-ai'
+                      : 'mobile-message bg-gray-500/20 text-gray-100 border border-gray-500/30'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="whitespace-pre-wrap font-console text-sm md:text-base leading-relaxed">
+                    {message.content}
+                  </p>
                   {message.diceRolls && message.diceRolls.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-current/20">
-                      <p className="text-sm opacity-75">Dice Rolls:</p>
+                      <p className="text-xs opacity-75 font-console">Dice Rolls:</p>
                       {message.diceRolls.map((roll, index) => (
-                        <p key={index} className="text-xs">
+                        <p key={index} className="text-xs font-console">
                           {roll.type}: {roll.result} {roll.success ? '✅' : '❌'}
                         </p>
                       ))}
@@ -261,10 +314,10 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
           
           {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-purple-500/20 text-purple-100 border border-purple-500/30 rounded-lg p-3">
+              <div className="mobile-message-ai">
                 <div className="flex items-center space-x-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>AI is thinking...</span>
+                  <span className="font-console text-sm">AI is thinking...</span>
                 </div>
               </div>
             </div>
@@ -273,8 +326,8 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-cyan-500/30">
+        {/* Mobile-optimized Input */}
+        <div className="mobile-chat-input">
           <div className="flex space-x-2">
             <textarea
               ref={inputRef}
@@ -282,7 +335,7 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type your message or use voice commands..."
-              className="flex-1 bg-black/40 text-cyan-100 placeholder-cyan-300/50 border border-cyan-500/30 rounded-lg p-3 resize-none focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+              className="mobile-input resize-none"
               rows={2}
               disabled={isTyping}
             />
@@ -290,17 +343,17 @@ export function AIChat({ onClose, className = '' }: AIChatProps) {
             <button
               onClick={handleSendMessage}
               disabled={!input.trim() || isTyping}
-              className="px-4 py-3 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mobile-button bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send className="w-4 h-4" />
             </button>
           </div>
           
-          {/* Voice Command Hints */}
+          {/* Voice Command Hints - Mobile */}
           {isListening && (
-                         <div className="mt-2 text-xs text-cyan-300/70">
-               Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
-             </div>
+            <div className="mt-2 text-xs text-cyan-300/70 font-console">
+              Voice commands: &quot;send&quot;, &quot;clear&quot;, &quot;help&quot;
+            </div>
           )}
         </div>
       </div>

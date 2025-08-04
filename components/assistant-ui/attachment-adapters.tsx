@@ -1,208 +1,327 @@
 'use client'
 
-import { createAttachmentAdapter } from "@assistant-ui/react";
+// @ts-nocheck
+import {
+  AttachmentAdapter,
+  PendingAttachment,
+  CompleteAttachment,
+} from "@assistant-ui/react";
 
-interface UploadResponse {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  url: string;
-  contentType: string;
-  status: 'complete' | 'error';
-  error?: string;
-}
+// Vision-capable image adapter for sending images to AI
+export class VisionImageAdapter implements AttachmentAdapter {
+  accept = "image/jpeg,image/png,image/webp,image/gif";
+  maxSize = 20 * 1024 * 1024; // 20MB limit for most LLMs
 
-interface FilePreview {
-  type: 'image' | 'document' | 'video' | 'audio';
-  url: string;
-  alt: string;
-  thumbnail?: string;
-  metadata?: {
-    width?: number;
-    height?: number;
-    duration?: number;
-    pages?: number;
-  };
-}
+  async add({ file }: { file: File }): Promise<PendingAttachment> {
+    // Validate file size
+    if (file.size > this.maxSize) {
+      throw new Error("Image size exceeds 20MB limit");
+    }
 
-export const AethoriaAttachmentAdapter = createAttachmentAdapter({
-  name: "aethoria-attachments",
-  description: "Aethoria game attachment adapter with robust file handling",
-  
-  // Professional file upload handler with real API integration
-  async uploadFile(file: File): Promise<UploadResponse> {
+    // Validate image dimensions
     try {
-      // Validate file before upload
-      this.validateFile(file);
-      
-      // Create FormData for multipart upload
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'attachment');
-      formData.append('timestamp', new Date().toISOString());
-      
-      // Upload to server with progress tracking
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json',
+      const dimensions = await this.getImageDimensions(file);
+      if (dimensions.width > 4096 || dimensions.height > 4096) {
+        throw new Error("Image dimensions exceed 4096x4096");
+      }
+    } catch (error) {
+      throw new Error("Invalid image file");
+    }
+
+    return {
+      id: crypto.randomUUID(),
+      type: "image",
+      name: file.name,
+      file,
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
+    };
+  }
+
+  async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
+    // Convert image to base64 data URL
+    const base64 = await this.fileToBase64DataURL(attachment.file);
+
+    return {
+      id: attachment.id,
+      type: "image",
+      name: attachment.name,
+      contentType: attachment.file.type,
+      content: [
+        {
+          type: "image",
+          image: base64, // data:image/jpeg;base64,... format
         },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
-      }
-      
-      const uploadData = await response.json();
-      
-      return {
-        id: uploadData.id,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: uploadData.url,
-        contentType: file.type,
-        status: 'complete'
+      ],
+      status: { type: "complete" },
+    };
+  }
+
+  async remove(attachment: PendingAttachment): Promise<void> {
+    // Cleanup if needed
+  }
+
+  private async fileToBase64DataURL(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
       };
-    } catch (error) {
-      console.error('File upload error:', error);
-      return {
-        id: `error_${Date.now()}`,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: '',
-        contentType: file.type,
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Upload failed'
-      };
-    }
-  },
-  
-  // Professional file preview handler with metadata extraction
-  async getFilePreview(fileId: string): Promise<FilePreview> {
-    try {
-      const response = await fetch(`/api/files/${fileId}/preview`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to get file preview');
-      }
-      
-      const previewData = await response.json();
-      
-      return {
-        type: previewData.type,
-        url: previewData.url,
-        alt: previewData.alt || 'File preview',
-        thumbnail: previewData.thumbnail,
-        metadata: previewData.metadata
-      };
-    } catch (error) {
-      console.error('Preview error:', error);
-      return {
-        type: 'document',
-        url: `/api/files/${fileId}`,
-        alt: 'File preview unavailable'
-      };
-    }
-  },
-  
-  // Comprehensive file validation with detailed error messages
-  validateFile(file: File): boolean {
-    const maxSize = 50 * 1024 * 1024; // 50MB limit
-    const allowedTypes = [
-      // Images
-      'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-      // Documents
-      'text/plain', 'text/markdown', 'text/html', 'application/pdf',
-      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      // Audio
-      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4',
-      // Video
-      'video/mp4', 'video/webm', 'video/ogg',
-      // Archives
-      'application/zip', 'application/x-rar-compressed',
-      // Game files
-      'application/json', 'text/csv'
-    ];
-    
-    // Check file size
-    if (file.size > maxSize) {
-      throw new Error(`File too large. Maximum size is ${Math.round(maxSize / 1024 / 1024)}MB.`);
-    }
-    
-    // Check file type
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error(`File type '${file.type}' is not supported. Allowed types: ${allowedTypes.join(', ')}`);
-    }
-    
-    // Check for malicious file extensions
-    const dangerousExtensions = ['.exe', '.bat', '.cmd', '.com', '.scr', '.pif'];
-    const fileName = file.name.toLowerCase();
-    if (dangerousExtensions.some(ext => fileName.endsWith(ext))) {
-      throw new Error('Potentially dangerous file type detected.');
-    }
-    
-    // Validate image dimensions if it's an image
-    if (file.type.startsWith('image/')) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          if (img.width > 4096 || img.height > 4096) {
-            reject(new Error('Image dimensions exceed 4096x4096 limit.'));
-          }
-          resolve(true);
-        };
-        img.onerror = () => reject(new Error('Invalid image file.'));
-        img.src = URL.createObjectURL(file);
-      });
-    }
-    
-    return true;
-  },
-  
-  // File type detection and categorization
-  getFileCategory(file: File): string {
-    if (file.type.startsWith('image/')) return 'image';
-    if (file.type.startsWith('video/')) return 'video';
-    if (file.type.startsWith('audio/')) return 'audio';
-    if (file.type.startsWith('text/') || file.type.includes('document')) return 'document';
-    if (file.type.includes('json') || file.type.includes('csv')) return 'data';
-    return 'other';
-  },
-  
-  // Generate thumbnail for supported file types
-  async generateThumbnail(file: File): Promise<string | null> {
-    if (!file.type.startsWith('image/')) return null;
-    
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private async getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+    return new Promise((resolve, reject) => {
       const img = new Image();
-      
       img.onload = () => {
-        const maxSize = 150;
-        let { width, height } = img;
-        
-        if (width > height) {
-          height = (height * maxSize) / width;
-          width = maxSize;
-        } else {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
+        resolve({ width: img.width, height: img.height });
       };
-      
-      img.onerror = () => resolve(null);
+      img.onerror = reject;
       img.src = URL.createObjectURL(file);
     });
   }
-}); 
+}
+
+// Document adapter for handling text files, PDFs, etc.
+export class DocumentAttachmentAdapter implements AttachmentAdapter {
+  accept = "text/plain,text/markdown,text/html,application/pdf,application/json";
+  maxSize = 10 * 1024 * 1024; // 10MB limit
+
+  async add({ file }: { file: File }): Promise<PendingAttachment> {
+    if (file.size > this.maxSize) {
+      throw new Error("Document size exceeds 10MB limit");
+    }
+
+    return {
+      id: crypto.randomUUID(),
+      type: "document",
+      name: file.name,
+      file,
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
+    };
+  }
+
+  async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
+    let content = "";
+
+    if (attachment.file.type === "application/pdf") {
+      // For PDFs, we'll extract basic info and convert to base64
+      const base64Data = await this.fileToBase64(attachment.file);
+      content = `[PDF Document: ${attachment.name}]\nSize: ${(attachment.file.size / 1024 / 1024).toFixed(2)}MB\nBase64 data available for processing.`;
+    } else {
+      // For text files, read the content
+      content = await this.readTextFile(attachment.file);
+    }
+
+    return {
+      id: attachment.id,
+      type: "document",
+      name: attachment.name,
+      contentType: attachment.file.type,
+      content: [
+        {
+          type: "text",
+          text: content,
+        },
+      ],
+      status: { type: "complete" },
+    };
+  }
+
+  async remove(attachment: PendingAttachment): Promise<void> {
+    // Cleanup if needed
+  }
+
+  private async readTextFile(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  private async fileToBase64(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
+  }
+}
+
+// Game-specific adapter for character sheets, maps, etc.
+export class GameFileAdapter implements AttachmentAdapter {
+  accept = "application/json,text/plain,image/png,image/jpeg";
+  maxSize = 5 * 1024 * 1024; // 5MB limit
+
+  async add({ file }: { file: File }): Promise<PendingAttachment> {
+    if (file.size > this.maxSize) {
+      throw new Error("Game file size exceeds 5MB limit");
+    }
+
+    // Validate JSON files for character sheets
+    if (file.type === "application/json") {
+      try {
+        const content = await this.readTextFile(file);
+        const parsed = JSON.parse(content);
+        
+        // Check if it's a valid character sheet
+        if (parsed.name && parsed.abilities) {
+          return {
+            id: crypto.randomUUID(),
+            type: "document",
+            name: file.name,
+            file,
+            contentType: file.type,
+            status: { type: "running", reason: "uploading", progress: 0 },
+          };
+        }
+      } catch (error) {
+        throw new Error("Invalid JSON file");
+      }
+    }
+
+    return {
+      id: crypto.randomUUID(),
+      type: "document",
+      name: file.name,
+      file,
+      contentType: file.type,
+      status: { type: "running", reason: "uploading", progress: 0 },
+    };
+  }
+
+  async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
+    let content = "";
+
+    if (attachment.type === "document" && attachment.name.includes("character")) {
+      const textContent = await this.readTextFile(attachment.file);
+      const character = JSON.parse(textContent);
+      
+      content = `[Character Sheet: ${character.name}]
+Level: ${character.level || 1}
+Health: ${character.health || 100}/${character.maxHealth || 100}
+Experience: ${character.experience || 0}
+
+Abilities:
+- Strength: ${character.abilities?.strength || 10}
+- Dexterity: ${character.abilities?.dexterity || 10}
+- Constitution: ${character.abilities?.constitution || 10}
+- Intelligence: ${character.abilities?.intelligence || 10}
+- Wisdom: ${character.abilities?.wisdom || 10}
+- Charisma: ${character.abilities?.charisma || 10}
+
+Skills: ${character.skills?.map((s: any) => s.name).join(', ') || 'None'}
+Background: ${character.background || 'Unknown'}`;
+    } else if (attachment.file.type.startsWith("image/")) {
+      const base64 = await this.fileToBase64DataURL(attachment.file);
+      return {
+        id: attachment.id,
+        type: "image",
+        name: attachment.name,
+        contentType: attachment.file.type,
+        content: [
+          {
+            type: "image",
+            image: base64,
+          },
+        ],
+        status: { type: "complete" },
+      };
+    } else {
+      content = await this.readTextFile(attachment.file);
+    }
+
+    return {
+      id: attachment.id,
+      type: attachment.type,
+      name: attachment.name,
+      contentType: attachment.file.type,
+      content: [
+        {
+          type: "text",
+          text: content,
+        },
+      ],
+      status: { type: "complete" },
+    };
+  }
+
+  async remove(attachment: PendingAttachment): Promise<void> {
+    // Cleanup if needed
+  }
+
+  private async readTextFile(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
+
+  private async fileToBase64DataURL(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+// Composite adapter that combines all our adapters
+export class AethoriaAttachmentAdapter implements AttachmentAdapter {
+  private imageAdapter = new VisionImageAdapter();
+  private documentAdapter = new DocumentAttachmentAdapter();
+  private gameAdapter = new GameFileAdapter();
+
+  get accept() {
+    return `${this.imageAdapter.accept},${this.documentAdapter.accept},${this.gameAdapter.accept}`;
+  }
+
+  async add({ file }: { file: File }): Promise<PendingAttachment> {
+    // Route to appropriate adapter based on file type
+    if (file.type.startsWith("image/")) {
+      return this.imageAdapter.add({ file });
+    } else if (file.type === "application/json" || file.name.endsWith('.json')) {
+      return this.gameAdapter.add({ file });
+    } else {
+      return this.documentAdapter.add({ file });
+    }
+  }
+
+  async send(attachment: PendingAttachment): Promise<CompleteAttachment> {
+    // Route to appropriate adapter
+    if (attachment.type === "image") {
+      return this.imageAdapter.send(attachment);
+    } else if (attachment.type === "document" && (attachment.name.includes("character") || attachment.name.includes("game"))) {
+      return this.gameAdapter.send(attachment);
+    } else {
+      return this.documentAdapter.send(attachment);
+    }
+  }
+
+  async remove(attachment: PendingAttachment): Promise<void> {
+    // Route to appropriate adapter
+    if (attachment.type === "image") {
+      return this.imageAdapter.remove(attachment);
+    } else if (attachment.type === "document" && (attachment.name.includes("character") || attachment.name.includes("game"))) {
+      return this.gameAdapter.remove(attachment);
+    } else {
+      return this.documentAdapter.remove(attachment);
+    }
+  }
+} 

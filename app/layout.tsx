@@ -1,14 +1,13 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Aethoria AI Gaming Console',
   description: 'AI-powered interactive storytelling and gaming platform',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
 }
 
 // Force dynamic rendering for all pages
@@ -29,14 +28,14 @@ export default async function RootLayout({
   await getTimestamp()
   
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
-        <TooltipProvider delayDuration={300} skipDelayDuration={500}>
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-          </Suspense>
-        </TooltipProvider>
-      </body>
+    <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#00ff41" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 } 

@@ -81,7 +81,7 @@ export function QuestLog({ isOpen, onClose }: QuestLogProps) {
   }
 
   const getQuestRewards = (quest: Quest) => {
-    const rewards: string[] = []
+    const rewards = []
     if (quest.rewards.experience) rewards.push(`${quest.rewards.experience} XP`)
     if (quest.rewards.gold) rewards.push(`${quest.rewards.gold} Gold`)
     if (quest.rewards.items && quest.rewards.items.length > 0) {
