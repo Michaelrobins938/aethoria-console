@@ -5,11 +5,31 @@ import { HeroSection } from '@/components/HeroSection'
 import { Header } from '@/components/Header'
 import { CharacterCreator } from '@/components/CharacterCreator'
 import { CartridgeSelector } from '@/components/CartridgeSelector'
+import { GamePrompt } from '@/lib/types'
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<'landing' | 'character' | 'game-select'>('landing')
   const [character, setCharacter] = useState(null)
   const [selectedGame, setSelectedGame] = useState(null)
+
+  // Default game prompt for character creation
+  const defaultGamePrompt: GamePrompt = {
+    id: "default-adventure",
+    title: "Fantasy Adventure",
+    description: "An epic journey through a mystical realm filled with magic, monsters, and ancient secrets.",
+    content: "You are in a mystical realm filled with magic, monsters, and ancient secrets. Your adventure begins...",
+    genre: "Fantasy",
+    difficulty: "medium",
+    themes: ["Adventure", "Magic", "Exploration"],
+    mechanics: {
+      diceSystem: "D20",
+      combatSystem: "Turn-based",
+      skillSystem: "D&D 5e inspired",
+      inventorySystem: "Weight-based",
+      questSystem: "Objective-based",
+      specialRules: ["Magic casting", "Stealth mechanics"]
+    }
+  }
 
   const handleStartAdventure = () => {
     setCurrentStep('character')
@@ -66,6 +86,7 @@ export default function Home() {
             <CharacterCreator 
               onComplete={handleCharacterCreated}
               onBack={handleBackToLanding}
+              gamePrompt={defaultGamePrompt}
             />
           </div>
         </div>
