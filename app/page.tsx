@@ -28,7 +28,7 @@ export default function Home() {
   const handleGameSelected = (game: any) => {
     setSelectedGame(game)
     // Navigate to the assistant UI with the character and game
-    window.location.href = `/assistant-ui?character=${encodeURIComponent(JSON.stringify(newCharacter))}&game=${encodeURIComponent(JSON.stringify(game))}`
+    window.location.href = `/assistant-ui?character=${encodeURIComponent(JSON.stringify(character))}&game=${encodeURIComponent(JSON.stringify(game))}`
   }
 
   const handleBackToLanding = () => {
