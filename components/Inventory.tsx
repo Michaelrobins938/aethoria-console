@@ -42,11 +42,7 @@ export function Inventory({ isOpen, onClose }: InventoryProps) {
     return inventory.map(item => ({
       ...item,
       quantity: 1, // Default quantity for items
-      effects: item.effects ? Object.entries(item.effects).map(([type, value]) => ({
-        type,
-        value,
-        description: `${type}: ${value}`
-      })) : undefined
+      effects: item.effects || {}
     }))
   }, [inventory])
 
@@ -282,13 +278,13 @@ export function Inventory({ isOpen, onClose }: InventoryProps) {
                 </div>
                 
                 {/* Item Effects */}
-                {item.effects && item.effects.length > 0 && (
+                {item.effects && Object.keys(item.effects).length > 0 && (
                   <div className="mt-3 pt-3 border-t border-console-border">
                     <h4 className="text-xs font-gaming text-console-accent mb-2">Effects:</h4>
                     <div className="space-y-1">
-                      {item.effects.map((effect, index) => (
-                        <div key={index} className="text-xs text-console-text-dim">
-                          {effect.description}
+                      {Object.entries(item.effects).map(([key, value]) => (
+                        <div key={key} className="text-xs text-console-text-dim">
+                          {key}: {value}
                         </div>
                       ))}
                     </div>

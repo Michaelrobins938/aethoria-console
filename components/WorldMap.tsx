@@ -325,7 +325,7 @@ export function WorldMap({ isOpen, onClose, onNavigate }: WorldMapProps) {
                     <h4 className="font-gaming text-console-accent mb-2">Available Quests</h4>
                     <div className="space-y-1 text-sm">
                       {selectedLocation.quests.map((quest, index) => (
-                        <div key={index} className="text-console-text-dim">• {quest}</div>
+                        <div key={index} className="text-console-text-dim">• {quest.title}</div>
                       ))}
                     </div>
                   </div>

@@ -69,31 +69,34 @@ const saveGameState = (state: GameState) => {
 
 // Default game state
 const getDefaultGameState = (): GameState => ({
-  character: {
-    name: "Adventurer",
-    health: 100,
-    maxHealth: 100,
-    attack: 10,
-    defense: 5,
-    speed: 10,
-    level: 1,
-    experience: 0,
-    inventory: [],
-    skills: [
-      { name: "Sword Fighting", level: 1, experience: 0, maxLevel: 5, description: "Basic sword combat", type: "combat" as const },
-      { name: "Stealth", level: 1, experience: 0, maxLevel: 5, description: "Moving silently", type: "exploration" as const }
-    ],
-    statusEffects: {},
-    background: "A mysterious traveler seeking adventure",
-    abilities: {
-      strength: 14,
-      dexterity: 12,
-      constitution: 16,
-      intelligence: 10,
-      wisdom: 8,
-      charisma: 12
-    }
-  },
+      character: {
+      id: "default-character",
+      name: "Adventurer",
+      health: 100,
+      maxHealth: 100,
+      armorClass: 10,
+      attack: 10,
+      level: 1,
+      experience: 0,
+      experienceToNextLevel: 1000,
+      proficiencyBonus: 2,
+      inventory: [],
+      skills: [
+        { name: "Sword Fighting", level: 1, experience: 0, maxLevel: 5, description: "Basic sword combat", type: "combat" as const },
+        { name: "Stealth", level: 1, experience: 0, maxLevel: 5, description: "Moving silently", type: "exploration" as const }
+      ],
+      statusEffects: {},
+      background: "A mysterious traveler seeking adventure",
+      abilities: {
+        strength: 14,
+        dexterity: 12,
+        constitution: 16,
+        intelligence: 10,
+        wisdom: 8,
+        charisma: 12
+      },
+      type: 'player'
+    },
   gamePrompt: {
     id: "fantasy-adventure",
     title: "Fantasy Adventure",

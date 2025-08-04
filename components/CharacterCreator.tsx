@@ -1002,14 +1002,16 @@ export function CharacterCreator({ onComplete, onBack, gamePrompt }: CharacterCr
     if (!selectedCharacter || !characterName.trim()) return
 
     const finalCharacter: Character = {
+      id: `char-${Date.now()}`,
       name: characterName,
       health: 100,
       maxHealth: 100,
+      armorClass: 10,
       attack: Math.floor(selectedCharacter.abilities.strength / 2) + 5,
-      defense: Math.floor(selectedCharacter.abilities.constitution / 2) + 3,
-      speed: Math.floor(selectedCharacter.abilities.dexterity / 2) + 5,
       level: 1,
       experience: 0,
+      experienceToNextLevel: 1000,
+      proficiencyBonus: 2,
       inventory: selectedCharacter.startingEquipment.map(item => ({
         id: item.toLowerCase().replace(/\s+/g, '-'),
         name: item,
@@ -1029,7 +1031,8 @@ export function CharacterCreator({ onComplete, onBack, gamePrompt }: CharacterCr
       })),
       statusEffects: {},
       background: selectedCharacter.background,
-      abilities: selectedCharacter.abilities
+      abilities: selectedCharacter.abilities,
+      type: 'player'
     }
 
     onComplete(finalCharacter)

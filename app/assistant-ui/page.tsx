@@ -16,14 +16,16 @@ export default function AssistantUIPage() {
   // Initialize with a default character and game prompt for demo
   useEffect(() => {
     const defaultCharacter: Character = {
+      id: "default-character",
       name: "Adventurer",
       health: 100,
       maxHealth: 100,
+      armorClass: 10,
       attack: 10,
-      defense: 5,
-      speed: 10,
       level: 1,
       experience: 0,
+      experienceToNextLevel: 1000,
+      proficiencyBonus: 2,
       inventory: [],
       skills: [
         { name: "Sword Fighting", level: 1, experience: 0, maxLevel: 5, description: "Basic sword combat", type: "combat" as const },
@@ -39,8 +41,7 @@ export default function AssistantUIPage() {
         wisdom: 8,
         charisma: 12
       },
-
-
+      type: 'player'
     };
 
     const defaultGamePrompt: GamePrompt = {

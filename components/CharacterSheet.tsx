@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { User, Heart, Sword, Shield, Zap, Brain, Star, TrendingUp, Award, BookOpen, Target, Activity, X } from 'lucide-react';
+import { User, Heart, Sword, Shield, Zap, Brain, Star, TrendingUp, Award, BookOpen, Target, Activity, X, Package } from 'lucide-react';
 import { useGameStore } from '@/lib/store';
 import { Character, Skill } from '@/lib/types';
 
@@ -111,7 +111,48 @@ export function CharacterSheet({ isOpen, onClose }: CharacterSheetProps) {
 
         <div className="max-h-[500px] overflow-y-auto">
           {activeTab === 'overview' && (
-            // ... (overview tab content remains the same)
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="console-card">
+                <h3 className="font-gaming text-console-accent mb-4">Character Overview</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <User className="w-5 h-5 text-console-accent" />
+                    <div>
+                      <div className="text-sm text-console-accent">Name</div>
+                      <div className="text-lg font-gaming">{character.name}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Star className="w-5 h-5 text-yellow-400" />
+                    <div>
+                      <div className="text-sm text-console-accent">Level</div>
+                      <div className="text-lg font-gaming">{character.level}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Heart className="w-5 h-5 text-red-400" />
+                    <div>
+                      <div className="text-sm text-console-accent">Health</div>
+                      <div className="text-lg font-gaming">{character.health}/{character.maxHealth}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="console-card">
+                <h3 className="font-gaming text-console-accent mb-4">Ability Scores</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.entries(character.abilities).map(([ability, value]) => (
+                    <div key={ability} className="flex items-center space-x-2">
+                      <div className={`w-3 h-3 rounded-full ${getAbilityColor(value)}`} />
+                      <div>
+                        <div className="text-sm text-console-accent">{ability.toUpperCase()}</div>
+                        <div className="text-lg font-gaming">{value} ({getAbilityModifier(value) >= 0 ? '+' : ''}{getAbilityModifier(value)})</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
           {activeTab === 'combat' && (
@@ -161,15 +202,90 @@ export function CharacterSheet({ isOpen, onClose }: CharacterSheetProps) {
           )}
 
           {activeTab === 'skills' && (
-            // ... (skills tab content remains the same)
+            <div className="console-card">
+              <h3 className="font-gaming text-console-accent mb-4">Skills</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(character.skills).map(([skillName, skill]) => (
+                  <div key={skillName} className="flex items-center justify-between p-3 border border-console-border rounded">
+                    <div className="flex items-center space-x-2">
+                      {getSkillTypeIcon(skill.type)}
+                      <div>
+                        <div className="text-sm text-console-accent">{skillName}</div>
+                        <div className="text-xs text-console-text-dim">{skill.type}</div>
+                      </div>
+                    </div>
+                    <div className="text-lg font-gaming">
+                      +{calculateTotalSkillBonus(skill)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {activeTab === 'inventory' && (
-            // ... (inventory tab content remains the same)
+            <div className="console-card">
+              <h3 className="font-gaming text-console-accent mb-4">Inventory</h3>
+              {character.inventory.length === 0 ? (
+                <p className="text-console-text-dim text-sm">Inventory is empty</p>
+              ) : (
+                <div className="space-y-2">
+                  {character.inventory.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border border-console-border rounded">
+                      <div className="flex items-center space-x-2">
+                        <Package className="w-4 h-4 text-console-accent" />
+                        <div>
+                          <div className="text-sm text-console-accent">{item.name}</div>
+                          <div className="text-xs text-console-text-dim">{item.description}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-console-text-dim">x{item.quantity}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {activeTab === 'progression' && (
-            // ... (progression tab content remains the same)
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="console-card">
+                <h3 className="font-gaming text-console-accent mb-4">Experience</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-console-accent">Current XP</span>
+                    <span className="font-gaming">{character.experience}</span>
+                  </div>
+                  <div className="w-full bg-console-border rounded-full h-2">
+                    <div 
+                      className="bg-console-accent h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${getExperienceProgress()}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-console-text-dim text-center">
+                    {character.experience} / {character.experienceToNextLevel} XP
+                  </div>
+                </div>
+              </div>
+              <div className="console-card">
+                <h3 className="font-gaming text-console-accent mb-4">Health Status</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-console-accent">Current Health</span>
+                    <span className="font-gaming">{character.health}</span>
+                  </div>
+                  <div className="w-full bg-console-border rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${getHealthColor()}`}
+                      style={{ width: `${getHealthPercentage()}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-console-text-dim text-center">
+                    {character.health} / {character.maxHealth} HP
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

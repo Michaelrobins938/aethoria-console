@@ -24,6 +24,8 @@ export interface Character extends CombatParticipant {
   statusEffects: Record<string, number>;
   background: string;
   proficiencyBonus: number;
+  experienceToNextLevel: number;
+  attack: number;
 }
 
 export interface Item {
@@ -35,6 +37,7 @@ export interface Item {
   weight: number;
   effects?: Record<string, number>;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  quantity?: number;
 }
 
 export interface Weapon extends Item {
@@ -76,12 +79,20 @@ export interface Quest {
   type: 'main' | 'side' | 'bounty' | 'guild' | 'exploration';
   objectives: QuestObjective[];
   rewards: QuestRewards;
+  level?: number;
+  location?: string;
+  timeLimit?: string;
+  questGiver?: string;
 }
 
 export interface QuestObjective {
   id: string;
   description: string;
   completed: boolean;
+  progress?: {
+    current: number;
+    required: number;
+  };
 }
 
 export interface QuestRewards {
@@ -95,7 +106,23 @@ export interface WorldState {
   timeOfDay: string;
   weather: string;
   activeEvents: string[];
+  discoveredLocations?: Location[];
 }
+
+export interface Location {
+  id: string;
+  name: string;
+  description: string;
+  type: LocationType;
+  isCurrent?: boolean;
+  coordinates?: { x: number; y: number };
+  isDiscovered?: boolean;
+  danger?: string;
+  features?: string[];
+  quests?: Quest[];
+}
+
+export type LocationType = 'town' | 'dungeon' | 'wilderness' | 'shop' | 'quest' | 'safe';
 
 export interface CombatState {
   isActive: boolean;
@@ -124,6 +151,8 @@ export interface DiceRoll {
   description: string;
   advantage?: 'advantage' | 'disadvantage' | null;
   advantageRolls?: number[];
+  success?: boolean;
+  type?: string;
 }
 
 export interface CombatRoll {
@@ -155,4 +184,67 @@ export interface GameMechanics {
   inventorySystem: string;
   questSystem: string;
   specialRules: string[];
+}
+
+// Missing types that were causing errors
+export interface Message {
+  id: string;
+  type: 'user' | 'system' | 'ai';
+  content: string;
+  timestamp: Date;
+  diceRolls?: DiceRoll[];
+}
+
+export interface InventoryItem extends Item {
+  quantity: number;
+  equipped?: boolean;
+}
+
+export type ItemType = 'weapon' | 'armor' | 'consumable' | 'quest' | 'misc';
+
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+
+export type QuestStatus = 'not_started' | 'active' | 'in_progress' | 'completed' | 'failed';
+
+export type QuestType = 'main' | 'side' | 'bounty' | 'guild' | 'exploration';
+
+export interface GameSession {
+  id: string;
+  title: string;
+  character: Character;
+  gamePrompt: GamePrompt;
+  createdAt: Date;
+  updatedAt: Date;
+  messages: Message[];
+  isActive: boolean;
+}
+
+export interface AIResponse {
+  content: string;
+  diceRolls?: DiceRoll[];
+  characterUpdates?: Partial<Character>;
+  worldUpdates?: Partial<WorldState>;
+}
+
+export interface VoiceState {
+  isListening: boolean;
+  isSpeaking: boolean;
+  isEnabled: boolean;
+  transcript: string;
+  confidence: number;
+}
+
+export interface AudioSettings {
+  volume: number;
+  rate: number;
+  pitch: number;
+  voice: string;
+  voiceOutputEnabled?: boolean;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  messages: Message[];
+  isActive: boolean;
 }

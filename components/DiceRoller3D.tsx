@@ -123,7 +123,6 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
     }
 
     let geometry: THREE.BufferGeometry
-    let material: THREE.MeshStandardMaterial
 
     switch (diceType) {
       case 'd4':
@@ -152,7 +151,7 @@ export function DiceRoller3D({ onRollComplete, className = '' }: DiceRoller3DPro
     }
 
     // Create material with dice-like appearance
-    material = new THREE.MeshStandardMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       metalness: 0.1,
       roughness: 0.8,

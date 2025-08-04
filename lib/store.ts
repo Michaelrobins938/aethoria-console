@@ -11,7 +11,8 @@ import {
   VoiceState,
   AudioSettings,
   GamePrompt,
-  CombatParticipant
+  CombatParticipant,
+  Message
 } from './types';
 
 interface GameStore {
@@ -22,16 +23,13 @@ interface GameStore {
   quests: Quest[];
   inventory: Item[];
   combatState: CombatState | null;
-  messages: Array<{
-    id: string;
-    type: 'user' | 'ai' | 'system';
-    content: string;
-    timestamp: Date;
-  }>;
+  messages: Message[];
   isTyping: boolean;
   isLoading: boolean;
   voiceState: VoiceState;
   audioSettings: AudioSettings;
+  chatSessions: GameSession[];
+  activeSessionId: string | null;
   initializeSession: (promptId: string) => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
   updateCharacter: (updates: Partial<Character>) => void;
@@ -46,12 +44,11 @@ interface GameStore {
   updateCombatState: (combatState: CombatState | null) => void;
   setVoiceState: (state: Partial<VoiceState>) => void;
   setAudioSettings: (settings: Partial<AudioSettings>) => void;
-  addMessage: (message: {
-    id: string;
-    type: 'user' | 'ai' | 'system';
-    content: string;
-    timestamp: Date;
-  }) => void;
+  addMessage: (message: Message) => void;
+  loadChatSession: (sessionId: string) => void;
+  deleteChatSession: (sessionId: string) => void;
+  updateSessionTitle: (sessionId: string, title: string) => void;
+  clearAllSessions: () => void;
   saveGame: () => void;
   loadGame: (sessionId: string) => Promise<void>;
   resetGame: () => void;
@@ -67,16 +64,16 @@ const initialWorldState: WorldState = {
 const initialVoiceState: VoiceState = {
   isListening: false,
   isSpeaking: false,
+  isEnabled: false,
   transcript: '',
   confidence: 0,
 };
 
 const initialAudioSettings: AudioSettings = {
-  voiceEnabled: false,
-  voiceOutputEnabled: true,
   volume: 0.7,
-  voiceSpeed: 1.0,
-  voicePitch: 1.0,
+  rate: 1.0,
+  pitch: 1.0,
+  voice: 'default',
 };
 
 export const useGameStore = create<GameStore>()(
@@ -94,6 +91,8 @@ export const useGameStore = create<GameStore>()(
       isLoading: false,
       voiceState: initialVoiceState,
       audioSettings: initialAudioSettings,
+      chatSessions: [],
+      activeSessionId: null,
 
       initializeSession: async (promptId: string) => {
         // ... (implementation remains the same)
@@ -174,6 +173,29 @@ export const useGameStore = create<GameStore>()(
 
       addMessage: (message) => {
         set(state => ({ messages: [...state.messages, message] }));
+      },
+
+      loadChatSession: (sessionId: string) => {
+        set({ activeSessionId: sessionId });
+      },
+
+      deleteChatSession: (sessionId: string) => {
+        set(state => ({
+          chatSessions: state.chatSessions.filter(s => s.id !== sessionId),
+          activeSessionId: state.activeSessionId === sessionId ? null : state.activeSessionId,
+        }));
+      },
+
+      updateSessionTitle: (sessionId: string, title: string) => {
+        set(state => ({
+          chatSessions: state.chatSessions.map(s => 
+            s.id === sessionId ? { ...s, title } : s
+          ),
+        }));
+      },
+
+      clearAllSessions: () => {
+        set({ chatSessions: [], activeSessionId: null });
       },
 
       saveGame: () => {

@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react'
 import Slider from 'react-slick'
 import { Gamepad2, Star, Play, ArrowLeft, ArrowRight, CheckCircle, Cpu, Zap } from 'lucide-react'
 import { LoadingSpinner } from './LoadingSpinner'
-import { GamePrompt } from '@/lib/types'
+import { GamePrompt, Character } from '@/lib/types'
 
 // Import slick carousel styles
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 
 interface CartridgeSelectorProps {
-  onCartridgeSelect: (cartridgeId: string) => void
+  onCartridgeSelect: (cartridgeId: string, characters?: Partial<Character>[]) => void
   onBack?: () => void
 }
 
