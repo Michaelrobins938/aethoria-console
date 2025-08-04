@@ -96,7 +96,7 @@ export default function Home() {
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-6xl">
             <CartridgeSelector 
-              onSelect={handleGameSelected}
+              onCartridgeSelect={handleGameSelected}
               onBack={() => setCurrentStep('character')}
             />
           </div>
